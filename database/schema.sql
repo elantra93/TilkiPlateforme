@@ -98,6 +98,24 @@ CREATE TABLE IF NOT EXISTS documents (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Tally webhook queue (soumissions non rattachées)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tally_queue (
+    id           INT UNSIGNED   AUTO_INCREMENT PRIMARY KEY,
+    event_id     VARCHAR(100)   NOT NULL DEFAULT '',
+    response_id  VARCHAR(100)   NOT NULL,
+    form_id      VARCHAR(100)   DEFAULT NULL,
+    form_name    VARCHAR(255)   DEFAULT NULL,
+    payload      JSON           NOT NULL,
+    status       ENUM('pending','matched','ignored') NOT NULL DEFAULT 'pending',
+    client_id    INT UNSIGNED   DEFAULT NULL,
+    created_at   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_response (response_id),
+    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL,
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- Admins
 -- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS admins (

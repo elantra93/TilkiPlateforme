@@ -58,6 +58,12 @@ unset($_SESSION['admin_flash']);
                                 <i class="bi bi-hourglass-split me-2"></i>En attente de validation
                             </a>
                         </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="/admin/tally/queue">
+                                <i class="bi bi-inbox me-2"></i>File Tally
+                            </a>
+                        </li>
                     </ul>
                 </li>
             </ul>

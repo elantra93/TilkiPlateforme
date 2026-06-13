@@ -80,6 +80,8 @@ $routes = [
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'showUpload'],
         '/admin/documents/pending'            => ['AdminDocument',   'pending'],
+        // Admin – File Tally
+        '/admin/tally/queue'                  => ['AdminTally',      'queue'],
     ],
     'POST' => [
         '/login'                     => ['Auth',     'login'],
@@ -103,6 +105,11 @@ $routes = [
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'upload'],
         '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],
+        // Admin – File Tally
+        '/admin/tally/(\d+)/match'            => ['AdminTally',      'match'],
+        '/admin/tally/(\d+)/ignore'           => ['AdminTally',      'ignore'],
+        // Webhook Tally (pas d'auth session)
+        '/webhooks/tally'                     => ['TallyWebhook',    'handle'],
     ],
 ];
 
