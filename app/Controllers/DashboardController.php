@@ -13,10 +13,15 @@ class DashboardController extends BaseController
         $this->requireAuth();
         $clientId = (int)$_SESSION['client_id'];
 
+        $contracts   = Contract::forClient($clientId);
+        $openClaims  = Claim::openForClient($clientId);
+        $totalDue    = array_sum(array_column($contracts, 'premium_due'));
+
         $this->render('dashboard.index', [
-            'client'    => Auth::client(),
-            'contracts' => Contract::forClient($clientId),
-            'claims'    => Claim::forClient($clientId),
+            'client'     => Auth::client(),
+            'contracts'  => $contracts,
+            'openClaims' => $openClaims,
+            'totalDue'   => (float)$totalDue,
         ]);
     }
 }
