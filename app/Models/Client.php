@@ -60,4 +60,34 @@ class Client
             'UPDATE clients SET reset_token = NULL, reset_token_expires = NULL, updated_at = NOW() WHERE id = ?'
         )->execute([$id]);
     }
+
+    // ── Admin ─────────────────────────────────────────────────────────────────
+
+    public static function all(): array
+    {
+        return Database::get()
+            ->query('SELECT id, account_number, first_name, last_name, email, phone, status, created_at FROM clients ORDER BY created_at DESC')
+            ->fetchAll();
+    }
+
+    public static function create(array $data): int
+    {
+        $db = Database::get();
+        $db->prepare(
+            'INSERT INTO clients (account_number, first_name, last_name, email, phone, password_hash, must_change_password, status)
+             VALUES (:account_number, :first_name, :last_name, :email, :phone, :password_hash, :must_change_password, :status)'
+        )->execute($data);
+        return (int)$db->lastInsertId();
+    }
+
+    public static function generateAccountNumber(): string
+    {
+        $db = Database::get();
+        do {
+            $num  = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $stmt = $db->prepare('SELECT COUNT(*) FROM clients WHERE account_number = ?');
+            $stmt->execute([$num]);
+        } while ($stmt->fetchColumn() > 0);
+        return $num;
+    }
 }

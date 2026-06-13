@@ -44,4 +44,43 @@ class Claim
         $stmt->execute([$id, $clientId]);
         return $stmt->fetch() ?: null;
     }
+
+    // ── Admin ─────────────────────────────────────────────────────────────────
+
+    public static function all(): array
+    {
+        return Database::get()->query(
+            'SELECT cl.*, c.first_name, c.last_name, c.account_number, co.policy_number
+             FROM claims cl
+             JOIN clients c ON cl.client_id = c.id
+             LEFT JOIN contracts co ON cl.contract_id = co.id
+             ORDER BY cl.created_at DESC'
+        )->fetchAll();
+    }
+
+    public static function find(int $id): ?array
+    {
+        $stmt = Database::get()->prepare('SELECT * FROM claims WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public static function create(array $data): int
+    {
+        $db = Database::get();
+        $db->prepare(
+            'INSERT INTO claims (client_id, contract_id, claim_number, insurer, branche, occurrence_date, status, description)
+             VALUES (:client_id, :contract_id, :claim_number, :insurer, :branche, :occurrence_date, :status, :description)'
+        )->execute($data);
+        return (int)$db->lastInsertId();
+    }
+
+    public static function update(int $id, array $data): void
+    {
+        Database::get()->prepare(
+            'UPDATE claims SET claim_number=:claim_number, contract_id=:contract_id, insurer=:insurer,
+             branche=:branche, occurrence_date=:occurrence_date, status=:status, description=:description
+             WHERE id=:id'
+        )->execute(array_merge($data, ['id' => $id]));
+    }
 }

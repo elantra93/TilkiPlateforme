@@ -61,11 +61,25 @@ $routes = [
         '/password/change'           => ['Auth',     'showChangePassword'],
         '/password/forgot'           => ['Auth',     'showForgotPassword'],
         '/password/reset'            => ['Auth',     'showResetPassword'],
-        // Admin
-        '/admin'                     => ['Admin',    'index'],
-        '/admin/login'               => ['Admin',    'showLogin'],
-        '/admin/logout'              => ['Admin',    'logout'],
-        '/admin/dashboard'           => ['Admin',    'dashboard'],
+        // Admin – Auth & Dashboard
+        '/admin'                              => ['Admin',           'index'],
+        '/admin/login'                        => ['Admin',           'showLogin'],
+        '/admin/logout'                       => ['Admin',           'logout'],
+        '/admin/dashboard'                    => ['Admin',           'dashboard'],
+        // Admin – Clients
+        '/admin/clients'                      => ['AdminClient',     'index'],
+        '/admin/clients/create'               => ['AdminClient',     'showCreate'],
+        // Admin – Contracts
+        '/admin/contracts'                    => ['AdminContract',   'index'],
+        '/admin/contracts/create'             => ['AdminContract',   'showCreate'],
+        '/admin/contracts/(\d+)/edit'         => ['AdminContract',   'showEdit'],
+        // Admin – Claims
+        '/admin/claims'                       => ['AdminClaim',      'index'],
+        '/admin/claims/create'                => ['AdminClaim',      'showCreate'],
+        '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'showEdit'],
+        // Admin – Documents
+        '/admin/documents/upload'             => ['AdminDocument',   'showUpload'],
+        '/admin/documents/pending'            => ['AdminDocument',   'pending'],
     ],
     'POST' => [
         '/login'                     => ['Auth',     'login'],
@@ -75,9 +89,20 @@ $routes = [
         '/password/reset'            => ['Auth',     'resetPassword'],
         '/claims/(\d+)/upload'        => ['Document', 'upload'],
         '/contracts/(\d+)/upload'     => ['Document', 'uploadContract'],
-        // Admin
-        '/admin/login'               => ['Admin',    'login'],
-        '/admin/logout'              => ['Admin',    'logout'],
+        // Admin – Auth
+        '/admin/login'                        => ['Admin',           'login'],
+        '/admin/logout'                       => ['Admin',           'logout'],
+        // Admin – Clients
+        '/admin/clients/create'               => ['AdminClient',     'create'],
+        // Admin – Contracts
+        '/admin/contracts/create'             => ['AdminContract',   'create'],
+        '/admin/contracts/(\d+)/edit'         => ['AdminContract',   'edit'],
+        // Admin – Claims
+        '/admin/claims/create'                => ['AdminClaim',      'create'],
+        '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'edit'],
+        // Admin – Documents
+        '/admin/documents/upload'             => ['AdminDocument',   'upload'],
+        '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],
     ],
 ];
 

@@ -37,6 +37,35 @@ class Document
         return $stmt->fetch() ?: null;
     }
 
+    // ── Admin ─────────────────────────────────────────────────────────────────
+
+    public static function find(int $id): ?array
+    {
+        $stmt = Database::get()->prepare('SELECT * FROM documents WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public static function pending(): array
+    {
+        return Database::get()->query(
+            "SELECT d.*, c.first_name, c.last_name, c.account_number,
+                    co.policy_number, cl.claim_number
+             FROM documents d
+             JOIN clients c ON d.client_id = c.id
+             LEFT JOIN contracts co ON d.contract_id = co.id
+             LEFT JOIN claims cl ON d.claim_id = cl.id
+             WHERE d.status = 'en_attente'
+             ORDER BY d.created_at DESC"
+        )->fetchAll();
+    }
+
+    public static function validateDoc(int $id): void
+    {
+        Database::get()->prepare("UPDATE documents SET status = 'valide' WHERE id = ?")
+            ->execute([$id]);
+    }
+
     public static function create(array $data): int
     {
         $db = Database::get();

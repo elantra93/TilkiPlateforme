@@ -28,6 +28,38 @@ unset($_SESSION['admin_flash']);
                         <i class="bi bi-speedometer2 me-1"></i>Tableau de bord
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/clients">
+                        <i class="bi bi-people me-1"></i>Clients
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/contracts">
+                        <i class="bi bi-file-earmark-text me-1"></i>Contrats
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/claims">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Sinistres
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-paperclip me-1"></i>Documents
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li>
+                            <a class="dropdown-item" href="/admin/documents/upload">
+                                <i class="bi bi-upload me-2"></i>Uploader
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/admin/documents/pending">
+                                <i class="bi bi-hourglass-split me-2"></i>En attente de validation
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
