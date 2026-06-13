@@ -1,4 +1,22 @@
-<?php $pageTitle = 'Contrat ' . htmlspecialchars($contract['policy_number']) . ' – TILKI'; ?>
+<?php
+$pageTitle = 'Contrat ' . htmlspecialchars($contract['policy_number']) . ' – TILKI';
+
+function docIcon(string $mime): string {
+    return match(true) {
+        $mime === 'application/pdf'        => 'bi-file-earmark-pdf text-danger',
+        str_starts_with($mime, 'image/')   => 'bi-file-earmark-image text-info',
+        str_contains($mime, 'word')        => 'bi-file-earmark-word text-primary',
+        str_contains($mime, 'excel') || str_contains($mime, 'sheet') => 'bi-file-earmark-excel text-success',
+        default                            => 'bi-file-earmark text-secondary',
+    };
+}
+
+$byCategory = ['cotation' => [], 'souscription' => []];
+foreach ($documents as $doc) {
+    $cat = $doc['category'] === 'cotation' ? 'cotation' : 'souscription';
+    $byCategory[$cat][] = $doc;
+}
+?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
 <div class="mb-3">
@@ -8,10 +26,12 @@
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-5">
-        <div class="card shadow-sm">
-            <div class="card-header fw-bold">
-                <i class="bi bi-file-earmark-text me-2"></i>Détails du contrat
+
+    <!-- ── Détails du contrat ──────────────────────────────────────────────── -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-file-earmark-text me-2 text-primary"></i>Détails du contrat
             </div>
             <div class="card-body">
                 <dl class="row mb-0 small">
@@ -19,15 +39,15 @@
                     <dd class="col-6 fw-semibold"><?= htmlspecialchars($contract['branche']) ?></dd>
 
                     <dt class="col-6 text-muted">N° Police</dt>
-                    <dd class="col-6"><code><?= htmlspecialchars($contract['policy_number']) ?></code></dd>
+                    <dd class="col-6"><code class="text-body"><?= htmlspecialchars($contract['policy_number']) ?></code></dd>
 
                     <dt class="col-6 text-muted">Assureur</dt>
                     <dd class="col-6"><?= htmlspecialchars($contract['insurer']) ?></dd>
 
-                    <dt class="col-6 text-muted">Début</dt>
+                    <dt class="col-6 text-muted">Date d'effet</dt>
                     <dd class="col-6"><?= date('d/m/Y', strtotime($contract['effective_date'])) ?></dd>
 
-                    <dt class="col-6 text-muted">Expiration</dt>
+                    <dt class="col-6 text-muted">Date d'échéance</dt>
                     <dd class="col-6"><?= date('d/m/Y', strtotime($contract['expiry_date'])) ?></dd>
 
                     <dt class="col-6 text-muted">Prime totale</dt>
@@ -36,10 +56,18 @@
                         <?= htmlspecialchars($contract['currency']) ?>
                     </dd>
 
-                    <dt class="col-6 text-muted">Prime due</dt>
+                    <dt class="col-6 text-muted">Restant dû</dt>
                     <dd class="col-6">
-                        <?= number_format((float)$contract['premium_due'], 0, ',', ' ') ?>
-                        <?= htmlspecialchars($contract['currency']) ?>
+                        <?php if ((float)$contract['premium_due'] <= 0): ?>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">
+                                <i class="bi bi-check2 me-1"></i>À jour
+                            </span>
+                        <?php else: ?>
+                            <span class="fw-semibold text-danger">
+                                <?= number_format((float)$contract['premium_due'], 0, ',', ' ') ?>
+                                <?= htmlspecialchars($contract['currency']) ?>
+                            </span>
+                        <?php endif; ?>
                     </dd>
 
                     <dt class="col-6 text-muted">Statut</dt>
@@ -53,40 +81,94 @@
         </div>
     </div>
 
-    <div class="col-lg-7">
+    <!-- ── Documents + Upload ─────────────────────────────────────────────── -->
+    <div class="col-lg-8 d-flex flex-column gap-4">
+
+        <?php
+        $sections = [
+            'cotation'     => ['label' => 'Cotation',     'icon' => 'bi-clipboard-data',    'color' => 'text-info'],
+            'souscription' => ['label' => 'Souscription', 'icon' => 'bi-file-earmark-check', 'color' => 'text-success'],
+        ];
+        foreach ($sections as $cat => $meta):
+            $docs = $byCategory[$cat];
+        ?>
         <div class="card shadow-sm">
-            <div class="card-header fw-bold">
-                <i class="bi bi-paperclip me-2"></i>Documents disponibles
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold">
+                <i class="bi <?= $meta['icon'] ?> <?= $meta['color'] ?>"></i>
+                <?= $meta['label'] ?>
+                <span class="badge bg-secondary fw-normal ms-1"><?= count($docs) ?></span>
             </div>
-            <?php if (empty($documents)): ?>
-                <div class="card-body text-muted small">Aucun document disponible pour ce contrat.</div>
+
+            <?php if (empty($docs)): ?>
+                <div class="card-body text-muted small py-4 text-center">
+                    <i class="bi bi-inbox fs-4 d-block mb-1 opacity-25"></i>
+                    Aucun document dans cette section.
+                </div>
             <?php else: ?>
                 <ul class="list-group list-group-flush">
-                    <?php foreach ($documents as $doc): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <div>
-                                <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
-                                <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                                <div class="text-muted x-small mt-1">
-                                    <?= htmlspecialchars($doc['doc_type']) ?>
-                                    &bull; <?= number_format($doc['file_size'] / 1024, 0) ?> Ko
-                                    &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
-                                </div>
+                    <?php foreach ($docs as $doc): ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div class="me-3 overflow-hidden">
+                            <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
+                            <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
+                            <div class="text-muted mt-1" style="font-size:.75rem">
+                                <?= htmlspecialchars($doc['doc_type']) ?>
+                                &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
+                                &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
+                                <?php if ($doc['source'] === 'client'): ?>
+                                    &bull; <em>déposé par vous</em>
+                                <?php endif; ?>
                             </div>
-                            <?php if ($doc['status'] === 'valide'): ?>
-                                <a href="/documents/<?= $doc['id'] ?>/download"
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-download me-1"></i>Télécharger
-                                </a>
-                            <?php else: ?>
-                                <span class="badge bg-warning text-dark">En attente</span>
-                            <?php endif; ?>
-                        </li>
+                        </div>
+                        <?php if ($doc['status'] === 'valide'): ?>
+                            <a href="/documents/<?= (int)$doc['id'] ?>/download"
+                               class="btn btn-sm btn-outline-primary flex-shrink-0">
+                                <i class="bi bi-download me-1"></i>Télécharger
+                            </a>
+                        <?php else: ?>
+                            <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                        <?php endif; ?>
+                    </li>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
         </div>
-    </div>
-</div>
+        <?php endforeach; ?>
+
+        <!-- ── Formulaire d'upload preuve de règlement ──────────────────── -->
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-upload me-2 text-primary"></i>Déposer une preuve de règlement
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Joignez votre reçu de paiement ou virement. Le document sera examiné par TILKI
+                    avant validation.
+                </p>
+                <form method="post"
+                      action="/contracts/<?= (int)$contract['id'] ?>/upload"
+                      enctype="multipart/form-data"
+                      novalidate>
+                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">
+                            Fichier
+                            <span class="text-muted fw-normal">(PDF, JPG ou PNG – max&nbsp;10&nbsp;Mo)</span>
+                        </label>
+                        <input type="file"
+                               name="document"
+                               class="form-control"
+                               accept=".pdf,.jpg,.jpeg,.png"
+                               required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload me-2"></i>Envoyer
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div><!-- /col -->
+</div><!-- /row -->
 
 <?php require APP_PATH . '/Views/layout/footer.php'; ?>

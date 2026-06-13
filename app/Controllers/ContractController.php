@@ -35,6 +35,7 @@ class ContractController extends BaseController
             'client'    => Auth::client(),
             'contract'  => $contract,
             'documents' => Document::forContract((int)$id, $clientId),
+            'csrf'      => $this->csrfToken(),
         ]);
     }
 }

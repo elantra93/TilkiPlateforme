@@ -73,7 +73,8 @@ $routes = [
         '/password/change'           => ['Auth',     'changePassword'],
         '/password/forgot'           => ['Auth',     'forgotPassword'],
         '/password/reset'            => ['Auth',     'resetPassword'],
-        '/claims/(\d+)/upload'       => ['Document', 'upload'],
+        '/claims/(\d+)/upload'        => ['Document', 'upload'],
+        '/contracts/(\d+)/upload'     => ['Document', 'uploadContract'],
         // Admin
         '/admin/login'               => ['Admin',    'login'],
         '/admin/logout'              => ['Admin',    'logout'],
