@@ -4,9 +4,13 @@ namespace App\Controllers;
 
 use App\Models\Client;
 use App\Services\Auth;
+use App\Services\AuditLogger;
+use App\Services\Mailer;
 
 class AuthController extends BaseController
 {
+    // ── Connexion client ──────────────────────────────────────────────────────
+
     public function showLogin(): void
     {
         if (!empty($_SESSION['client_id'])) {
@@ -48,6 +52,8 @@ class AuthController extends BaseController
     {
         Auth::logout();
     }
+
+    // ── Changement de mot de passe (connecté) ─────────────────────────────────
 
     public function showChangePassword(): void
     {
@@ -94,5 +100,119 @@ class AuthController extends BaseController
         $_SESSION['must_change_password'] = false;
 
         $this->redirect('/dashboard');
+    }
+
+    // ── Mot de passe oublié ───────────────────────────────────────────────────
+
+    public function showForgotPassword(): void
+    {
+        if (!empty($_SESSION['client_id'])) {
+            $this->redirect('/dashboard');
+        }
+        $this->render('auth.forgot_password', ['csrf' => $this->csrfToken()]);
+    }
+
+    public function forgotPassword(): void
+    {
+        $this->verifyCsrf();
+
+        $email = trim(strtolower($_POST['email'] ?? ''));
+
+        // Réponse identique que le compte existe ou non (anti-énumération)
+        $generic = 'Si cette adresse est associée à un compte, un email de réinitialisation a été envoyé.';
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->render('auth.forgot_password', [
+                'error' => 'Adresse email invalide.',
+                'csrf'  => $this->csrfToken(),
+            ]);
+            return;
+        }
+
+        $client = Client::findByEmail($email);
+
+        if ($client) {
+            $token = bin2hex(random_bytes(32));
+            Client::setResetToken((int)$client['id'], $token);
+            Mailer::sendPasswordReset($client, $token);
+            AuditLogger::log('client', (int)$client['id'], 'password_reset_requested', "email:{$email}", $this->ip());
+        }
+
+        $config   = require CONFIG_PATH;
+        $devUrl   = ($config['app']['env'] === 'development') ? ($_SESSION['dev_reset_url'] ?? null) : null;
+        unset($_SESSION['dev_reset_url']);
+
+        $this->render('auth.forgot_password', [
+            'success' => $generic,
+            'dev_url' => $devUrl,
+            'csrf'    => $this->csrfToken(),
+        ]);
+    }
+
+    // ── Réinitialisation de mot de passe (via token) ──────────────────────────
+
+    public function showResetPassword(): void
+    {
+        $token  = trim($_GET['token'] ?? '');
+        $client = $token ? Client::findByResetToken($token) : null;
+
+        if (!$client) {
+            $this->render('auth.reset_password', [
+                'error' => 'Ce lien est invalide ou expiré. Veuillez faire une nouvelle demande.',
+                'csrf'  => $this->csrfToken(),
+            ]);
+            return;
+        }
+
+        $this->render('auth.reset_password', [
+            'token' => $token,
+            'csrf'  => $this->csrfToken(),
+        ]);
+    }
+
+    public function resetPassword(): void
+    {
+        $this->verifyCsrf();
+
+        $token   = trim($_POST['token']            ?? '');
+        $new     = $_POST['new_password']          ?? '';
+        $confirm = $_POST['confirm_password']      ?? '';
+
+        $client = $token ? Client::findByResetToken($token) : null;
+
+        if (!$client) {
+            $this->render('auth.reset_password', [
+                'error' => 'Ce lien est invalide ou expiré. Veuillez faire une nouvelle demande.',
+                'csrf'  => $this->csrfToken(),
+            ]);
+            return;
+        }
+
+        if ($new !== $confirm) {
+            $this->render('auth.reset_password', [
+                'error' => 'Les mots de passe ne correspondent pas.',
+                'token' => $token,
+                'csrf'  => $this->csrfToken(),
+            ]);
+            return;
+        }
+
+        if (strlen($new) < 8) {
+            $this->render('auth.reset_password', [
+                'error' => 'Le mot de passe doit contenir au moins 8 caractères.',
+                'token' => $token,
+                'csrf'  => $this->csrfToken(),
+            ]);
+            return;
+        }
+
+        Client::updatePasswordHash((int)$client['id'], password_hash($new, PASSWORD_BCRYPT));
+        Client::clearResetToken((int)$client['id']);
+        AuditLogger::log('client', (int)$client['id'], 'password_reset_done', 'via_token', $this->ip());
+
+        $this->render('auth.login', [
+            'success' => 'Mot de passe réinitialisé. Vous pouvez vous connecter.',
+            'csrf'    => $this->csrfToken(),
+        ]);
     }
 }

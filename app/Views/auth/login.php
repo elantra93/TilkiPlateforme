@@ -25,6 +25,11 @@
                             <i class="bi bi-exclamation-circle me-1"></i><?= htmlspecialchars($error) ?>
                         </div>
                     <?php endif; ?>
+                    <?php if (!empty($success)): ?>
+                        <div class="alert alert-success py-2 small">
+                            <i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($success) ?>
+                        </div>
+                    <?php endif; ?>
 
                     <form method="post" action="/login" novalidate>
                         <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
@@ -43,7 +48,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-2">
                             <label class="form-label small fw-semibold" for="password">
                                 Mot de passe
                             </label>
@@ -52,6 +57,12 @@
                                 <input type="password" id="password" name="password"
                                        class="form-control" required>
                             </div>
+                        </div>
+
+                        <div class="text-end mb-4">
+                            <a href="/password/forgot" class="small text-muted">
+                                Mot de passe oublié ?
+                            </a>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 py-2">

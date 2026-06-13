@@ -11,7 +11,9 @@ $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
     || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
 
-if (!$isHttps && php_sapi_name() !== 'cli') {
+$cfg = file_exists(CONFIG_PATH) ? (require CONFIG_PATH) : [];
+$isProd = ($cfg['app']['env'] ?? 'production') === 'production';
+if (!$isHttps && $isProd && php_sapi_name() !== 'cli') {
     header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], true, 301);
     exit;
 }
@@ -26,7 +28,7 @@ spl_autoload_register(function (string $class): void {
 // ── Session ───────────────────────────────────────────────────────────────────
 ini_set('session.cookie_httponly', '1');
 ini_set('session.cookie_secure',   '1');
-ini_set('session.cookie_samesite', 'Strict');
+ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.use_strict_mode', '1');
 ini_set('session.gc_maxlifetime',  '3600');
 
@@ -57,12 +59,24 @@ $routes = [
         '/claims/(\d+)'              => ['Claim',    'show'],
         '/documents/(\d+)/download'  => ['Document', 'download'],
         '/password/change'           => ['Auth',     'showChangePassword'],
+        '/password/forgot'           => ['Auth',     'showForgotPassword'],
+        '/password/reset'            => ['Auth',     'showResetPassword'],
+        // Admin
+        '/admin'                     => ['Admin',    'index'],
+        '/admin/login'               => ['Admin',    'showLogin'],
+        '/admin/logout'              => ['Admin',    'logout'],
+        '/admin/dashboard'           => ['Admin',    'dashboard'],
     ],
     'POST' => [
         '/login'                     => ['Auth',     'login'],
         '/logout'                    => ['Auth',     'logout'],
         '/password/change'           => ['Auth',     'changePassword'],
+        '/password/forgot'           => ['Auth',     'forgotPassword'],
+        '/password/reset'            => ['Auth',     'resetPassword'],
         '/claims/(\d+)/upload'       => ['Document', 'upload'],
+        // Admin
+        '/admin/login'               => ['Admin',    'login'],
+        '/admin/logout'              => ['Admin',    'logout'],
     ],
 ];
 
