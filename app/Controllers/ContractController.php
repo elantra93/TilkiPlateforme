@@ -23,6 +23,7 @@ class ContractController extends BaseController
     {
         $this->requireAuth();
         $clientId = (int)$_SESSION['client_id'];
+        $client   = Auth::client();
         $contract = Contract::findForClient((int)$id, $clientId);
 
         if (!$contract) {
@@ -31,11 +32,22 @@ class ContractController extends BaseController
             return;
         }
 
+        $config        = file_exists(CONFIG_PATH) ? (require CONFIG_PATH) : [];
+        $claimFormBase = (string)($config['tally']['claim_form_url'] ?? '');
+        $tallyClaimUrl = '';
+        if ($claimFormBase) {
+            $sep           = str_contains($claimFormBase, '?') ? '&' : '?';
+            $tallyClaimUrl = $claimFormBase . $sep
+                . 'account_number=' . urlencode($client['account_number'])
+                . '&policy_number=' . urlencode($contract['policy_number']);
+        }
+
         $this->render('contracts.show', [
-            'client'    => Auth::client(),
-            'contract'  => $contract,
-            'documents' => Document::forContract((int)$id, $clientId),
-            'csrf'      => $this->csrfToken(),
+            'client'        => $client,
+            'contract'      => $contract,
+            'documents'     => Document::forContract((int)$id, $clientId),
+            'csrf'          => $this->csrfToken(),
+            'tallyClaimUrl' => $tallyClaimUrl,
         ]);
     }
 }

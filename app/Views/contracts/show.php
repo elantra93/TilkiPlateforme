@@ -19,10 +19,16 @@ foreach ($documents as $doc) {
 ?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
-<div class="mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <a href="/contracts" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Retour aux contrats
     </a>
+    <?php if (!empty($tallyClaimUrl)): ?>
+    <a href="<?= htmlspecialchars($tallyClaimUrl) ?>" target="_blank" rel="noopener"
+       class="btn btn-danger btn-sm">
+        <i class="bi bi-exclamation-triangle me-1"></i>Déclarer un sinistre
+    </a>
+    <?php endif; ?>
 </div>
 
 <div class="row g-4">

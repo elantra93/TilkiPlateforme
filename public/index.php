@@ -110,8 +110,9 @@ $routes = [
         // Admin – File Tally
         '/admin/tally/(\d+)/match'            => ['AdminTally',      'match'],
         '/admin/tally/(\d+)/ignore'           => ['AdminTally',      'ignore'],
-        // Webhook Tally (pas d'auth session)
-        '/webhooks/tally'                     => ['TallyWebhook',    'handle'],
+        // Webhooks Tally (pas d'auth session)
+        '/webhooks/tally'                     => ['TallyWebhook',      'handle'],
+        '/webhooks/tally-sinistre'            => ['TallyClaimWebhook', 'handle'],
     ],
 ];
 

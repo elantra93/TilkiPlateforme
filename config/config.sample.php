@@ -19,4 +19,8 @@ return [
         'documents' => dirname(__DIR__) . '/storage/documents',
         'logs'      => dirname(__DIR__) . '/storage/logs',
     ],
+    'tally' => [
+        'secret'         => 'CHANGE_ME',        // Secret partagé Tally (webhook signing key)
+        'claim_form_url' => 'https://tally.so/r/XXXXX',  // URL du formulaire de déclaration de sinistre
+    ],
 ];

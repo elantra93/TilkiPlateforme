@@ -24,6 +24,15 @@ class Contract
         return $stmt->fetch() ?: null;
     }
 
+    public static function findByPolicyForClient(string $policyNumber, int $clientId): ?array
+    {
+        $stmt = Database::get()->prepare(
+            'SELECT * FROM contracts WHERE policy_number = ? AND client_id = ? LIMIT 1'
+        );
+        $stmt->execute([$policyNumber, $clientId]);
+        return $stmt->fetch() ?: null;
+    }
+
     // ── Admin ─────────────────────────────────────────────────────────────────
 
     public static function all(): array
