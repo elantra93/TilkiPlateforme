@@ -40,36 +40,20 @@ class ClaimController extends BaseController
     {
         $this->requireAuth();
         $this->verifyCsrf();
-        $clientId = (int)$_SESSION['client_id'];
+        $clientId   = (int)$_SESSION['client_id'];
+        $contractId = (int)($_POST['contract_id'] ?? 0) ?: null;
 
-        $contractId     = (int)($_POST['contract_id'] ?? 0) ?: null;
-        $insurerInput   = trim($_POST['insurer']          ?? '');
-        $brancheInput   = trim($_POST['branche']          ?? '');
-        $occurrenceDate = trim($_POST['occurrence_date']   ?? '');
-        $description    = trim($_POST['description']       ?? '');
-
-        // Si un contrat est choisi, vérifier qu'il appartient bien au client
-        if ($contractId) {
-            $contract = Contract::findForClient($contractId, $clientId);
-            if (!$contract) {
-                $contractId = null;
-            } else {
-                $insurerInput = $contract['insurer'];
-                $brancheInput = $contract['branche'];
-            }
-        }
-
-        if (!$insurerInput || !$brancheInput || !$occurrenceDate || !$description) {
+        if (!$contractId) {
             $_SESSION['_old']   = $_POST;
-            $_SESSION['_error'] = 'Tous les champs obligatoires doivent être remplis.';
+            $_SESSION['_error'] = 'Veuillez sélectionner un contrat.';
             $this->redirect('/claims/declare');
             return;
         }
 
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $occurrenceDate) ||
-            strtotime($occurrenceDate) > time()) {
+        $contract = Contract::findForClient($contractId, $clientId);
+        if (!$contract) {
             $_SESSION['_old']   = $_POST;
-            $_SESSION['_error'] = 'La date de survenance est invalide ou dans le futur.';
+            $_SESSION['_error'] = 'Contrat introuvable.';
             $this->redirect('/claims/declare');
             return;
         }
@@ -78,11 +62,11 @@ class ClaimController extends BaseController
             'client_id'       => $clientId,
             'contract_id'     => $contractId,
             'claim_number'    => 'PENDING',
-            'insurer'         => $insurerInput,
-            'branche'         => $brancheInput,
-            'occurrence_date' => $occurrenceDate,
+            'insurer'         => $contract['insurer'],
+            'branche'         => $contract['branche'],
+            'occurrence_date' => date('Y-m-d'),
             'status'          => 'ouvert',
-            'description'     => $description,
+            'description'     => null,
             'is_auto_rc'      => 0,
         ]);
         ClaimStep::initForClaim($id, false);
