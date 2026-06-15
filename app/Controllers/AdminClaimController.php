@@ -17,7 +17,7 @@ class AdminClaimController extends BaseController
 
     private const DOC_TYPES = [
         'declaration'               => ['declaration_sinistre', 'rapport_circonstances', 'constat_amiable', 'plainte'],
-        'expertise_devis'           => ['rapport_expertise', 'devis_reparation', 'contre_expertise', 'estimation_perte'],
+        'expertise_devis'           => ['rapport_expertise', 'devis_reparation', 'constat_police', 'contre_expertise', 'estimation_perte'],
         'correspondances'           => ['courrier_assureur', 'courrier_expert', 'courrier_client', 'mise_en_demeure'],
         'reglements_remboursements' => ['virement', 'cheque', 'quittance_reglement', 'decompte_indemnite'],
     ];

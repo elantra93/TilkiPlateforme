@@ -26,6 +26,13 @@ class DocumentController extends BaseController
         FileStorage::serve($doc['stored_path'], $doc['original_filename'], $doc['mime_type']);
     }
 
+    private const CLIENT_DOC_TYPES = [
+        'declaration_sinistre' => 'declaration',
+        'devis_reparation'     => 'expertise_devis',
+        'rapport_expertise'    => 'expertise_devis',
+        'constat_police'       => 'expertise_devis',
+    ];
+
     public function upload(string $claimId): void
     {
         $this->requireAuth();
@@ -40,20 +47,33 @@ class DocumentController extends BaseController
             return;
         }
 
+        $docType = $_POST['doc_type'] ?? '';
+        if (!array_key_exists($docType, self::CLIENT_DOC_TYPES)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Type de document invalide.'];
+            $this->redirect('/claims/' . $claimId);
+            return;
+        }
+
         if (empty($_FILES['document']) || $_FILES['document']['error'] === UPLOAD_ERR_NO_FILE) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Aucun fichier sélectionné.'];
             $this->redirect('/claims/' . $claimId);
             return;
         }
 
         try {
+            $mime = mime_content_type($_FILES['document']['tmp_name']);
+            if (!in_array($mime, ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'], true)) {
+                throw new \RuntimeException('Seuls les formats PDF, JPG et PNG sont acceptés.');
+            }
+
             $stored = FileStorage::store($_FILES['document'], 'sinistres/' . $claimId);
             Document::create([
                 'client_id'         => $clientId,
                 'contract_id'       => $claim['contract_id'],
                 'claim_id'          => (int)$claimId,
                 'scope'             => 'sinistre',
-                'category'          => 'souscription',
-                'doc_type'          => 'preuve_reglement',
+                'category'          => self::CLIENT_DOC_TYPES[$docType],
+                'doc_type'          => $docType,
                 'original_filename' => $stored['original_filename'],
                 'stored_path'       => $stored['stored_path'],
                 'mime_type'         => $stored['mime_type'],
@@ -62,8 +82,8 @@ class DocumentController extends BaseController
                 'status'            => 'en_attente',
             ]);
 
-            AuditLogger::log('client', $clientId, 'upload', "claim:{$claimId}", $this->ip());
-            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Document déposé avec succès.'];
+            AuditLogger::log('client', $clientId, 'claim_upload', "claim:{$claimId} type:{$docType}", $this->ip());
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Document déposé. Il sera visible après validation par TILKI.'];
         } catch (\Throwable $e) {
             $_SESSION['flash'] = ['type' => 'danger', 'msg' => $e->getMessage()];
         }

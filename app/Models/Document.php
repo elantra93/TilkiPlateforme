@@ -48,6 +48,18 @@ class Document
         return $stmt->fetchAll();
     }
 
+    public static function tallyDeclarationForClaim(int $claimId): ?array
+    {
+        $stmt = Database::get()->prepare(
+            "SELECT * FROM documents
+             WHERE claim_id = ? AND source = 'tally'
+               AND doc_type = 'declaration_sinistre' AND scope = 'sinistre'
+             ORDER BY created_at ASC LIMIT 1"
+        );
+        $stmt->execute([$claimId]);
+        return $stmt->fetch() ?: null;
+    }
+
     public static function attestationForContract(int $contractId): ?array
     {
         $stmt = Database::get()->prepare(

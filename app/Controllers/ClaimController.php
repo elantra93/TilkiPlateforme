@@ -89,12 +89,32 @@ class ClaimController extends BaseController
             return;
         }
 
+        // Réponses Tally : parse le JSON pour affichage client
+        $tallyDecl   = Document::tallyDeclarationForClaim((int)$id);
+        $tallyFields = [];
+        if ($tallyDecl && file_exists($tallyDecl['stored_path'])) {
+            $json = json_decode((string)file_get_contents($tallyDecl['stored_path']), true);
+            if (is_array($json)) {
+                foreach ($json['data']['fields'] ?? [] as $f) {
+                    $type  = $f['type']  ?? '';
+                    $val   = $f['value'] ?? null;
+                    if (in_array($type, ['HIDDEN_FIELDS', 'FILE_UPLOAD'], true)) continue;
+                    if ($val === null || $val === '' || $val === []) continue;
+                    $tallyFields[] = [
+                        'label' => (string)($f['label'] ?? $f['key'] ?? ''),
+                        'value' => is_array($val) ? implode(', ', $val) : (string)$val,
+                    ];
+                }
+            }
+        }
+
         $this->render('claims.show', [
-            'client'    => Auth::client(),
-            'claim'     => $claim,
-            'steps'     => ClaimStep::forClaim((int)$id),
-            'documents' => Document::forClaim((int)$id, $clientId),
-            'csrf'      => $this->csrfToken(),
+            'client'      => Auth::client(),
+            'claim'       => $claim,
+            'steps'       => ClaimStep::forClaim((int)$id),
+            'documents'   => Document::forClaim((int)$id, $clientId),
+            'tallyFields' => $tallyFields,
+            'csrf'        => $this->csrfToken(),
         ]);
     }
 }
