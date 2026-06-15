@@ -75,6 +75,12 @@ class Claim
         return (int)$db->lastInsertId();
     }
 
+    public static function setNumber(int $id, string $number): void
+    {
+        Database::get()->prepare('UPDATE claims SET claim_number = ? WHERE id = ?')
+            ->execute([$number, $id]);
+    }
+
     public static function update(int $id, array $data): void
     {
         Database::get()->prepare(

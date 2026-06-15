@@ -56,6 +56,7 @@ $routes = [
         '/contracts'                 => ['Contract', 'index'],
         '/contracts/(\d+)'           => ['Contract', 'show'],
         '/claims'                    => ['Claim',    'index'],
+        '/claims/declare'            => ['Claim',    'showDeclare'],
         '/claims/(\d+)'              => ['Claim',    'show'],
         '/documents/(\d+)/download'  => ['Document', 'download'],
         '/password/change'           => ['Auth',     'showChangePassword'],
@@ -89,6 +90,7 @@ $routes = [
         '/password/change'           => ['Auth',     'changePassword'],
         '/password/forgot'           => ['Auth',     'forgotPassword'],
         '/password/reset'            => ['Auth',     'resetPassword'],
+        '/claims/declare'             => ['Claim',    'declare'],
         '/claims/(\d+)/upload'        => ['Document', 'upload'],
         '/contracts/(\d+)/upload'     => ['Document', 'uploadContract'],
         // Admin – Auth

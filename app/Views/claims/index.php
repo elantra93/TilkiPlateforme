@@ -3,6 +3,9 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="h4 mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Mes sinistres</h2>
+    <a href="/claims/declare" class="btn btn-danger">
+        <i class="bi bi-plus-lg me-1"></i>Déclarer un sinistre
+    </a>
 </div>
 
 <?php if (empty($claims)): ?>
