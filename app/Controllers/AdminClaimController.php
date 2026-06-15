@@ -10,6 +10,7 @@ use App\Models\Contract;
 use App\Models\Document;
 use App\Services\AuditLogger;
 use App\Services\FileStorage;
+use App\Services\TallyUrlBuilder;
 
 class AdminClaimController extends BaseController
 {
@@ -33,55 +34,74 @@ class AdminClaimController extends BaseController
     public function showCreate(): void
     {
         AdminMiddleware::check();
-        $this->render('admin.claims.form', [
-            'csrf'      => $this->csrfToken(),
-            'claim'     => null,
-            'steps'     => [],
-            'clients'   => Client::all(),
-            'contracts' => Contract::all(),
-            'old'       => [],
+
+        $contracts = Contract::all();
+        $contractsByClient = [];
+        foreach ($contracts as $c) {
+            $contractsByClient[$c['client_id']][] = [
+                'id'     => $c['id'],
+                'label'  => $c['policy_number'] . ' — ' . $c['branche'],
+                'branche'=> strtolower(trim($c['branche'])),
+            ];
+        }
+
+        $flash = $_SESSION['admin_flash'] ?? null;
+        unset($_SESSION['admin_flash']);
+
+        $this->render('admin.claims.tally', [
+            'clients'           => Client::all(),
+            'contractsByClient' => $contractsByClient,
+            'flash'             => $flash,
         ]);
     }
 
-    public function create(): void
+    public function tallyRedirect(): void
     {
         AdminMiddleware::check();
-        $this->verifyCsrf();
 
-        $data = $this->collectFields();
-        $old  = $data;
-
-        if (!$data['client_id'] || !$data['claim_number'] || !$data['insurer'] ||
-            !$data['branche'] || !$data['occurrence_date']) {
-            $this->render('admin.claims.form', [
-                'csrf'      => $this->csrfToken(),
-                'claim'     => null,
-                'steps'     => [],
-                'clients'   => Client::all(),
-                'contracts' => Contract::all(),
-                'old'       => $old,
-                'error'     => 'Tous les champs obligatoires doivent être remplis.',
-            ]);
+        $contractId = (int)($_GET['contract_id'] ?? 0);
+        if (!$contractId) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Police non spécifiée.'];
+            $this->redirect('/admin/claims/create');
             return;
         }
 
-        try {
-            $id = Claim::create($data);
-            ClaimStep::initForClaim($id, (bool)$data['is_auto_rc']);
-            AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'claim_created', "claim:{$id}", $this->ip());
-            $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Sinistre créé avec succès.'];
-            $this->redirect('/admin/claims');
-        } catch (\Throwable $e) {
-            $this->render('admin.claims.form', [
-                'csrf'      => $this->csrfToken(),
-                'claim'     => null,
-                'steps'     => [],
-                'clients'   => Client::all(),
-                'contracts' => Contract::all(),
-                'old'       => $old,
-                'error'     => 'Erreur : ' . $e->getMessage(),
-            ]);
+        $contract = Contract::find($contractId);
+        if (!$contract) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Contrat introuvable.'];
+            $this->redirect('/admin/claims/create');
+            return;
         }
+
+        $client = Client::findById((int)$contract['client_id']);
+        if (!$client) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Client introuvable.'];
+            $this->redirect('/admin/claims/create');
+            return;
+        }
+
+        $config    = file_exists(CONFIG_PATH) ? (require CONFIG_PATH) : [];
+        $appUrl    = rtrim((string)($config['app']['url'] ?? ''), '/');
+        $branche   = strtolower(trim($contract['branche'] ?? ''));
+        $attestUrl = '';
+        if (in_array($branche, ['automobile', 'auto'], true) && $appUrl) {
+            $attest = Document::attestationForContract($contractId);
+            if ($attest) {
+                $attestUrl = $appUrl . '/documents/' . (int)$attest['id'] . '/download';
+            }
+        }
+
+        $tallyUrl = TallyUrlBuilder::claimFormUrl($client, $contract, $attestUrl);
+        if (!$tallyUrl) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'URL Tally non configurée (vérifiez config.php).'];
+            $this->redirect('/admin/claims/create');
+            return;
+        }
+
+        AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'tally_claim_redirect_admin',
+            "contract:{$contractId}/client:{$client['id']}", $this->ip());
+
+        $this->redirect($tallyUrl);
     }
 
     public function showEdit(string $id): void

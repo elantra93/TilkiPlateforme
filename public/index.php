@@ -78,6 +78,7 @@ $routes = [
         // Admin – Claims
         '/admin/claims'                       => ['AdminClaim',      'index'],
         '/admin/claims/create'                => ['AdminClaim',      'showCreate'],
+        '/admin/claims/tally-redirect'        => ['AdminClaim',      'tallyRedirect'],
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'showEdit'],
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'showUpload'],
@@ -103,7 +104,6 @@ $routes = [
         '/admin/contracts/create'             => ['AdminContract',   'create'],
         '/admin/contracts/(\d+)/edit'         => ['AdminContract',   'edit'],
         // Admin – Claims
-        '/admin/claims/create'                => ['AdminClaim',      'create'],
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'edit'],
         '/admin/claims/(\d+)/steps/(\d+)'     => ['AdminClaim',      'updateStep'],
         '/admin/claims/(\d+)/upload'          => ['AdminClaim',      'uploadDoc'],
