@@ -16,6 +16,12 @@ foreach ($documents as $doc) {
     $cat = $doc['category'] === 'cotation' ? 'cotation' : 'souscription';
     $byCategory[$cat][] = $doc;
 }
+
+// Index des docs souscription par doc_type pour la vue structurée
+$souscriptionByType = [];
+foreach ($byCategory['souscription'] as $doc) {
+    $souscriptionByType[$doc['doc_type']][] = $doc;
+}
 ?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
@@ -90,35 +96,144 @@ foreach ($documents as $doc) {
     <!-- ── Documents + Upload ─────────────────────────────────────────────── -->
     <div class="col-lg-8 d-flex flex-column gap-4">
 
-        <?php
-        $sections = [
-            'cotation'     => ['label' => 'Cotation',     'icon' => 'bi-clipboard-data',    'color' => 'text-info'],
-            'souscription' => ['label' => 'Documents du contrat', 'icon' => 'bi-file-earmark-check', 'color' => 'text-success'],
-        ];
-        foreach ($sections as $cat => $meta):
-            $docs = $byCategory[$cat];
-        ?>
+        <!-- ── Cotation (inchangée) ──────────────────────────────────────────── -->
         <div class="card shadow-sm">
             <div class="card-header d-flex align-items-center gap-2 fw-semibold">
-                <i class="bi <?= $meta['icon'] ?> <?= $meta['color'] ?>"></i>
-                <?= $meta['label'] ?>
-                <span class="badge bg-secondary fw-normal ms-1"><?= count($docs) ?></span>
+                <i class="bi bi-clipboard-data text-info"></i>
+                Cotation
+                <span class="badge bg-secondary fw-normal ms-1"><?= count($byCategory['cotation']) ?></span>
             </div>
-
-            <?php if (empty($docs)): ?>
+            <?php if (empty($byCategory['cotation'])): ?>
                 <div class="card-body text-muted small py-4 text-center">
                     <i class="bi bi-inbox fs-4 d-block mb-1 opacity-25"></i>
                     Aucun document dans cette section.
                 </div>
             <?php else: ?>
                 <ul class="list-group list-group-flush">
-                    <?php foreach ($docs as $doc): ?>
+                    <?php foreach ($byCategory['cotation'] as $doc): ?>
                     <li class="list-group-item d-flex justify-content-between align-items-center py-3">
                         <div class="me-3 overflow-hidden">
                             <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
                             <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
                             <div class="text-muted mt-1" style="font-size:.75rem">
                                 <?= htmlspecialchars($doc['doc_type']) ?>
+                                &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
+                                &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
+                            </div>
+                        </div>
+                        <?php if ($doc['status'] === 'valide'): ?>
+                            <a href="/documents/<?= (int)$doc['id'] ?>/download"
+                               class="btn btn-sm btn-outline-primary flex-shrink-0">
+                                <i class="bi bi-download me-1"></i>Télécharger
+                            </a>
+                        <?php else: ?>
+                            <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                        <?php endif; ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+
+        <!-- ── Documents du contrat (structurés par branche) ─────────────────── -->
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold">
+                <i class="bi bi-file-earmark-check text-success"></i>
+                Documents du contrat
+                <span class="badge bg-secondary fw-normal ms-1"><?= count($byCategory['souscription']) ?></span>
+            </div>
+
+            <?php if (!empty($branchDocTypes)): ?>
+            <!-- Vue structurée : types attendus pour cette branche -->
+            <ul class="list-group list-group-flush">
+                <?php foreach ($branchDocTypes as $expected): ?>
+                <?php $docs = $souscriptionByType[$expected['key']] ?? []; ?>
+                <li class="list-group-item py-3">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div class="flex-grow-1">
+                            <div class="small fw-semibold mb-1">
+                                <?= htmlspecialchars($expected['label']) ?>
+                                <?php if (!$expected['required']): ?>
+                                    <span class="badge bg-light text-muted border fw-normal ms-1" style="font-size:.68rem">optionnel</span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (!empty($docs)): ?>
+                                <?php foreach ($docs as $doc): ?>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <i class="bi <?= docIcon($doc['mime_type']) ?> small"></i>
+                                    <span style="font-size:.78rem" class="text-muted">
+                                        <?= htmlspecialchars($doc['original_filename']) ?>
+                                        &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
+                                        &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
+                                    </span>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="text-muted" style="font-size:.78rem">
+                                    <i class="bi bi-hourglass me-1 opacity-50"></i>Non fourni / en attente
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="d-flex flex-column gap-1 flex-shrink-0">
+                            <?php foreach ($docs as $doc): ?>
+                                <?php if ($doc['status'] === 'valide'): ?>
+                                <a href="/documents/<?= (int)$doc['id'] ?>/download"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download me-1"></i>Télécharger
+                                </a>
+                                <?php else: ?>
+                                <span class="badge bg-warning text-dark">En attente</span>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </li>
+                <?php endforeach; ?>
+
+                <?php
+                // Documents hors liste attendue (types libres ajoutés par l'admin)
+                $expectedKeys = array_column($branchDocTypes, 'key');
+                $extras = array_filter($byCategory['souscription'], fn($d) => !in_array($d['doc_type'], $expectedKeys, true));
+                foreach ($extras as $doc):
+                ?>
+                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                    <div class="me-3 overflow-hidden">
+                        <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
+                        <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
+                        <div class="text-muted mt-1" style="font-size:.75rem">
+                            <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
+                            &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
+                            &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
+                        </div>
+                    </div>
+                    <?php if ($doc['status'] === 'valide'): ?>
+                        <a href="/documents/<?= (int)$doc['id'] ?>/download"
+                           class="btn btn-sm btn-outline-primary flex-shrink-0">
+                            <i class="bi bi-download me-1"></i>Télécharger
+                        </a>
+                    <?php else: ?>
+                        <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                    <?php endif; ?>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+
+            <?php else: ?>
+            <!-- Vue générique : liste plate pour les autres branches -->
+            <?php if (empty($byCategory['souscription'])): ?>
+                <div class="card-body text-muted small py-4 text-center">
+                    <i class="bi bi-inbox fs-4 d-block mb-1 opacity-25"></i>
+                    Aucun document dans cette section.
+                </div>
+            <?php else: ?>
+                <ul class="list-group list-group-flush">
+                    <?php foreach ($byCategory['souscription'] as $doc): ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div class="me-3 overflow-hidden">
+                            <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
+                            <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
+                            <div class="text-muted mt-1" style="font-size:.75rem">
+                                <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
                                 &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                 &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
                                 <?php if ($doc['source'] === 'client'): ?>
@@ -138,8 +253,8 @@ foreach ($documents as $doc) {
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
+            <?php endif; ?>
         </div>
-        <?php endforeach; ?>
 
         <!-- ── Formulaire d'upload preuve de règlement ──────────────────── -->
         <div class="card shadow-sm">

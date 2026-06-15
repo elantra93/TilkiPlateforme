@@ -117,13 +117,15 @@
 </div>
 
 <script>
-const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;
-const claimsByClient    = <?= json_encode($claimsByClient,    JSON_HEX_TAG) ?>;
-const docTypes          = <?= json_encode($docTypes,          JSON_HEX_TAG) ?>;
+const contractsByClient  = <?= json_encode($contractsByClient,  JSON_HEX_TAG) ?>;
+const claimsByClient     = <?= json_encode($claimsByClient,     JSON_HEX_TAG) ?>;
+const docTypes           = <?= json_encode($docTypes,           JSON_HEX_TAG) ?>;
+const branchDocTypes     = <?= json_encode($branchDocTypes,     JSON_HEX_TAG) ?>;
+const genericSouscription= <?= json_encode($genericSouscription,JSON_HEX_TAG) ?>;
 
 const catLabels = {
     cotation:                  'Cotation',
-    souscription:              'Souscription',
+    souscription:              'Documents du contrat',
     declaration:               'Déclaration',
     expertise_devis:           "Rapports d'expertises et devis",
     correspondances:           'Correspondances',
@@ -153,6 +155,45 @@ function populateCategories(cats) {
     cats.forEach(c => {
         categorySel.innerHTML += `<option value="${c}">${catLabels[c] ?? c}</option>`;
     });
+}
+
+// Retourne la branche du contrat sélectionné (string normalisée)
+function selectedContractBranche() {
+    const cid = contractSel.value;
+    if (!cid) return null;
+    for (const list of Object.values(contractsByClient)) {
+        for (const c of list) {
+            if (String(c.id) === String(cid)) return c.branche;
+        }
+    }
+    return null;
+}
+
+function populateDocTypes(category) {
+    docTypeSel.innerHTML = '<option value="">— Sélectionner —</option>';
+
+    if (category === 'souscription') {
+        const branche  = selectedContractBranche();
+        const specific = branche ? (branchDocTypes[branche] ?? null) : null;
+        if (specific) {
+            specific.forEach(t => {
+                const suffix = t.required ? '' : ' (optionnel)';
+                docTypeSel.innerHTML += `<option value="${t.key}">${t.label}${suffix}</option>`;
+            });
+        } else {
+            genericSouscription.forEach(t => {
+                docTypeSel.innerHTML += `<option value="${t}">${t.replace(/_/g, ' ')}</option>`;
+            });
+        }
+    } else {
+        (docTypes[category] || []).forEach(t => {
+            docTypeSel.innerHTML += `<option value="${t}">${t.replace(/_/g, ' ')}</option>`;
+        });
+    }
+
+    show('docTypeRow');
+    show('fileRow');
+    show('submitRow');
 }
 
 clientSel.addEventListener('change', function () {
@@ -204,13 +245,7 @@ document.querySelectorAll('input[name=scope]').forEach(radio => {
 categorySel.addEventListener('change', function () {
     resetFrom(5);
     if (!this.value) return;
-    docTypeSel.innerHTML = '<option value="">— Sélectionner —</option>';
-    (docTypes[this.value] || []).forEach(t => {
-        docTypeSel.innerHTML += `<option value="${t}">${t.replace(/_/g,' ')}</option>`;
-    });
-    show('docTypeRow');
-    show('fileRow');
-    show('submitRow');
+    populateDocTypes(this.value);
 });
 </script>
 

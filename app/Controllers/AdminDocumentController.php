@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Contract;
 use App\Models\Document;
 use App\Services\AuditLogger;
+use App\Services\ContractDocTypes;
 use App\Services\FileStorage;
 
 class AdminDocumentController extends BaseController
@@ -34,12 +35,13 @@ class AdminDocumentController extends BaseController
         $contracts = Contract::all();
         $claims    = Claim::all();
 
-        // Groupe par client_id pour la cascade JS
+        // Groupe par client_id pour la cascade JS (inclut la branche pour les types branch-aware)
         $contractsByClient = [];
         foreach ($contracts as $c) {
             $contractsByClient[$c['client_id']][] = [
-                'id'    => $c['id'],
-                'label' => $c['policy_number'] . ' — ' . $c['branche'],
+                'id'     => $c['id'],
+                'label'  => $c['policy_number'] . ' — ' . $c['branche'],
+                'branche'=> strtolower(trim($c['branche'])),
             ];
         }
         $claimsByClient = [];
@@ -59,6 +61,8 @@ class AdminDocumentController extends BaseController
             'docTypes'          => self::DOC_TYPES,
             'catContrat'        => self::CATEGORIES_CONTRAT,
             'catSinistre'       => self::CATEGORIES_SINISTRE,
+            'branchDocTypes'    => ContractDocTypes::all(),
+            'genericSouscription' => ContractDocTypes::GENERIC_SOUSCRIPTION,
         ]);
     }
 

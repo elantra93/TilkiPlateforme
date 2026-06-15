@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Contract;
 use App\Models\Document;
 use App\Services\Auth;
+use App\Services\ContractDocTypes;
 
 class ContractController extends BaseController
 {
@@ -44,11 +45,12 @@ class ContractController extends BaseController
         }
 
         $this->render('contracts.show', [
-            'client'        => $client,
-            'contract'      => $contract,
-            'documents'     => Document::forContract((int)$id, $clientId),
-            'csrf'          => $this->csrfToken(),
-            'tallyClaimUrl' => $tallyClaimUrl,
+            'client'         => $client,
+            'contract'       => $contract,
+            'documents'      => Document::forContract((int)$id, $clientId),
+            'csrf'           => $this->csrfToken(),
+            'tallyClaimUrl'  => $tallyClaimUrl,
+            'branchDocTypes' => ContractDocTypes::forBranche($contract['branche']),
         ]);
     }
 }
