@@ -153,9 +153,6 @@ foreach ($byCategory['souscription'] as $doc) {
                         <div class="flex-grow-1">
                             <div class="small fw-semibold mb-1">
                                 <?= htmlspecialchars($expected['label']) ?>
-                                <?php if (!$expected['required']): ?>
-                                    <span class="badge bg-light text-muted border fw-normal ms-1" style="font-size:.68rem">optionnel</span>
-                                <?php endif; ?>
                             </div>
                             <?php if (!empty($docs)): ?>
                                 <?php foreach ($docs as $doc): ?>
