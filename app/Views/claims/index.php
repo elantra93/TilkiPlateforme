@@ -3,9 +3,15 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="h4 mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Mes sinistres</h2>
+    <?php if (!empty($contracts)): ?>
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declarerModal">
+        <i class="bi bi-plus-lg me-1"></i>Déclarer un sinistre
+    </button>
+    <?php else: ?>
     <a href="/claims/declare" class="btn btn-danger">
         <i class="bi bi-plus-lg me-1"></i>Déclarer un sinistre
     </a>
+    <?php endif; ?>
 </div>
 
 <?php if (empty($claims)): ?>
@@ -49,6 +55,52 @@
             </table>
         </div>
     </div>
+<?php endif; ?>
+
+<!-- ── Modal sélection de contrat ─────────────────────────────────────────── -->
+<?php if (!empty($contracts)): ?>
+<div class="modal fade" id="declarerModal" tabindex="-1" aria-labelledby="declarerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-semibold" id="declarerModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Déclarer un sinistre
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <form method="get" action="/claims/declare" novalidate id="declarerForm">
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Sélectionnez le contrat concerné. Vous serez redirigé vers le formulaire
+                        de déclaration en ligne, pré-rempli avec les informations de votre contrat.
+                    </p>
+                    <label for="modalContractSel" class="form-label fw-semibold">
+                        Contrat concerné <span class="text-danger">*</span>
+                    </label>
+                    <select name="contract_id" id="modalContractSel" class="form-select" required>
+                        <option value="">— Sélectionner une police —</option>
+                        <?php foreach ($contracts as $c): ?>
+                        <option value="<?= (int)$c['id'] ?>">
+                            <?= htmlspecialchars($c['policy_number'] . ' — ' . $c['branche'] . ' (' . $c['insurer'] . ')') ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger" id="declarerSubmitBtn" disabled>
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Accéder au formulaire
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('modalContractSel').addEventListener('change', function () {
+    document.getElementById('declarerSubmitBtn').disabled = !this.value;
+});
+</script>
 <?php endif; ?>
 
 <?php require APP_PATH . '/Views/layout/footer.php'; ?>

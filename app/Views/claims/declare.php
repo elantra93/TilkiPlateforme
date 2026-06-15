@@ -17,40 +17,42 @@
     <div class="card-body p-4">
 
         <p class="text-muted small mb-4">
-            Sélectionnez le contrat concerné. Notre équipe prendra en charge votre déclaration
-            et vous contactera dans les meilleurs délais.
+            Sélectionnez le contrat concerné. Vous serez redirigé vers le formulaire de déclaration
+            en ligne, pré-rempli avec les informations de votre contrat.
         </p>
 
-        <?php if (!empty($error)): ?>
-        <div class="alert alert-danger small">
-            <i class="bi bi-exclamation-circle me-1"></i><?= htmlspecialchars($error) ?>
-        </div>
-        <?php endif; ?>
-
-        <form method="post" action="/claims/declare" novalidate>
-            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+        <form method="get" action="/claims/declare" novalidate>
 
             <div class="mb-4">
                 <label for="contractSel" class="form-label fw-semibold">
                     Contrat concerné <span class="text-danger">*</span>
                 </label>
+                <?php if (empty($contracts)): ?>
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        Vous n'avez aucun contrat enregistré. Contactez TILKI pour plus d'informations.
+                    </div>
+                <?php else: ?>
                 <select name="contract_id" id="contractSel" class="form-select" required>
                     <option value="">— Sélectionner un contrat —</option>
                     <?php foreach ($contracts as $c): ?>
-                    <option value="<?= (int)$c['id'] ?>"
-                        <?= (int)($old['contract_id'] ?? 0) === (int)$c['id'] ? 'selected' : '' ?>>
+                    <option value="<?= (int)$c['id'] ?>">
                         <?= htmlspecialchars($c['policy_number'] . ' — ' . $c['branche'] . ' (' . $c['insurer'] . ')') ?>
                     </option>
                     <?php endforeach; ?>
                 </select>
+                <?php endif; ?>
             </div>
 
+            <?php if (!empty($contracts)): ?>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-send me-2"></i>Envoyer la déclaration
+                    <i class="bi bi-box-arrow-up-right me-2"></i>Accéder au formulaire
                 </button>
                 <a href="/claims" class="btn btn-outline-secondary">Annuler</a>
             </div>
+            <?php endif; ?>
+
         </form>
 
     </div>

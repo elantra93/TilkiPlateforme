@@ -8,6 +8,7 @@ use App\Models\Contract;
 use App\Models\Document;
 use App\Services\AuditLogger;
 use App\Services\Auth;
+use App\Services\TallyUrlBuilder;
 
 class ClaimController extends BaseController
 {
@@ -17,67 +18,63 @@ class ClaimController extends BaseController
         $clientId = (int)$_SESSION['client_id'];
 
         $this->render('claims.index', [
-            'client' => Auth::client(),
-            'claims' => Claim::forClient($clientId),
-        ]);
-    }
-
-    public function showDeclare(): void
-    {
-        $this->requireAuth();
-        $clientId = (int)$_SESSION['client_id'];
-
-        $this->render('claims.declare', [
+            'client'    => Auth::client(),
+            'claims'    => Claim::forClient($clientId),
             'contracts' => Contract::forClient($clientId),
-            'old'       => $_SESSION['_old'] ?? [],
-            'error'     => $_SESSION['_error'] ?? null,
-            'csrf'      => $this->csrfToken(),
         ]);
-        unset($_SESSION['_old'], $_SESSION['_error']);
     }
 
+    /**
+     * GET /claims/declare
+     *
+     * Sans contract_id → affiche le sélecteur de contrat.
+     * Avec contract_id  → construit l'URL Tally et redirige vers le formulaire.
+     */
     public function declare(): void
     {
         $this->requireAuth();
-        $this->verifyCsrf();
         $clientId   = (int)$_SESSION['client_id'];
-        $contractId = (int)($_POST['contract_id'] ?? 0) ?: null;
+        $contractId = (int)($_GET['contract_id'] ?? 0);
 
         if (!$contractId) {
-            $_SESSION['_old']   = $_POST;
-            $_SESSION['_error'] = 'Veuillez sélectionner un contrat.';
-            $this->redirect('/claims/declare');
+            $this->render('claims.declare', [
+                'contracts' => Contract::forClient($clientId),
+            ]);
             return;
         }
 
+        $client   = Auth::client();
         $contract = Contract::findForClient($contractId, $clientId);
-        if (!$contract) {
-            $_SESSION['_old']   = $_POST;
-            $_SESSION['_error'] = 'Contrat introuvable.';
+
+        if (!$client || !$contract) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Contrat introuvable.'];
             $this->redirect('/claims/declare');
             return;
         }
 
-        $id = Claim::create([
-            'client_id'       => $clientId,
-            'contract_id'     => $contractId,
-            'claim_number'    => 'PENDING',
-            'insurer'         => $contract['insurer'],
-            'branche'         => $contract['branche'],
-            'occurrence_date' => date('Y-m-d'),
-            'status'          => 'ouvert',
-            'description'     => null,
-            'is_auto_rc'      => 0,
-        ]);
-        ClaimStep::initForClaim($id, false);
+        $config    = require CONFIG_PATH;
+        $appUrl    = rtrim((string)($config['app']['url'] ?? ''), '/');
+        $branche   = strtolower(trim($contract['branche'] ?? ''));
+        $attestUrl = '';
+        if (in_array($branche, ['automobile', 'auto'], true) && $appUrl) {
+            $attest = Document::attestationForContract($contractId);
+            if ($attest) {
+                $attestUrl = $appUrl . '/documents/' . (int)$attest['id'] . '/download';
+            }
+        }
 
-        $claimNumber = 'SIN-' . date('Y') . '-' . str_pad((string)$id, 4, '0', STR_PAD_LEFT);
-        Claim::setNumber($id, $claimNumber);
+        $tallyUrl = TallyUrlBuilder::claimFormUrl($client, $contract, $attestUrl);
+        if (!$tallyUrl) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Formulaire de déclaration non configuré. Contactez TILKI.'];
+            $this->redirect('/claims/declare');
+            return;
+        }
 
-        AuditLogger::log('client', $clientId, 'claim_declared', "claim:{$id}", $this->ip());
+        AuditLogger::log('client', $clientId, 'tally_claim_redirect',
+            "contract:{$contractId}", $this->ip());
 
-        $_SESSION['flash'] = ['type' => 'success', 'msg' => "Sinistre {$claimNumber} déclaré. Notre équipe vous contactera prochainement."];
-        $this->redirect('/claims/' . $id);
+        header('Location: ' . $tallyUrl);
+        exit;
     }
 
     public function show(string $id): void

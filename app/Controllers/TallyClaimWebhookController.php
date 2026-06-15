@@ -52,10 +52,10 @@ class TallyClaimWebhookController extends BaseController
         }
 
         // ── 4. Extraction des champs du formulaire ────────────────────────────
-        $accountNumber = $this->field($fields, 'compte', 'account');
-        $policyNumber  = $this->field($fields, 'police', 'policy_number', 'policy');
+        $accountNumber = $this->field($fields, 'account_number', 'compte', 'account');
+        $policyNumber  = $this->field($fields, 'police_number', 'police', 'policy');
         $insurerField  = $this->field($fields, 'assureur', 'insurer');
-        $attestation   = $this->fileField($fields, 'attestation');
+        $attestation   = $this->fileField($fields, 'attestation_picture', 'attestation');
 
         // ── 5. Identification du client ───────────────────────────────────────
         $client = $accountNumber ? Client::findByAccountNumber($accountNumber) : null;
@@ -130,7 +130,7 @@ class TallyClaimWebhookController extends BaseController
             foreach ($keywords as $kw) {
                 if (str_contains($label, $kw) || str_contains($key, $kw)) {
                     // Pour le numéro de compte : extraire 6 chiffres consécutifs
-                    if ($kw === 'compte' || $kw === 'account') {
+                    if ($kw === 'account_number' || $kw === 'compte' || $kw === 'account') {
                         if (preg_match('/\d{6}/', $value, $m)) return $m[0];
                         continue;
                     }
@@ -139,7 +139,7 @@ class TallyClaimWebhookController extends BaseController
             }
         }
         // Fallback compte : première valeur à 6 chiffres exactement
-        if (in_array('compte', $keywords, true) || in_array('account', $keywords, true)) {
+        if (in_array('account_number', $keywords, true) || in_array('compte', $keywords, true) || in_array('account', $keywords, true)) {
             foreach ($fields as $f) {
                 $v = trim((string)($f['value'] ?? ''));
                 if (preg_match('/^\d{6}$/', $v)) return $v;

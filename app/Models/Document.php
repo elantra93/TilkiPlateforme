@@ -48,6 +48,18 @@ class Document
         return $stmt->fetchAll();
     }
 
+    public static function attestationForContract(int $contractId): ?array
+    {
+        $stmt = Database::get()->prepare(
+            "SELECT * FROM documents
+             WHERE contract_id = ? AND scope = 'contrat'
+               AND doc_type = 'attestation_assurance' AND status = 'valide'
+             ORDER BY created_at DESC LIMIT 1"
+        );
+        $stmt->execute([$contractId]);
+        return $stmt->fetch() ?: null;
+    }
+
     // ── Admin ─────────────────────────────────────────────────────────────────
 
     public static function find(int $id): ?array

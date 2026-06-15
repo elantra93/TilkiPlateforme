@@ -6,6 +6,7 @@ use App\Models\Contract;
 use App\Models\Document;
 use App\Services\Auth;
 use App\Services\ContractDocTypes;
+use App\Services\TallyUrlBuilder;
 
 class ContractController extends BaseController
 {
@@ -33,16 +34,17 @@ class ContractController extends BaseController
             return;
         }
 
-        $config        = file_exists(CONFIG_PATH) ? (require CONFIG_PATH) : [];
-        $claimFormBase = (string)($config['tally']['claim_form_url'] ?? '');
-        $tallyClaimUrl = '';
-        if ($claimFormBase) {
-            $sep           = str_contains($claimFormBase, '?') ? '&' : '?';
-            $tallyClaimUrl = $claimFormBase . $sep
-                . 'compte='   . urlencode($client['account_number'])
-                . '&police='  . urlencode($contract['policy_number'])
-                . '&assureur=' . urlencode($contract['insurer']);
+        $config      = file_exists(CONFIG_PATH) ? (require CONFIG_PATH) : [];
+        $appUrl      = rtrim((string)($config['app']['url'] ?? ''), '/');
+        $branche     = strtolower(trim($contract['branche'] ?? ''));
+        $attestUrl   = '';
+        if (in_array($branche, ['automobile', 'auto'], true) && $appUrl) {
+            $attest = Document::attestationForContract((int)$id);
+            if ($attest) {
+                $attestUrl = $appUrl . '/documents/' . (int)$attest['id'] . '/download';
+            }
         }
+        $tallyClaimUrl = TallyUrlBuilder::claimFormUrl($client, $contract, $attestUrl);
 
         $this->render('contracts.show', [
             'client'         => $client,
