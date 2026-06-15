@@ -38,8 +38,9 @@ class ContractController extends BaseController
         if ($claimFormBase) {
             $sep           = str_contains($claimFormBase, '?') ? '&' : '?';
             $tallyClaimUrl = $claimFormBase . $sep
-                . 'account_number=' . urlencode($client['account_number'])
-                . '&policy_number=' . urlencode($contract['policy_number']);
+                . 'compte='   . urlencode($client['account_number'])
+                . '&police='  . urlencode($contract['policy_number'])
+                . '&assureur=' . urlencode($contract['insurer']);
         }
 
         $this->render('contracts.show', [
