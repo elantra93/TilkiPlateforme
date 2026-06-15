@@ -148,11 +148,11 @@ $isOpen = $claim['status'] === 'ouvert';
              SECTION 1 — Déclaration
              ════════════════════════════════════════════════════════════════════ -->
         <?php $declEmpty = empty($byCategory['declaration']); ?>
-        <div class="card shadow-sm <?= $declEmpty ? 'border-danger' : '' ?>">
-            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $declEmpty ? 'text-danger border-danger bg-danger bg-opacity-10' : '' ?>">
-                <i class="bi bi-clipboard-data <?= $declEmpty ? 'text-danger' : 'text-info' ?>"></i>
+        <div class="card shadow-sm <?= $declEmpty ? 'border-danger' : 'border-success-subtle' ?>">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $declEmpty ? 'text-danger bg-danger bg-opacity-10' : 'text-success' ?>">
+                <i class="bi bi-clipboard-data"></i>
                 Déclaration
-                <span class="badge <?= $declEmpty ? 'bg-danger' : 'bg-secondary' ?> fw-normal ms-1"><?= count($byCategory['declaration']) ?></span>
+                <span class="badge <?= $declEmpty ? 'bg-danger' : 'bg-success' ?> fw-normal ms-1"><?= count($byCategory['declaration']) ?></span>
             </div>
             <div class="card-body d-flex flex-column gap-3 p-3">
 
@@ -254,11 +254,11 @@ $isOpen = $claim['status'] === 'ouvert';
              SECTION 2 — Rapports d'expertises et devis
              ════════════════════════════════════════════════════════════════════ -->
         <?php $expertEmpty = empty($byCategory['expertise_devis']); ?>
-        <div class="card shadow-sm <?= $expertEmpty ? 'border-danger' : '' ?>">
-            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $expertEmpty ? 'text-danger border-danger bg-danger bg-opacity-10' : '' ?>">
-                <i class="bi bi-file-earmark-check <?= $expertEmpty ? 'text-danger' : 'text-success' ?>"></i>
+        <div class="card shadow-sm <?= $expertEmpty ? '' : 'border-success-subtle' ?>">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $expertEmpty ? 'text-secondary' : 'text-success' ?>">
+                <i class="bi bi-file-earmark-check <?= $expertEmpty ? 'text-secondary opacity-50' : 'text-success' ?>"></i>
                 Rapports d'expertises et devis
-                <span class="badge <?= $expertEmpty ? 'bg-danger' : 'bg-secondary' ?> fw-normal ms-1"><?= count($byCategory['expertise_devis']) ?></span>
+                <span class="badge <?= $expertEmpty ? 'bg-secondary opacity-50' : 'bg-success' ?> fw-normal ms-1"><?= count($byCategory['expertise_devis']) ?></span>
             </div>
             <div class="card-body d-flex flex-column gap-0 p-0">
 
@@ -268,10 +268,10 @@ $isOpen = $claim['status'] === 'ouvert';
                 ?>
                 <div class="border-bottom px-3 py-2">
                     <div class="d-flex align-items-center gap-2 mb-<?= $typeEmpty ? '0' : '2' ?>">
-                        <i class="bi <?= $typeMeta['icon'] ?> <?= $typeEmpty ? 'text-danger' : 'text-secondary' ?> small"></i>
-                        <span class="small fw-semibold <?= $typeEmpty ? 'text-danger' : '' ?>"><?= $typeMeta['label'] ?></span>
+                        <i class="bi <?= $typeMeta['icon'] ?> <?= $typeEmpty ? 'text-secondary opacity-50' : 'text-secondary' ?> small"></i>
+                        <span class="small fw-semibold <?= $typeEmpty ? 'text-muted' : '' ?>"><?= $typeMeta['label'] ?></span>
                         <?php if ($typeEmpty): ?>
-                            <span class="ms-auto small text-danger"><i class="bi bi-exclamation-circle me-1"></i>Aucun document</span>
+                            <span class="ms-auto small text-muted"><i class="bi bi-dash me-1"></i>Aucun document</span>
                         <?php else: ?>
                             <span class="ms-auto badge bg-secondary fw-normal"><?= count($typeDocs) ?></span>
                         <?php endif; ?>
@@ -384,15 +384,15 @@ $isOpen = $claim['status'] === 'ouvert';
             $docs  = $byCategory[$cat];
             $empty = empty($docs);
         ?>
-        <div class="card shadow-sm <?= $empty ? 'border-danger' : '' ?>">
-            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $empty ? 'text-danger border-danger bg-danger bg-opacity-10' : '' ?>">
-                <i class="bi <?= $meta['icon'] ?> <?= $empty ? 'text-danger' : $meta['color'] ?>"></i>
+        <div class="card shadow-sm <?= $empty ? '' : 'border-success-subtle' ?>">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $empty ? 'text-secondary' : 'text-success' ?>">
+                <i class="bi <?= $meta['icon'] ?> <?= $empty ? 'text-secondary opacity-50' : $meta['color'] ?>"></i>
                 <?= $meta['label'] ?>
-                <span class="badge <?= $empty ? 'bg-danger' : 'bg-secondary' ?> fw-normal ms-1"><?= count($docs) ?></span>
+                <span class="badge <?= $empty ? 'bg-secondary opacity-50' : 'bg-success' ?> fw-normal ms-1"><?= count($docs) ?></span>
             </div>
             <?php if ($empty): ?>
                 <div class="card-body py-3">
-                    <span class="text-danger small"><i class="bi bi-exclamation-circle me-1"></i>Aucun document dans cette section.</span>
+                    <span class="text-muted small"><i class="bi bi-dash me-1 opacity-50"></i>Aucun document pour le moment.</span>
                 </div>
             <?php else: ?>
                 <ul class="list-group list-group-flush">
