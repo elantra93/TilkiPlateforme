@@ -153,6 +153,99 @@ foreach ($contracts as $c) {
 </div>
 </div>
 
+<?php if ($isEdit): ?>
+<!-- ── Documents du sinistre ─────────────────────────────────────────────────── -->
+<?php
+$catMeta = [
+    'declaration'               => ['label' => 'Déclaration',                     'icon' => 'bi-clipboard-data',     'color' => 'text-info'],
+    'expertise_devis'           => ['label' => "Rapports d'expertises et devis",  'icon' => 'bi-file-earmark-check', 'color' => 'text-success'],
+    'correspondances'           => ['label' => 'Correspondances',                  'icon' => 'bi-envelope-paper',     'color' => 'text-warning'],
+    'reglements_remboursements' => ['label' => 'Règlements et remboursements',     'icon' => 'bi-cash-coin',          'color' => 'text-primary'],
+];
+$docsByCategory = array_fill_keys(array_keys($catMeta), []);
+foreach ($documents ?? [] as $doc) {
+    if (isset($docsByCategory[$doc['category']])) {
+        $docsByCategory[$doc['category']][] = $doc;
+    }
+}
+?>
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-paperclip me-2 text-secondary"></i>Documents du sinistre
+    </div>
+    <div class="card-body p-0">
+
+        <!-- Formulaire d'ajout -->
+        <div class="p-3 border-bottom bg-light">
+            <p class="small fw-semibold mb-2"><i class="bi bi-upload me-1"></i>Ajouter un document</p>
+            <form method="post" action="/admin/claims/<?= (int)$claim['id'] ?>/upload"
+                  enctype="multipart/form-data" class="row g-2 align-items-end" id="claimDocForm">
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Catégorie</label>
+                    <select name="category" id="claimCatSel" class="form-select form-select-sm" required>
+                        <option value="">— Choisir —</option>
+                        <?php foreach ($catMeta as $catKey => $catInfo): ?>
+                        <option value="<?= $catKey ?>"><?= htmlspecialchars($catInfo['label']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Type de document</label>
+                    <select name="doc_type" id="claimDocTypeSel" class="form-select form-select-sm" required disabled>
+                        <option value="">— Choisir une catégorie —</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">Fichier <span class="text-muted fw-normal">(PDF, image, Word, Excel – max 10 Mo)</span></label>
+                    <input type="file" name="document" class="form-control form-control-sm"
+                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-upload me-1"></i>Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Documents existants par catégorie -->
+        <?php foreach ($catMeta as $catKey => $catInfo): ?>
+        <?php $docs = $docsByCategory[$catKey]; ?>
+        <div class="border-bottom">
+            <div class="px-3 py-2 d-flex align-items-center gap-2 bg-white">
+                <i class="bi <?= $catInfo['icon'] ?> <?= $catInfo['color'] ?> small"></i>
+                <span class="small fw-semibold"><?= htmlspecialchars($catInfo['label']) ?></span>
+                <span class="badge bg-secondary fw-normal ms-1" style="font-size:.7rem"><?= count($docs) ?></span>
+            </div>
+            <?php if (empty($docs)): ?>
+            <div class="px-3 py-2 text-muted small fst-italic">Aucun document.</div>
+            <?php else: ?>
+            <ul class="list-group list-group-flush">
+                <?php foreach ($docs as $doc): ?>
+                <li class="list-group-item d-flex justify-content-between align-items-center py-2 ps-4">
+                    <div>
+                        <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
+                        <span class="text-muted ms-2" style="font-size:.72rem">
+                            <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
+                            &bull; <?= number_format($doc['file_size'] / 1024, 0) ?> Ko
+                            &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
+                        </span>
+                    </div>
+                    <span class="badge bg-<?= $doc['status'] === 'valide' ? 'success' : 'warning text-dark' ?> ms-2">
+                        <?= $doc['status'] === 'valide' ? 'Valide' : 'En attente' ?>
+                    </span>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
+
+    </div>
+</div>
+<?php endif; ?>
+
 <?php if ($isEdit && !empty($steps)): ?>
 <!-- ── Suivi d'avancement ─────────────────────────────────────────────────────── -->
 <div class="card shadow-sm">
@@ -210,6 +303,18 @@ foreach ($contracts as $c) {
 </div><!-- /row -->
 
 <script>
+// Cascade catégorie → type de document (section upload sinistre)
+const claimDocTypes = <?= json_encode($docTypes ?? [], JSON_HEX_TAG) ?>;
+document.getElementById('claimCatSel')?.addEventListener('change', function () {
+    const sel = document.getElementById('claimDocTypeSel');
+    const types = claimDocTypes[this.value] || [];
+    sel.innerHTML = '<option value="">— Sélectionner —</option>';
+    types.forEach(t => {
+        sel.innerHTML += `<option value="${t}">${t.replace(/_/g, ' ')}</option>`;
+    });
+    sel.disabled = types.length === 0;
+});
+
 const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;
 
 document.getElementById('clientSel')?.addEventListener('change', function () {

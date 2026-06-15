@@ -67,6 +67,7 @@ $routes = [
         '/admin/login'                        => ['Admin',           'showLogin'],
         '/admin/logout'                       => ['Admin',           'logout'],
         '/admin/dashboard'                    => ['Admin',           'dashboard'],
+        '/admin/password/change'              => ['Admin',           'showChangePassword'],
         // Admin – Clients
         '/admin/clients'                      => ['AdminClient',     'index'],
         '/admin/clients/create'               => ['AdminClient',     'showCreate'],
@@ -96,6 +97,7 @@ $routes = [
         // Admin – Auth
         '/admin/login'                        => ['Admin',           'login'],
         '/admin/logout'                       => ['Admin',           'logout'],
+        '/admin/password/change'              => ['Admin',           'changePassword'],
         // Admin – Clients
         '/admin/clients/create'               => ['AdminClient',     'create'],
         // Admin – Contracts
@@ -105,6 +107,7 @@ $routes = [
         '/admin/claims/create'                => ['AdminClaim',      'create'],
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'edit'],
         '/admin/claims/(\d+)/steps/(\d+)'     => ['AdminClaim',      'updateStep'],
+        '/admin/claims/(\d+)/upload'          => ['AdminClaim',      'uploadDoc'],
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'upload'],
         '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],

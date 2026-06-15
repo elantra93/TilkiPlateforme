@@ -21,4 +21,10 @@ class Admin
         $stmt->execute([$id]);
         return $stmt->fetch() ?: null;
     }
+
+    public static function updatePassword(int $id, string $hash): void
+    {
+        Database::get()->prepare('UPDATE admins SET password_hash = ? WHERE id = ?')
+            ->execute([$hash, $id]);
+    }
 }

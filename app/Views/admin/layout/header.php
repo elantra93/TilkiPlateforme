@@ -81,6 +81,12 @@ unset($_SESSION['admin_flash']);
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
+                            <a class="dropdown-item" href="/admin/password/change">
+                                <i class="bi bi-key me-2"></i>Changer mon mot de passe
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
                             <form method="post" action="/admin/logout">
                                 <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                                 <button class="dropdown-item text-danger" type="submit">

@@ -97,6 +97,59 @@ class AdminController extends BaseController
         $this->redirect('/admin/login');
     }
 
+    // ── Changement de mot de passe admin ─────────────────────────────────────
+
+    public function showChangePassword(): void
+    {
+        AdminMiddleware::check();
+        $this->render('admin.change_password', ['csrf' => $this->csrfToken()]);
+    }
+
+    public function changePassword(): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $current  = $_POST['current_password']  ?? '';
+        $new      = $_POST['new_password']       ?? '';
+        $confirm  = $_POST['confirm_password']   ?? '';
+
+        $admin = Admin::findById((int)$_SESSION['admin_id']);
+        if (!$admin) {
+            $this->redirect('/admin/logout');
+        }
+
+        if (!password_verify($current, $admin['password_hash'])) {
+            $this->render('admin.change_password', [
+                'csrf'  => $this->csrfToken(),
+                'error' => 'Mot de passe actuel incorrect.',
+            ]);
+            return;
+        }
+
+        if (strlen($new) < 8) {
+            $this->render('admin.change_password', [
+                'csrf'  => $this->csrfToken(),
+                'error' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+            ]);
+            return;
+        }
+
+        if ($new !== $confirm) {
+            $this->render('admin.change_password', [
+                'csrf'  => $this->csrfToken(),
+                'error' => 'Les mots de passe ne correspondent pas.',
+            ]);
+            return;
+        }
+
+        Admin::updatePassword((int)$admin['id'], password_hash($new, PASSWORD_BCRYPT));
+        AuditLogger::log('admin', (int)$admin['id'], 'admin_password_changed', "admin:{$admin['id']}", $this->ip());
+
+        $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Mot de passe modifié avec succès.'];
+        $this->redirect('/admin/dashboard');
+    }
+
     // ── Tableau de bord admin ─────────────────────────────────────────────────
 
     public function dashboard(): void

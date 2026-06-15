@@ -172,13 +172,21 @@ clientSel.addEventListener('change', function () {
 document.querySelectorAll('input[name=scope]').forEach(radio => {
     radio.addEventListener('change', function () {
         resetFrom(3);
+        const clientId = clientSel.value;
         if (this.value === 'contrat') {
+            contractSel.innerHTML = '<option value="">— Sélectionner un contrat —</option>';
+            (contractsByClient[clientId] || []).forEach(c => {
+                contractSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
+            });
             show('contractRow'); hide('claimRow');
-            populateCategories(catContrat);
         } else {
+            claimSel.innerHTML = '<option value="">— Sélectionner un sinistre —</option>';
+            (claimsByClient[clientId] || []).forEach(c => {
+                claimSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
+            });
             show('claimRow'); hide('contractRow');
-            populateCategories(catSinistre);
         }
+        populateCategories(this.value === 'contrat' ? catContrat : catSinistre);
         show('categoryRow');
     });
 });

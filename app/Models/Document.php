@@ -37,6 +37,17 @@ class Document
         return $stmt->fetch() ?: null;
     }
 
+    public static function forClaimAdmin(int $claimId): array
+    {
+        $stmt = Database::get()->prepare(
+            "SELECT * FROM documents
+             WHERE claim_id = ? AND scope = 'sinistre'
+             ORDER BY created_at DESC"
+        );
+        $stmt->execute([$claimId]);
+        return $stmt->fetchAll();
+    }
+
     // ── Admin ─────────────────────────────────────────────────────────────────
 
     public static function find(int $id): ?array

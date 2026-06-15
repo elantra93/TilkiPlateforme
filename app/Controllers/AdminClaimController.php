@@ -7,11 +7,20 @@ use App\Models\Claim;
 use App\Models\ClaimStep;
 use App\Models\Client;
 use App\Models\Contract;
+use App\Models\Document;
 use App\Services\AuditLogger;
+use App\Services\FileStorage;
 
 class AdminClaimController extends BaseController
 {
     private const STATUSES = ['ouvert', 'clos'];
+
+    private const DOC_TYPES = [
+        'declaration'               => ['declaration_sinistre', 'rapport_circonstances', 'constat_amiable', 'plainte'],
+        'expertise_devis'           => ['rapport_expertise', 'devis_reparation', 'contre_expertise', 'estimation_perte'],
+        'correspondances'           => ['courrier_assureur', 'courrier_expert', 'courrier_client', 'mise_en_demeure'],
+        'reglements_remboursements' => ['virement', 'cheque', 'quittance_reglement', 'decompte_indemnite'],
+    ];
 
     public function index(): void
     {
@@ -92,6 +101,8 @@ class AdminClaimController extends BaseController
             'csrf'      => $this->csrfToken(),
             'claim'     => $claim,
             'steps'     => ClaimStep::forClaim((int)$id),
+            'documents' => Document::forClaimAdmin((int)$id),
+            'docTypes'  => self::DOC_TYPES,
             'clients'   => Client::all(),
             'contracts' => Contract::all(),
             'old'       => [],
@@ -164,6 +175,58 @@ class AdminClaimController extends BaseController
 
         $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Étape mise à jour.'];
         $this->redirect('/admin/claims/' . $claimId . '/edit');
+    }
+
+    public function uploadDoc(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $claim = Claim::find((int)$id);
+        if (!$claim) {
+            http_response_code(404);
+            require APP_PATH . '/Views/errors/404.php';
+            return;
+        }
+
+        $category = $_POST['category'] ?? '';
+        $docType  = trim($_POST['doc_type'] ?? '');
+
+        if (!array_key_exists($category, self::DOC_TYPES) || !$docType) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Catégorie ou type de document manquant.'];
+            $this->redirect('/admin/claims/' . $id . '/edit');
+            return;
+        }
+
+        if (empty($_FILES['document']) || $_FILES['document']['error'] === UPLOAD_ERR_NO_FILE) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Aucun fichier sélectionné.'];
+            $this->redirect('/admin/claims/' . $id . '/edit');
+            return;
+        }
+
+        try {
+            $stored = FileStorage::store($_FILES['document'], 'sinistres/' . $id);
+            Document::create([
+                'client_id'         => $claim['client_id'],
+                'contract_id'       => $claim['contract_id'],
+                'claim_id'          => (int)$id,
+                'scope'             => 'sinistre',
+                'category'          => $category,
+                'doc_type'          => $docType,
+                'original_filename' => $stored['original_filename'],
+                'stored_path'       => $stored['stored_path'],
+                'mime_type'         => $stored['mime_type'],
+                'file_size'         => $stored['file_size'],
+                'source'            => 'admin',
+                'status'            => 'valide',
+            ]);
+            AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'claim_doc_upload', "claim:{$id}", $this->ip());
+            $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Document ajouté au sinistre.'];
+        } catch (\Throwable $e) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => $e->getMessage()];
+        }
+
+        $this->redirect('/admin/claims/' . $id . '/edit');
     }
 
     private function collectFields(): array
