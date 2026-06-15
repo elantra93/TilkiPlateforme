@@ -65,8 +65,8 @@ echo "Contrat créé : AUTO-2024-001 (NSIA, Automobile)\n";
 // ── Sinistre de test ───────────────────────────────────────────────────────────
 $pdo->prepare(
     "INSERT INTO claims
-        (client_id, contract_id, claim_number, insurer, branche, occurrence_date, status, description)
-     VALUES (:client_id, :contract_id, :claim_number, :insurer, :branche, :occurrence_date, :status, :description)"
+        (client_id, contract_id, claim_number, insurer, branche, occurrence_date, status, description, is_auto_rc)
+     VALUES (:client_id, :contract_id, :claim_number, :insurer, :branche, :occurrence_date, :status, :description, :is_auto_rc)"
 )->execute([
     'client_id'       => $clientId,
     'contract_id'     => $contractId,
@@ -76,9 +76,28 @@ $pdo->prepare(
     'occurrence_date' => '2024-06-15',
     'status'          => 'ouvert',
     'description'     => 'Accrochage en stationnement – aile avant gauche endommagée.',
+    'is_auto_rc'      => 1,
 ]);
 $claimId = (int)$pdo->lastInsertId();
-echo "Sinistre créé: SIN-2024-001 (ouvert)\n";
+echo "Sinistre créé: SIN-2024-001 (ouvert, auto RC)\n";
+
+// ── Étapes de suivi (toutes les étapes car is_auto_rc = 1) ────────────────────
+$steps = [
+    ['step_key' => 'declaration',               'label' => 'Déclaration du sinistre',                          'position' => 1, 'completed' => 1, 'completed_date' => '2024-06-15'],
+    ['step_key' => 'instruction',               'label' => 'Instruction du sinistre',                          'position' => 2, 'completed' => 1, 'completed_date' => '2024-06-22'],
+    ['step_key' => 'mise_en_cause',             'label' => "Mise en cause de l'adversaire",                    'position' => 3, 'completed' => 0, 'completed_date' => null],
+    ['step_key' => 'reconnaissance_resp',       'label' => "Reconnaissance de responsabilité de l'adversaire", 'position' => 4, 'completed' => 0, 'completed_date' => null],
+    ['step_key' => 'proposition_indemnisation', 'label' => "Proposition d'indemnisation",                      'position' => 5, 'completed' => 0, 'completed_date' => null],
+    ['step_key' => 'indemnisation',             'label' => 'Indemnisation',                                    'position' => 6, 'completed' => 0, 'completed_date' => null],
+];
+$stepStmt = $pdo->prepare(
+    "INSERT IGNORE INTO claim_steps (claim_id, step_key, label, position, completed, completed_date)
+     VALUES (:claim_id, :step_key, :label, :position, :completed, :completed_date)"
+);
+foreach ($steps as $s) {
+    $stepStmt->execute(array_merge(['claim_id' => $claimId], $s));
+}
+echo "Étapes créées: 6 étapes (2 réalisées)\n";
 
 // ── Admin de test ──────────────────────────────────────────────────────────────
 $adminPassword = 'Admin@Tilki2024';

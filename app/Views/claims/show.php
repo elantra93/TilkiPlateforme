@@ -34,9 +34,11 @@ foreach ($documents as $doc) {
 
 <div class="row g-4">
 
-    <!-- ── Détails du sinistre ────────────────────────────────────────────────── -->
-    <div class="col-lg-4">
-        <div class="card shadow-sm h-100">
+    <!-- ── Colonne gauche : détails + frise ──────────────────────────────────── -->
+    <div class="col-lg-4 d-flex flex-column gap-4">
+
+    <!-- Détails -->
+    <div class="card shadow-sm">
             <div class="card-header fw-semibold">
                 <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Détails du sinistre
             </div>
@@ -82,7 +84,43 @@ foreach ($documents as $doc) {
                 </dl>
             </div>
         </div>
+    </div><!-- /details card -->
+
+    <?php if (!empty($steps)): ?>
+    <!-- Frise verticale d'avancement -->
+    <div class="card shadow-sm">
+        <div class="card-header fw-semibold">
+            <i class="bi bi-list-check me-2 text-primary"></i>Avancement du dossier
+        </div>
+        <div class="card-body">
+            <div class="claim-timeline">
+            <?php foreach ($steps as $step):
+                $done = (bool)$step['completed'];
+            ?>
+            <div class="ct-item <?= $done ? 'ct-done' : 'ct-pending' ?>">
+                <div class="ct-dot">
+                    <?php if ($done): ?>
+                        <i class="bi bi-check-lg"></i>
+                    <?php else: ?>
+                        <?= (int)$step['position'] ?>
+                    <?php endif; ?>
+                </div>
+                <div class="ct-content">
+                    <div class="ct-label"><?= htmlspecialchars($step['label']) ?></div>
+                    <?php if ($done && !empty($step['completed_date'])): ?>
+                    <div class="ct-date">
+                        <i class="bi bi-calendar-check me-1"></i><?= date('d/m/Y', strtotime($step['completed_date'])) ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            </div>
+        </div>
     </div>
+    <?php endif; ?>
+
+    </div><!-- /col-lg-4 -->
 
     <!-- ── Documents ─────────────────────────────────────────────────────────── -->
     <div class="col-lg-8 d-flex flex-column gap-4">

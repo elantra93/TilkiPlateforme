@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Claim;
+use App\Models\ClaimStep;
 use App\Models\Contract;
 use App\Models\Document;
 use App\Services\AuditLogger;
@@ -82,7 +83,9 @@ class ClaimController extends BaseController
             'occurrence_date' => $occurrenceDate,
             'status'          => 'ouvert',
             'description'     => $description,
+            'is_auto_rc'      => 0,
         ]);
+        ClaimStep::initForClaim($id, false);
 
         $claimNumber = 'SIN-' . date('Y') . '-' . str_pad((string)$id, 4, '0', STR_PAD_LEFT);
         Claim::setNumber($id, $claimNumber);
@@ -108,6 +111,7 @@ class ClaimController extends BaseController
         $this->render('claims.show', [
             'client'    => Auth::client(),
             'claim'     => $claim,
+            'steps'     => ClaimStep::forClaim((int)$id),
             'documents' => Document::forClaim((int)$id, $clientId),
             'csrf'      => $this->csrfToken(),
         ]);

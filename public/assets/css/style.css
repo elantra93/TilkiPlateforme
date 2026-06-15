@@ -61,3 +61,56 @@ body.login-page {
 /* Badge "à jour" Bootstrap 5.3 subtle */
 .bg-success-subtle { background-color: #d1e7dd; }
 .border-success-subtle { border-color: #a3cfbb !important; }
+
+/* Frise verticale d'avancement sinistre */
+.claim-timeline { position: relative; }
+.ct-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    position: relative;
+    padding-bottom: 1.35rem;
+}
+.ct-item:last-child { padding-bottom: 0; }
+.ct-item::before {
+    content: '';
+    position: absolute;
+    left: 1.125rem;
+    top: 2.35rem;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+.ct-item:last-child::before { display: none; }
+.ct-item.ct-done::before { background: #16a34a; }
+.ct-dot {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .78rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+.ct-done .ct-dot {
+    background: #16a34a;
+    color: #fff;
+    font-size: 1rem;
+}
+.ct-pending .ct-dot {
+    background: #f3f4f6;
+    border: 2px solid #d1d5db;
+    color: #9ca3af;
+}
+.ct-content { padding-top: .3rem; }
+.ct-label { font-size: .875rem; font-weight: 500; }
+.ct-done .ct-label { color: #111827; }
+.ct-pending .ct-label { color: #9ca3af; }
+.ct-date { font-size: .75rem; color: #16a34a; margin-top: .1rem; }
+
+/* form inline dans table */
+.d-contents { display: contents; }

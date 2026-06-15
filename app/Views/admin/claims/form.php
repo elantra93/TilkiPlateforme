@@ -28,8 +28,10 @@ foreach ($contracts as $c) {
     </a>
 </div>
 
-<div class="row justify-content-center">
+<div class="row justify-content-center g-4">
 <div class="col-xl-8">
+
+<!-- ── Formulaire principal ──────────────────────────────────────────────────── -->
 <div class="card shadow-sm">
 <div class="card-body p-4">
 
@@ -120,6 +122,19 @@ foreach ($contracts as $c) {
                 <?php endforeach; ?>
             </select>
         </div>
+
+        <!-- Responsabilité civile auto -->
+        <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch"
+                       name="is_auto_rc" id="isAutoRc"
+                       <?= (bool)(int)v('is_auto_rc', $old, $claim, 0) ? 'checked' : '' ?>>
+                <label class="form-check-label fw-semibold small" for="isAutoRc">
+                    Sinistre automobile en responsabilité civile (RC)
+                </label>
+            </div>
+        </div>
+
         <div class="col-12">
             <label class="form-label small fw-semibold">Description</label>
             <textarea name="description" class="form-control" rows="3"><?= htmlspecialchars((string)v('description', $old, $claim)) ?></textarea>
@@ -137,8 +152,62 @@ foreach ($contracts as $c) {
 </form>
 </div>
 </div>
+
+<?php if ($isEdit && !empty($steps)): ?>
+<!-- ── Suivi d'avancement ─────────────────────────────────────────────────────── -->
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-list-check me-2 text-primary"></i>Suivi d'avancement du sinistre
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3" style="width:2rem">#</th>
+                    <th>Étape</th>
+                    <th style="width:7rem">Réalisée</th>
+                    <th style="width:10rem">Date</th>
+                    <th style="width:7rem"></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($steps as $step): ?>
+            <tr class="<?= $step['completed'] ? 'table-success' : '' ?>">
+                <td class="ps-3 text-muted small"><?= (int)$step['position'] ?></td>
+                <td class="fw-semibold small"><?= htmlspecialchars($step['label']) ?></td>
+                <form method="post"
+                      action="/admin/claims/<?= (int)$claim['id'] ?>/steps/<?= (int)$step['id'] ?>"
+                      class="d-contents">
+                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                    <td>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" name="completed"
+                                   id="step_<?= (int)$step['id'] ?>"
+                                   <?= $step['completed'] ? 'checked' : '' ?>
+                                   onchange="this.closest('form').submit()">
+                        </div>
+                    </td>
+                    <td>
+                        <input type="date" name="completed_date" class="form-control form-control-sm"
+                               value="<?= htmlspecialchars($step['completed_date'] ?? '') ?>"
+                               <?= !$step['completed'] ? 'disabled' : '' ?>>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-save me-1"></i>Sauver
+                        </button>
+                    </td>
+                </form>
+            </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
-</div>
+<?php endif; ?>
+
+</div><!-- /col -->
+</div><!-- /row -->
 
 <script>
 const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;
@@ -152,6 +221,14 @@ document.getElementById('clientSel')?.addEventListener('change', function () {
         opt.value       = c.id;
         opt.textContent = c.label;
         sel.appendChild(opt);
+    });
+});
+
+// Enable/disable date inputs when checkbox changes
+document.querySelectorAll('input[type="checkbox"][name="completed"]').forEach(cb => {
+    cb.addEventListener('change', function () {
+        const dateInput = this.closest('tr').querySelector('input[type="date"]');
+        if (dateInput) dateInput.disabled = !this.checked;
     });
 });
 </script>

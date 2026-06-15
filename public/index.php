@@ -104,6 +104,7 @@ $routes = [
         // Admin – Claims
         '/admin/claims/create'                => ['AdminClaim',      'create'],
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'edit'],
+        '/admin/claims/(\d+)/steps/(\d+)'     => ['AdminClaim',      'updateStep'],
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'upload'],
         '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],
