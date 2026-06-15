@@ -11,10 +11,17 @@ function docIcon(string $mime): string {
     };
 }
 
-$byCategory = ['cotation' => [], 'souscription' => []];
+$byCategory = [
+    'declaration'               => [],
+    'expertise_devis'           => [],
+    'correspondances'           => [],
+    'reglements_remboursements' => [],
+];
 foreach ($documents as $doc) {
-    $cat = $doc['category'] === 'cotation' ? 'cotation' : 'souscription';
-    $byCategory[$cat][] = $doc;
+    $cat = $doc['category'];
+    if (array_key_exists($cat, $byCategory)) {
+        $byCategory[$cat][] = $doc;
+    }
 }
 ?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
@@ -27,7 +34,7 @@ foreach ($documents as $doc) {
 
 <div class="row g-4">
 
-    <!-- ── Détails du sinistre ────────────────────────────────────────────── -->
+    <!-- ── Détails du sinistre ────────────────────────────────────────────────── -->
     <div class="col-lg-4">
         <div class="card shadow-sm h-100">
             <div class="card-header fw-semibold">
@@ -77,13 +84,15 @@ foreach ($documents as $doc) {
         </div>
     </div>
 
-    <!-- ── Documents + Upload ─────────────────────────────────────────────── -->
+    <!-- ── Documents ─────────────────────────────────────────────────────────── -->
     <div class="col-lg-8 d-flex flex-column gap-4">
 
         <?php
         $sections = [
-            'cotation'     => ['label' => 'Cotation',     'icon' => 'bi-clipboard-data',     'color' => 'text-info'],
-            'souscription' => ['label' => 'Souscription', 'icon' => 'bi-file-earmark-check',  'color' => 'text-success'],
+            'declaration'               => ['label' => 'Déclaration',                    'icon' => 'bi-clipboard-data',    'color' => 'text-info'],
+            'expertise_devis'           => ['label' => "Rapports d'expertises et devis", 'icon' => 'bi-file-earmark-check', 'color' => 'text-success'],
+            'correspondances'           => ['label' => 'Correspondances',                 'icon' => 'bi-envelope-paper',    'color' => 'text-warning'],
+            'reglements_remboursements' => ['label' => 'Règlements et remboursements',    'icon' => 'bi-cash-coin',         'color' => 'text-primary'],
         ];
         foreach ($sections as $cat => $meta):
             $docs = $byCategory[$cat];
@@ -111,9 +120,6 @@ foreach ($documents as $doc) {
                                 <?= htmlspecialchars($doc['doc_type']) ?>
                                 &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                 &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
-                                <?php if ($doc['source'] === 'client'): ?>
-                                    &bull; <em>déposé par vous</em>
-                                <?php endif; ?>
                             </div>
                         </div>
                         <?php if ($doc['status'] === 'valide'): ?>
@@ -130,41 +136,6 @@ foreach ($documents as $doc) {
             <?php endif; ?>
         </div>
         <?php endforeach; ?>
-
-        <!-- ── Formulaire d'upload (sinistre ouvert seulement) ──────────── -->
-        <?php if ($claim['status'] === 'ouvert'): ?>
-        <div class="card shadow-sm">
-            <div class="card-header fw-semibold">
-                <i class="bi bi-upload me-2 text-primary"></i>Déposer une preuve de règlement
-            </div>
-            <div class="card-body">
-                <p class="small text-muted mb-3">
-                    Joignez tout document justificatif (reçu, virement, etc.). Il sera examiné
-                    par TILKI avant validation.
-                </p>
-                <form method="post"
-                      action="/claims/<?= (int)$claim['id'] ?>/upload"
-                      enctype="multipart/form-data"
-                      novalidate>
-                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">
-                            Fichier
-                            <span class="text-muted fw-normal">(PDF, JPG ou PNG – max&nbsp;10&nbsp;Mo)</span>
-                        </label>
-                        <input type="file"
-                               name="document"
-                               class="form-control"
-                               accept=".pdf,.jpg,.jpeg,.png"
-                               required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-upload me-2"></i>Envoyer
-                    </button>
-                </form>
-            </div>
-        </div>
-        <?php endif; ?>
 
     </div><!-- /col -->
 </div><!-- /row -->

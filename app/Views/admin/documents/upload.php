@@ -81,8 +81,6 @@
             </label>
             <select name="category" id="categorySel" class="form-select" required>
                 <option value="">— Choisir —</option>
-                <option value="cotation">Cotation</option>
-                <option value="souscription">Souscription</option>
             </select>
         </div>
 
@@ -123,6 +121,17 @@ const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;
 const claimsByClient    = <?= json_encode($claimsByClient,    JSON_HEX_TAG) ?>;
 const docTypes          = <?= json_encode($docTypes,          JSON_HEX_TAG) ?>;
 
+const catLabels = {
+    cotation:                  'Cotation',
+    souscription:              'Souscription',
+    declaration:               'Déclaration',
+    expertise_devis:           "Rapports d'expertises et devis",
+    correspondances:           'Correspondances',
+    reglements_remboursements: 'Règlements et remboursements',
+};
+const catContrat  = <?= json_encode($catContrat,  JSON_HEX_TAG) ?>;
+const catSinistre = <?= json_encode($catSinistre, JSON_HEX_TAG) ?>;
+
 const clientSel   = document.getElementById('clientSel');
 const contractSel = document.getElementById('contractSel');
 const claimSel    = document.getElementById('claimSel');
@@ -135,19 +144,24 @@ function hide(id)  { document.getElementById(id).style.display = 'none'; }
 function resetFrom(step) {
     if (step <= 2) { hide('scopeRow');    document.querySelectorAll('input[name=scope]').forEach(r => r.checked = false); }
     if (step <= 3) { hide('contractRow'); hide('claimRow'); contractSel.innerHTML = '<option value="">—</option>'; claimSel.innerHTML = '<option value="">—</option>'; }
-    if (step <= 4) { hide('categoryRow'); hide('docTypeRow'); categorySel.value = ''; docTypeSel.innerHTML = '<option value="">—</option>'; }
+    if (step <= 4) { hide('categoryRow'); hide('docTypeRow'); categorySel.innerHTML = '<option value="">— Choisir —</option>'; docTypeSel.innerHTML = '<option value="">—</option>'; }
     if (step <= 5) { hide('fileRow'); hide('submitRow'); }
+}
+
+function populateCategories(cats) {
+    categorySel.innerHTML = '<option value="">— Choisir —</option>';
+    cats.forEach(c => {
+        categorySel.innerHTML += `<option value="${c}">${catLabels[c] ?? c}</option>`;
+    });
 }
 
 clientSel.addEventListener('change', function () {
     resetFrom(2);
     if (!this.value) return;
-    // Populate contract select
     contractSel.innerHTML = '<option value="">— Sélectionner —</option>';
     (contractsByClient[this.value] || []).forEach(c => {
         contractSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
     });
-    // Populate claim select
     claimSel.innerHTML = '<option value="">— Sélectionner —</option>';
     (claimsByClient[this.value] || []).forEach(c => {
         claimSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
@@ -158,8 +172,13 @@ clientSel.addEventListener('change', function () {
 document.querySelectorAll('input[name=scope]').forEach(radio => {
     radio.addEventListener('change', function () {
         resetFrom(3);
-        if (this.value === 'contrat') { show('contractRow'); hide('claimRow'); }
-        else                          { show('claimRow');    hide('contractRow'); }
+        if (this.value === 'contrat') {
+            show('contractRow'); hide('claimRow');
+            populateCategories(catContrat);
+        } else {
+            show('claimRow'); hide('contractRow');
+            populateCategories(catSinistre);
+        }
         show('categoryRow');
     });
 });
@@ -168,6 +187,8 @@ document.querySelectorAll('input[name=scope]').forEach(radio => {
     sel.addEventListener('change', function () {
         resetFrom(4);
         if (!this.value) return;
+        const scope = document.querySelector('input[name=scope]:checked')?.value;
+        populateCategories(scope === 'sinistre' ? catSinistre : catContrat);
         show('categoryRow');
     });
 });

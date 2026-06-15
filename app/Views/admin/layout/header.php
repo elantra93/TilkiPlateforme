@@ -15,8 +15,11 @@ unset($_SESSION['admin_flash']);
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid px-4">
-        <a class="navbar-brand fw-bold" href="/admin/dashboard">
-            <i class="bi bi-shield-lock me-2"></i>TILKI <span class="badge bg-warning text-dark ms-1 small">Admin</span>
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="/admin/dashboard">
+            <img src="/assets/img/logo.png" alt="TILKI" height="36" class="me-2"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+            <span style="display:none"><i class="bi bi-shield-lock me-1"></i>TILKI</span>
+            <span class="badge bg-warning text-dark ms-2 small">Admin</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
             <span class="navbar-toggler-icon"></span>

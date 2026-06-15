@@ -87,7 +87,7 @@ foreach ($documents as $doc) {
         <?php
         $sections = [
             'cotation'     => ['label' => 'Cotation',     'icon' => 'bi-clipboard-data',    'color' => 'text-info'],
-            'souscription' => ['label' => 'Souscription', 'icon' => 'bi-file-earmark-check', 'color' => 'text-success'],
+            'souscription' => ['label' => 'Documents du contrat', 'icon' => 'bi-file-earmark-check', 'color' => 'text-success'],
         ];
         foreach ($sections as $cat => $meta):
             $docs = $byCategory[$cat];
@@ -142,8 +142,8 @@ foreach ($documents as $doc) {
             </div>
             <div class="card-body">
                 <p class="small text-muted mb-3">
-                    Joignez votre reçu de paiement ou virement. Le document sera examiné par TILKI
-                    avant validation.
+                    Joignez votre reçu de paiement ou virement. Le document sera examiné par notre équipe
+                    avant d'apparaître dans cette section.
                 </p>
                 <form method="post"
                       action="/contracts/<?= (int)$contract['id'] ?>/upload"

@@ -13,9 +13,18 @@ use App\Services\FileStorage;
 class AdminDocumentController extends BaseController
 {
     private const DOC_TYPES = [
-        'cotation'     => ['questionnaire', 'cotation', 'bordereau', 'note_de_couverture'],
-        'souscription' => ['contrat', 'avenant', 'preuve_paiement', 'quittance', 'attestation', 'decompte'],
+        // Contrat
+        'cotation'                   => ['questionnaire', 'cotation', 'bordereau', 'note_de_couverture'],
+        'souscription'               => ['contrat', 'avenant', 'preuve_paiement', 'quittance', 'attestation', 'decompte'],
+        // Sinistre
+        'declaration'                => ['declaration_sinistre', 'rapport_circonstances', 'constat_amiable', 'plainte'],
+        'expertise_devis'            => ['rapport_expertise', 'devis_reparation', 'contre_expertise', 'estimation_perte'],
+        'correspondances'            => ['courrier_assureur', 'courrier_expert', 'courrier_client', 'mise_en_demeure'],
+        'reglements_remboursements'  => ['virement', 'cheque', 'quittance_reglement', 'decompte_indemnite'],
     ];
+
+    private const CATEGORIES_CONTRAT  = ['cotation', 'souscription'];
+    private const CATEGORIES_SINISTRE = ['declaration', 'expertise_devis', 'correspondances', 'reglements_remboursements'];
 
     public function showUpload(): void
     {
@@ -48,6 +57,8 @@ class AdminDocumentController extends BaseController
             'contractsByClient' => $contractsByClient,
             'claimsByClient'    => $claimsByClient,
             'docTypes'          => self::DOC_TYPES,
+            'catContrat'        => self::CATEGORIES_CONTRAT,
+            'catSinistre'       => self::CATEGORIES_SINISTRE,
         ]);
     }
 
@@ -63,8 +74,9 @@ class AdminDocumentController extends BaseController
         $category   = $_POST['category']           ?? '';
         $docType    = trim($_POST['doc_type']      ?? '');
 
+        $validCategories = $scope === 'contrat' ? self::CATEGORIES_CONTRAT : self::CATEGORIES_SINISTRE;
         if (!$clientId || !in_array($scope, ['contrat', 'sinistre'], true) ||
-            !in_array($category, ['cotation', 'souscription'], true) || !$docType) {
+            !in_array($category, $validCategories, true) || !$docType) {
             $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Tous les champs sont obligatoires.'];
             $this->redirect('/admin/documents/upload');
             return;

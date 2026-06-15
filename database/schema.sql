@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS documents (
     contract_id       INT UNSIGNED  DEFAULT NULL,
     claim_id          INT UNSIGNED  DEFAULT NULL,
     scope             ENUM('contrat','sinistre') NOT NULL,
-    category          ENUM('cotation','souscription') NOT NULL DEFAULT 'souscription',
+    category          ENUM('cotation','souscription','declaration','expertise_devis','correspondances','reglements_remboursements') NOT NULL DEFAULT 'souscription',
     doc_type          VARCHAR(100)  NOT NULL,
     original_filename VARCHAR(255)  NOT NULL,
     stored_path       VARCHAR(500)  NOT NULL,
