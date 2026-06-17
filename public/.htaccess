@@ -13,3 +13,11 @@ Header always set X-XSS-Protection "1; mode=block"
 Header always set Referrer-Policy "strict-origin-when-cross-origin"
 Header always set Permissions-Policy "geolocation=(), camera=(), microphone=()"
 Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data:"
+
+# PHP settings (shared hosting)
+php_flag  display_errors        Off
+php_flag  log_errors            On
+php_value upload_max_filesize   10M
+php_value post_max_size         12M
+php_value max_execution_time    60
+php_value memory_limit          128M

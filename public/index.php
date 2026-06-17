@@ -1,7 +1,12 @@
 <?php
 declare(strict_types=1);
 
-define('ROOT_PATH', dirname(__DIR__));
+// Hostinger: app files live in ~/tilki_app/ (sibling of public_html)
+// VPS/Dev:   app files live in parent of public/ (original repo layout)
+$_siblingApp = dirname(__DIR__) . '/tilki_app';
+define('ROOT_PATH', is_dir($_siblingApp . '/app') ? $_siblingApp : dirname(__DIR__));
+unset($_siblingApp);
+
 define('CONFIG_PATH', ROOT_PATH . '/config/config.php');
 define('APP_PATH',    ROOT_PATH . '/app');
 define('STORAGE_PATH',ROOT_PATH . '/storage');

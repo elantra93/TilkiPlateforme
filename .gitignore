@@ -5,3 +5,5 @@ storage/logs/*
 !storage/logs/.gitkeep
 *.log
 .DS_Store
+config/*.pdf
+config/*.md
