@@ -4,7 +4,9 @@ namespace App\Controllers;
 
 use App\Middleware\AdminMiddleware;
 use App\Models\Client;
+use App\Models\Document;
 use App\Services\AuditLogger;
+use App\Services\FileStorage;
 
 class AdminClientController extends BaseController
 {
@@ -20,9 +22,10 @@ class AdminClientController extends BaseController
     {
         AdminMiddleware::check();
         $this->render('admin.clients.create', [
-            'csrf'        => $this->csrfToken(),
-            'credentials' => null,
-            'old'         => [],
+            'csrf'               => $this->csrfToken(),
+            'credentials'        => null,
+            'old'                => [],
+            'nextAccountNumber'  => Client::nextAccountNumber(),
         ]);
     }
 
@@ -31,19 +34,43 @@ class AdminClientController extends BaseController
         AdminMiddleware::check();
         $this->verifyCsrf();
 
-        $firstName = trim($_POST['first_name'] ?? '');
-        $lastName  = trim($_POST['last_name']  ?? '');
-        $email     = trim(strtolower($_POST['email'] ?? ''));
-        $phone     = trim($_POST['phone'] ?? '') ?: null;
-        $status    = $_POST['status'] ?? 'actif';
-        $old       = compact('firstName', 'lastName', 'email', 'phone', 'status');
+        $firstName     = trim($_POST['first_name']     ?? '');
+        $lastName      = trim($_POST['last_name']      ?? '');
+        $email         = trim(strtolower($_POST['email'] ?? ''));
+        $phone         = trim($_POST['phone']          ?? '') ?: null;
+        $status        = $_POST['status']              ?? 'actif';
+        $accountNumber = trim($_POST['account_number'] ?? '');
+        $old           = compact('firstName', 'lastName', 'email', 'phone', 'status', 'accountNumber');
 
         if (!$firstName || !$lastName || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->render('admin.clients.create', [
-                'csrf'        => $this->csrfToken(),
-                'credentials' => null,
-                'old'         => $old,
-                'error'       => 'Prénom, nom et adresse e-mail valide sont obligatoires.',
+                'csrf'              => $this->csrfToken(),
+                'credentials'       => null,
+                'old'               => $old,
+                'nextAccountNumber' => Client::nextAccountNumber(),
+                'error'             => 'Prénom, nom et adresse e-mail valide sont obligatoires.',
+            ]);
+            return;
+        }
+
+        if (!preg_match('/^\d{6}$/', $accountNumber)) {
+            $this->render('admin.clients.create', [
+                'csrf'              => $this->csrfToken(),
+                'credentials'       => null,
+                'old'               => $old,
+                'nextAccountNumber' => Client::nextAccountNumber(),
+                'error'             => 'Le numéro de compte doit contenir exactement 6 chiffres.',
+            ]);
+            return;
+        }
+
+        if (Client::isAccountNumberTaken($accountNumber)) {
+            $this->render('admin.clients.create', [
+                'csrf'              => $this->csrfToken(),
+                'credentials'       => null,
+                'old'               => $old,
+                'nextAccountNumber' => Client::nextAccountNumber(),
+                'error'             => "Le numéro de compte « {$accountNumber} » est déjà utilisé. Un nouveau numéro a été suggéré.",
             ]);
             return;
         }
@@ -53,16 +80,13 @@ class AdminClientController extends BaseController
         }
 
         try {
-            $accountNumber = Client::generateAccountNumber();
-            $rawPassword   = $this->generatePassword();
-
             $id = Client::create([
                 'account_number'       => $accountNumber,
                 'first_name'           => $firstName,
                 'last_name'            => $lastName,
                 'email'                => $email,
                 'phone'                => $phone,
-                'password_hash'        => password_hash($rawPassword, PASSWORD_BCRYPT),
+                'password_hash'        => password_hash('12345678', PASSWORD_BCRYPT),
                 'must_change_password' => 1,
                 'status'               => $status,
             ]);
@@ -73,7 +97,7 @@ class AdminClientController extends BaseController
                 'csrf'        => $this->csrfToken(),
                 'credentials' => [
                     'account_number' => $accountNumber,
-                    'password'       => $rawPassword,
+                    'pin'            => '12345678',
                     'name'           => $firstName . ' ' . $lastName,
                     'email'          => $email,
                 ],
@@ -81,21 +105,79 @@ class AdminClientController extends BaseController
             ]);
         } catch (\Throwable $e) {
             $this->render('admin.clients.create', [
-                'csrf'        => $this->csrfToken(),
-                'credentials' => null,
-                'old'         => $old,
-                'error'       => 'Erreur : ' . $e->getMessage(),
+                'csrf'              => $this->csrfToken(),
+                'credentials'       => null,
+                'old'               => $old,
+                'nextAccountNumber' => Client::nextAccountNumber(),
+                'error'             => 'Erreur : ' . $e->getMessage(),
             ]);
         }
     }
 
-    private function generatePassword(): string
+    public function showEdit(string $id): void
     {
-        $chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
-        $pwd   = '';
-        for ($i = 0; $i < 10; $i++) {
-            $pwd .= $chars[random_int(0, strlen($chars) - 1)];
+        AdminMiddleware::check();
+        $client = Client::findById((int)$id);
+        if (!$client) {
+            http_response_code(404);
+            require APP_PATH . '/Views/errors/404.php';
+            return;
         }
-        return $pwd;
+        $this->render('admin.clients.edit', [
+            'csrf'   => $this->csrfToken(),
+            'client' => $client,
+            'carte'  => Document::carteAssurance((int)$id),
+        ]);
+    }
+
+    public function uploadCarte(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $client = Client::findById((int)$id);
+        if (!$client) {
+            http_response_code(404);
+            require APP_PATH . '/Views/errors/404.php';
+            return;
+        }
+
+        if (empty($_FILES['document']) || $_FILES['document']['error'] === UPLOAD_ERR_NO_FILE) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Aucun fichier sélectionné.'];
+            $this->redirect('/admin/clients/' . $id . '/edit');
+            return;
+        }
+
+        try {
+            $mime = mime_content_type($_FILES['document']['tmp_name']);
+            if (!in_array($mime, ['application/pdf', 'image/jpeg', 'image/png'], true)) {
+                throw new \RuntimeException('Seuls les formats PDF, JPG et PNG sont acceptés.');
+            }
+
+            Document::archiveCarteAssurance((int)$id);
+
+            $stored = FileStorage::store($_FILES['document'], 'clients/' . $id);
+            Document::create([
+                'client_id'         => (int)$id,
+                'contract_id'       => null,
+                'claim_id'          => null,
+                'scope'             => 'carte',
+                'category'          => 'carte',
+                'doc_type'          => 'carte_assurance',
+                'original_filename' => $stored['original_filename'],
+                'stored_path'       => $stored['stored_path'],
+                'mime_type'         => $stored['mime_type'],
+                'file_size'         => $stored['file_size'],
+                'source'            => 'admin',
+                'status'            => 'valide',
+            ]);
+
+            AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'carte_uploaded', "client:{$id}", $this->ip());
+            $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => "Carte d'assurance uploadée avec succès."];
+        } catch (\Throwable $e) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => $e->getMessage()];
+        }
+
+        $this->redirect('/admin/clients/' . $id . '/edit');
     }
 }

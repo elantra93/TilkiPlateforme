@@ -64,6 +64,8 @@ $routes = [
         '/claims/declare'            => ['Claim',    'declare'],
         '/claims/(\d+)'              => ['Claim',    'show'],
         '/documents/(\d+)/download'  => ['Document', 'download'],
+        '/documents/(\d+)/view'      => ['Document', 'view'],
+        '/account'                   => ['Account',  'show'],
         '/password/change'           => ['Auth',     'showChangePassword'],
         '/password/forgot'           => ['Auth',     'showForgotPassword'],
         '/password/reset'            => ['Auth',     'showResetPassword'],
@@ -76,6 +78,7 @@ $routes = [
         // Admin – Clients
         '/admin/clients'                      => ['AdminClient',     'index'],
         '/admin/clients/create'               => ['AdminClient',     'showCreate'],
+        '/admin/clients/(\d+)/edit'           => ['AdminClient',     'showEdit'],
         // Admin – Contracts
         '/admin/contracts'                    => ['AdminContract',   'index'],
         '/admin/contracts/create'             => ['AdminContract',   'showCreate'],
@@ -95,6 +98,7 @@ $routes = [
         '/login'                     => ['Auth',     'login'],
         '/logout'                    => ['Auth',     'logout'],
         '/password/change'           => ['Auth',     'changePassword'],
+        '/account/pin'               => ['Account',  'changePin'],
         '/password/forgot'           => ['Auth',     'forgotPassword'],
         '/password/reset'            => ['Auth',     'resetPassword'],
         '/claims/(\d+)/upload'        => ['Document', 'upload'],
@@ -105,6 +109,7 @@ $routes = [
         '/admin/password/change'              => ['Admin',           'changePassword'],
         // Admin – Clients
         '/admin/clients/create'               => ['AdminClient',     'create'],
+        '/admin/clients/(\d+)/carte'          => ['AdminClient',     'uploadCarte'],
         // Admin – Contracts
         '/admin/contracts/create'             => ['AdminContract',   'create'],
         '/admin/contracts/(\d+)/edit'         => ['AdminContract',   'edit'],

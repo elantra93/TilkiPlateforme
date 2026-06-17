@@ -80,14 +80,23 @@ class Client
         return (int)$db->lastInsertId();
     }
 
-    public static function generateAccountNumber(): string
+    public static function nextAccountNumber(): string
     {
-        $db = Database::get();
-        do {
-            $num  = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-            $stmt = $db->prepare('SELECT COUNT(*) FROM clients WHERE account_number = ?');
-            $stmt->execute([$num]);
-        } while ($stmt->fetchColumn() > 0);
-        return $num;
+        $prefix = date('y'); // ex. "26" pour 2026
+        $stmt = Database::get()->prepare(
+            "SELECT MAX(CAST(SUBSTR(account_number, 3) AS UNSIGNED))
+             FROM clients
+             WHERE account_number LIKE ?"
+        );
+        $stmt->execute([$prefix . '%']);
+        $maxSeq = (int)$stmt->fetchColumn();
+        return $prefix . str_pad((string)($maxSeq + 1), 4, '0', STR_PAD_LEFT);
+    }
+
+    public static function isAccountNumberTaken(string $num): bool
+    {
+        $stmt = Database::get()->prepare('SELECT COUNT(*) FROM clients WHERE account_number = ?');
+        $stmt->execute([$num]);
+        return (int)$stmt->fetchColumn() > 0;
     }
 }

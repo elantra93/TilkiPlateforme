@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mot de passe oublié &ndash; TILKI</title>
+    <title>Code PIN oublié &ndash; TILKI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
@@ -16,7 +16,7 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
                         <i class="bi bi-envelope-open text-primary" style="font-size:3rem"></i>
-                        <h1 class="h4 mt-2 fw-bold">Mot de passe oublié</h1>
+                        <h1 class="h4 mt-2 fw-bold">Code PIN oublié</h1>
                         <p class="text-muted small mb-0">Entrez votre email pour recevoir un lien de réinitialisation.</p>
                     </div>
 

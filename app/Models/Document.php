@@ -72,6 +72,25 @@ class Document
         return $stmt->fetch() ?: null;
     }
 
+    public static function carteAssurance(int $clientId): ?array
+    {
+        $stmt = Database::get()->prepare(
+            "SELECT * FROM documents
+             WHERE client_id = ? AND scope = 'carte' AND doc_type = 'carte_assurance' AND status = 'valide'
+             ORDER BY created_at DESC LIMIT 1"
+        );
+        $stmt->execute([$clientId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public static function archiveCarteAssurance(int $clientId): void
+    {
+        Database::get()->prepare(
+            "UPDATE documents SET status = 'en_attente'
+             WHERE client_id = ? AND scope = 'carte' AND doc_type = 'carte_assurance' AND status = 'valide'"
+        )->execute([$clientId]);
+    }
+
     // ── Admin ─────────────────────────────────────────────────────────────────
 
     public static function find(int $id): ?array

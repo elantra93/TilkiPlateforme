@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Administration &ndash; TILKI</title>
+    <link rel="icon" type="image/svg+xml" href="/logoparapluie.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
@@ -18,9 +19,8 @@
             <div class="card login-card border-0">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <i class="bi bi-shield-lock text-warning" style="font-size:3.5rem"></i>
-                        <h1 class="h3 mt-2 fw-bold">Administration</h1>
-                        <p class="text-muted small mb-0">TILKI &mdash; Accès réservé</p>
+                        <img src="/logobleu.svg" alt="TILKI" height="48" style="width:auto">
+                        <p class="text-muted small mb-0 mt-2">Administration &mdash; Accès réservé</p>
                     </div>
 
                     <?php if (!empty($error)): ?>

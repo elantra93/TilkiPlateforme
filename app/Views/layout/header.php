@@ -8,6 +8,7 @@ unset($_SESSION['flash']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($pageTitle ?? 'TILKI Portail Client') ?></title>
+    <link rel="icon" type="image/svg+xml" href="/logoparapluie.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
@@ -15,10 +16,8 @@ unset($_SESSION['flash']);
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-        <a class="navbar-brand fw-bold d-flex align-items-center" href="/dashboard">
-            <img src="/assets/img/logo.png" alt="TILKI" height="36" class="me-2"
-                 onerror="this.style.display='none';this.nextElementSibling.style.display=''">
-            <span style="display:none"><i class="bi bi-shield-check me-1"></i>TILKI</span>
+        <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+            <img src="/logoblanc.svg" alt="TILKI" height="38" style="width:auto">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
             <span class="navbar-toggler-icon"></span>
@@ -42,8 +41,8 @@ unset($_SESSION['flash']);
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="/password/change">
-                                <i class="bi bi-key me-2"></i>Changer le mot de passe
+                            <a class="dropdown-item" href="/account">
+                                <i class="bi bi-person-gear me-2"></i>Paramètres de compte
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>

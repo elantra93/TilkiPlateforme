@@ -19,6 +19,7 @@
                     <th>Téléphone</th>
                     <th>Statut</th>
                     <th>Créé le</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -37,6 +38,12 @@
                         </span>
                     </td>
                     <td class="text-muted small"><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
+                    <td>
+                        <a href="/admin/clients/<?= (int)$c['id'] ?>/edit"
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil me-1"></i>Fiche
+                        </a>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

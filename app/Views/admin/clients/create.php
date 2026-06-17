@@ -36,15 +36,16 @@
             </div>
         </div>
         <div class="col-md-3">
-            <label class="form-label small fw-semibold text-muted">Mot de passe initial</label>
+            <label class="form-label small fw-semibold text-muted">PIN initial</label>
             <div class="input-group">
                 <input type="text" class="form-control form-control-sm font-monospace fw-bold"
-                       value="<?= htmlspecialchars($credentials['password']) ?>" readonly id="pwd">
+                       value="<?= htmlspecialchars($credentials['pin']) ?>" readonly id="pwd">
                 <button class="btn btn-outline-secondary btn-sm" type="button"
                         onclick="navigator.clipboard.writeText(document.getElementById('pwd').value)">
                     <i class="bi bi-clipboard"></i>
                 </button>
             </div>
+            <div class="form-text small text-muted">Le client devra le modifier à la première connexion.</div>
         </div>
     </div>
     <div class="mt-3">
@@ -101,13 +102,23 @@
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">
+                                N° de compte <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="account_number" class="form-control font-monospace"
+                                   value="<?= htmlspecialchars($old['accountNumber'] ?? $nextAccountNumber) ?>"
+                                   maxlength="6" pattern="\d{6}" inputmode="numeric" required>
+                            <div class="form-text">
+                                <i class="bi bi-pencil me-1"></i>Suggéré selon la séquence annuelle — modifiable.
+                            </div>
+                        </div>
                     </div>
 
                     <hr class="my-4">
                     <p class="small text-muted mb-3">
                         <i class="bi bi-info-circle me-1"></i>
-                        Le numéro de compte (6 chiffres) et le mot de passe initial seront générés
-                        automatiquement et affichés une seule fois.
+                        Le code PIN initial <strong>12345678</strong> sera affiché une seule fois. Le client devra le modifier à sa première connexion.
                     </p>
 
                     <button type="submit" class="btn btn-primary w-100">

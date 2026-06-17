@@ -136,26 +136,11 @@ foreach ($byCategory['souscription'] as $doc) {
         </div>
 
         <!-- ── Documents du contrat (structurés par branche) ─────────────────── -->
-        <?php
-        // État global : rouge si un doc requis manque, vert si au moins un doc présent, gris sinon
-        $cdAnyRequiredMissing = false;
-        if (!empty($branchDocTypes)) {
-            foreach ($branchDocTypes as $dt) {
-                if (($dt['required'] ?? false) && empty($souscriptionByType[$dt['key']] ?? [])) {
-                    $cdAnyRequiredMissing = true;
-                    break;
-                }
-            }
-        }
-        if ($cdAnyRequiredMissing)               $cdState = 'red';
-        elseif (!empty($byCategory['souscription'])) $cdState = 'green';
-        else                                          $cdState = 'gray';
-        ?>
-        <div class="card shadow-sm <?= $cdState === 'red' ? 'border-danger' : ($cdState === 'green' ? 'border-success-subtle' : '') ?>">
-            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $cdState === 'red' ? 'text-danger bg-danger bg-opacity-10' : ($cdState === 'green' ? 'text-success' : 'text-secondary') ?>">
-                <i class="bi bi-file-earmark-check <?= $cdState === 'red' ? 'text-danger' : ($cdState === 'green' ? 'text-success' : 'text-secondary opacity-50') ?>"></i>
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold">
+                <i class="bi bi-file-earmark-check text-primary"></i>
                 Documents du contrat
-                <span class="badge <?= $cdState === 'red' ? 'bg-danger' : ($cdState === 'green' ? 'bg-success' : 'bg-secondary opacity-50') ?> fw-normal ms-1"><?= count($byCategory['souscription']) ?></span>
+                <span class="badge bg-secondary fw-normal ms-1"><?= count($byCategory['souscription']) ?></span>
             </div>
 
             <?php if (!empty($branchDocTypes)): ?>
@@ -164,16 +149,15 @@ foreach ($byCategory['souscription'] as $doc) {
                 <?php foreach ($branchDocTypes as $expected):
                     $docs       = $souscriptionByType[$expected['key']] ?? [];
                     $isRequired = $expected['required'] ?? false;
-                    $isEmpty    = empty($docs);
-                    if ($isEmpty && $isRequired)  $iState = 'red';
-                    elseif ($isEmpty)             $iState = 'gray';
-                    else                          $iState = 'green';
                 ?>
-                <li class="list-group-item py-3 <?= $iState === 'red' ? 'bg-danger bg-opacity-5' : '' ?>">
+                <li class="list-group-item py-3">
                     <div class="d-flex justify-content-between align-items-start gap-3">
                         <div class="flex-grow-1">
-                            <div class="small fw-semibold mb-1 <?= $iState === 'red' ? 'text-danger' : ($iState === 'green' ? 'text-success' : 'text-muted') ?>">
+                            <div class="small fw-semibold mb-1 text-body">
                                 <?= htmlspecialchars($expected['label']) ?>
+                                <?php if ($isRequired): ?>
+                                    <span class="text-muted fw-normal">(requis)</span>
+                                <?php endif; ?>
                             </div>
                             <?php if (!empty($docs)): ?>
                                 <?php foreach ($docs as $doc): ?>
@@ -186,10 +170,6 @@ foreach ($byCategory['souscription'] as $doc) {
                                     </span>
                                 </div>
                                 <?php endforeach; ?>
-                            <?php elseif ($isRequired): ?>
-                                <div class="text-danger" style="font-size:.78rem">
-                                    <i class="bi bi-exclamation-circle me-1"></i>Document manquant — requis
-                                </div>
                             <?php else: ?>
                                 <div class="text-muted opacity-75" style="font-size:.78rem">
                                     <i class="bi bi-dash me-1"></i>Aucun document pour le moment
@@ -245,7 +225,7 @@ foreach ($byCategory['souscription'] as $doc) {
             <?php if (empty($byCategory['souscription'])): ?>
                 <div class="card-body text-muted small py-4 text-center">
                     <i class="bi bi-inbox fs-4 d-block mb-1 opacity-25"></i>
-                    Aucun document dans cette section.
+                    Aucun document pour le moment.
                 </div>
             <?php else: ?>
                 <ul class="list-group list-group-flush">

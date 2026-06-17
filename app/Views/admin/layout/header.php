@@ -8,6 +8,7 @@ unset($_SESSION['admin_flash']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($pageTitle ?? 'Administration – TILKI') ?></title>
+    <link rel="icon" type="image/svg+xml" href="/logoparapluie.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
@@ -15,11 +16,9 @@ unset($_SESSION['admin_flash']);
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid px-4">
-        <a class="navbar-brand fw-bold d-flex align-items-center" href="/admin/dashboard">
-            <img src="/assets/img/logo.png" alt="TILKI" height="36" class="me-2"
-                 onerror="this.style.display='none';this.nextElementSibling.style.display=''">
-            <span style="display:none"><i class="bi bi-shield-lock me-1"></i>TILKI</span>
-            <span class="badge bg-warning text-dark ms-2 small">Admin</span>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/dashboard">
+            <img src="/logoblanc.svg" alt="TILKI" height="38" style="width:auto">
+            <span class="badge bg-warning text-dark small">Admin</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
             <span class="navbar-toggler-icon"></span>

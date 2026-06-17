@@ -373,30 +373,94 @@ $isOpen = $claim['status'] === 'ouvert';
 
 
         <!-- ════════════════════════════════════════════════════════════════════
-             SECTIONS 3 & 4 — Admin uniquement (lecture seule pour le client)
+             SECTION 3 — Correspondances (lecture + upload client)
              ════════════════════════════════════════════════════════════════════ -->
-        <?php
-        $adminSections = [
-            'correspondances'           => ['label' => 'Correspondances',              'icon' => 'bi-envelope-paper',  'color' => 'text-warning'],
-            'reglements_remboursements' => ['label' => 'Règlements et remboursements', 'icon' => 'bi-cash-coin',       'color' => 'text-primary'],
-        ];
-        foreach ($adminSections as $cat => $meta):
-            $docs  = $byCategory[$cat];
-            $empty = empty($docs);
-        ?>
-        <div class="card shadow-sm <?= $empty ? '' : 'border-success-subtle' ?>">
-            <div class="card-header d-flex align-items-center gap-2 fw-semibold <?= $empty ? 'text-secondary' : 'text-success' ?>">
-                <i class="bi <?= $meta['icon'] ?> <?= $empty ? 'text-secondary opacity-50' : $meta['color'] ?>"></i>
-                <?= $meta['label'] ?>
-                <span class="badge <?= $empty ? 'bg-secondary opacity-50' : 'bg-success' ?> fw-normal ms-1"><?= count($docs) ?></span>
+        <?php $corrDocs = $byCategory['correspondances']; ?>
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold">
+                <i class="bi bi-envelope-paper text-warning"></i>
+                Correspondances
+                <span class="badge bg-secondary fw-normal ms-1"><?= count($corrDocs) ?></span>
             </div>
-            <?php if ($empty): ?>
+            <div class="card-body d-flex flex-column gap-0 p-0">
+
+                <?php if (empty($corrDocs)): ?>
+                <div class="px-3 py-3">
+                    <span class="text-muted small"><i class="bi bi-dash me-1 opacity-50"></i>Aucun document pour le moment.</span>
+                </div>
+                <?php else: ?>
+                <ul class="list-group list-group-flush">
+                    <?php foreach ($corrDocs as $doc): ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div class="me-3 overflow-hidden">
+                            <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
+                            <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
+                            <div class="text-muted mt-1" style="font-size:.75rem">
+                                <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
+                                &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
+                                &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
+                                <?php if ($doc['source'] === 'client'): ?>
+                                    &bull; <em>déposé par vous</em>
+                                <?php elseif ($doc['source'] === 'admin'): ?>
+                                    &bull; TILKI
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php if ($doc['status'] === 'valide'): ?>
+                            <a href="/documents/<?= (int)$doc['id'] ?>/download"
+                               class="btn btn-sm btn-outline-primary flex-shrink-0">
+                                <i class="bi bi-download me-1"></i>Télécharger
+                            </a>
+                        <?php else: ?>
+                            <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                        <?php endif; ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php endif; ?>
+
+                <?php if ($isOpen): ?>
+                <div class="border-top px-3 py-3">
+                    <p class="small text-muted mb-2">
+                        <i class="bi bi-upload me-1"></i>
+                        Déposer un courrier ou document de correspondance (PDF ou image, max&nbsp;10&nbsp;Mo) :
+                    </p>
+                    <form method="post" action="/claims/<?= (int)$claim['id'] ?>/upload"
+                          enctype="multipart/form-data" novalidate class="d-flex gap-2 flex-wrap align-items-end">
+                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                        <input type="hidden" name="doc_type" value="courrier_client">
+                        <div class="flex-grow-1">
+                            <input type="file" name="document" class="form-control form-control-sm"
+                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary flex-shrink-0">
+                            <i class="bi bi-upload me-1"></i>Envoyer
+                        </button>
+                    </form>
+                </div>
+                <?php endif; ?>
+
+            </div>
+        </div>
+
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             SECTION 4 — Règlements et remboursements (admin-only, lecture seule)
+             ════════════════════════════════════════════════════════════════════ -->
+        <?php $reglDocs = $byCategory['reglements_remboursements']; ?>
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold">
+                <i class="bi bi-cash-coin text-primary"></i>
+                Règlements et remboursements
+                <span class="badge bg-secondary fw-normal ms-1"><?= count($reglDocs) ?></span>
+            </div>
+            <?php if (empty($reglDocs)): ?>
                 <div class="card-body py-3">
                     <span class="text-muted small"><i class="bi bi-dash me-1 opacity-50"></i>Aucun document pour le moment.</span>
                 </div>
             <?php else: ?>
                 <ul class="list-group list-group-flush">
-                    <?php foreach ($docs as $doc): ?>
+                    <?php foreach ($reglDocs as $doc): ?>
                     <li class="list-group-item d-flex justify-content-between align-items-center py-3">
                         <div class="me-3 overflow-hidden">
                             <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
@@ -420,7 +484,6 @@ $isOpen = $claim['status'] === 'ouvert';
                 </ul>
             <?php endif; ?>
         </div>
-        <?php endforeach; ?>
 
     </div><!-- /col-lg-8 -->
 </div><!-- /row -->

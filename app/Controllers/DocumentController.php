@@ -26,11 +26,42 @@ class DocumentController extends BaseController
         FileStorage::serve($doc['stored_path'], $doc['original_filename'], $doc['mime_type']);
     }
 
+    public function view(string $id): void
+    {
+        $this->requireAuth();
+        $clientId = (int)$_SESSION['client_id'];
+        $doc      = Document::findForClient((int)$id, $clientId);
+
+        if (!$doc) {
+            http_response_code(403);
+            require APP_PATH . '/Views/errors/403.php';
+            return;
+        }
+
+        $real    = realpath($doc['stored_path']);
+        $baseDir = realpath(ROOT_PATH . '/storage');
+
+        if ($real === false || $baseDir === false || strncmp($real, $baseDir, strlen($baseDir)) !== 0) {
+            http_response_code(404);
+            exit('Fichier introuvable.');
+        }
+
+        AuditLogger::log('client', $clientId, 'view', "document:{$id}", $this->ip());
+        header('Content-Type: '        . $doc['mime_type']);
+        header('Content-Disposition: inline; filename="' . rawurlencode($doc['original_filename']) . '"');
+        header('Content-Length: '      . filesize($real));
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: private, no-store');
+        readfile($real);
+        exit;
+    }
+
     private const CLIENT_DOC_TYPES = [
         'declaration_sinistre' => 'declaration',
         'devis_reparation'     => 'expertise_devis',
         'rapport_expertise'    => 'expertise_devis',
         'constat_police'       => 'expertise_devis',
+        'courrier_client'      => 'correspondances',
     ];
 
     public function upload(string $claimId): void

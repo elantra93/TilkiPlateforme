@@ -72,15 +72,15 @@ class AuthController extends BaseController
 
         if ($new !== $confirm) {
             $this->render('auth.change_password', [
-                'error' => 'Les nouveaux mots de passe ne correspondent pas.',
+                'error' => 'Les codes PIN ne correspondent pas.',
                 'csrf'  => $this->csrfToken(),
             ]);
             return;
         }
 
-        if (strlen($new) < 8) {
+        if (!preg_match('/^[0-9]{4,8}$/', $new)) {
             $this->render('auth.change_password', [
-                'error' => 'Le mot de passe doit contenir au moins 8 caractères.',
+                'error' => 'Le code PIN doit contenir entre 4 et 8 chiffres (chiffres uniquement).',
                 'csrf'  => $this->csrfToken(),
             ]);
             return;
@@ -90,7 +90,7 @@ class AuthController extends BaseController
 
         if (!$client || !password_verify($current, $client['password_hash'])) {
             $this->render('auth.change_password', [
-                'error' => 'Mot de passe actuel incorrect.',
+                'error' => 'Code PIN actuel incorrect.',
                 'csrf'  => $this->csrfToken(),
             ]);
             return;
@@ -190,16 +190,16 @@ class AuthController extends BaseController
 
         if ($new !== $confirm) {
             $this->render('auth.reset_password', [
-                'error' => 'Les mots de passe ne correspondent pas.',
+                'error' => 'Les codes PIN ne correspondent pas.',
                 'token' => $token,
                 'csrf'  => $this->csrfToken(),
             ]);
             return;
         }
 
-        if (strlen($new) < 8) {
+        if (!preg_match('/^[0-9]{4,8}$/', $new)) {
             $this->render('auth.reset_password', [
-                'error' => 'Le mot de passe doit contenir au moins 8 caractères.',
+                'error' => 'Le code PIN doit contenir entre 4 et 8 chiffres (chiffres uniquement).',
                 'token' => $token,
                 'csrf'  => $this->csrfToken(),
             ]);
@@ -211,7 +211,7 @@ class AuthController extends BaseController
         AuditLogger::log('client', (int)$client['id'], 'password_reset_done', 'via_token', $this->ip());
 
         $this->render('auth.login', [
-            'success' => 'Mot de passe réinitialisé. Vous pouvez vous connecter.',
+            'success' => 'Code PIN réinitialisé. Vous pouvez vous connecter.',
             'csrf'    => $this->csrfToken(),
         ]);
     }

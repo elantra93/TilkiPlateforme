@@ -25,7 +25,7 @@ class Auth
         if (!$client || !password_verify($password, $client['password_hash'])) {
             LoginAttempt::record($accountNumber, $ip, false);
             AuditLogger::log('client', null, 'login_failed', "account:{$accountNumber}", $ip);
-            return ['success' => false, 'error' => 'Numéro de compte ou mot de passe incorrect.'];
+            return ['success' => false, 'error' => 'Numéro de compte ou code PIN incorrect.'];
         }
 
         LoginAttempt::record($accountNumber, $ip, true);
