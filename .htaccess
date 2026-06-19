@@ -1,0 +1,6 @@
+# Bloquer tout accès web direct aux fichiers de l'application.
+# Sur un VPS où le web root est configuré sur le dossier racine du dépôt,
+# ceci protège app/, config/, storage/, database/ etc.
+# Sur Hostinger (public_html/ = web root), ce fichier n'est pas servi
+# mais il est versionné pour documenter l'intention.
+Deny from all

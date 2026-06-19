@@ -1,9 +1,18 @@
-config/config.php
+# Secrets — NE JAMAIS versionner
+.env
+
+# Storage (contenu généré)
 storage/documents/*
 storage/logs/*
 !storage/documents/.gitkeep
 !storage/logs/.gitkeep
+
+# Logs
 *.log
+
+# OS
 .DS_Store
+
+# Fichiers config non-code dans config/
 config/*.pdf
 config/*.md
