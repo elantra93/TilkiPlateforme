@@ -17,7 +17,7 @@ unset($_SESSION['flash']);
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="/dashboard">
-            <img src="/logoblanc.svg" alt="TILKI" height="38" style="width:auto">
+            <img src="/logoparapluie.svg" alt="TILKI" height="40" style="width:auto; filter: brightness(0) invert(1);">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
             <span class="navbar-toggler-icon"></span>

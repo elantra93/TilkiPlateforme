@@ -184,7 +184,7 @@ class AdminClaimController extends BaseController
             return;
         }
 
-        $completed     = isset($_POST['completed']);
+        $completed     = !empty($_POST['completed']);
         $completedDate = trim($_POST['completed_date'] ?? '');
         if ($completed && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $completedDate)) {
             $completedDate = date('Y-m-d');

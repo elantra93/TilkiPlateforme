@@ -94,7 +94,7 @@ function v(string $key, array $old, ?array $contract, mixed $default = ''): mixe
                    value="<?= htmlspecialchars((string)v('premium_total', $old, $contract, '0')) ?>">
         </div>
         <div class="col-md-4">
-            <label class="form-label small fw-semibold">Restant dû (premium_due)</label>
+            <label class="form-label small fw-semibold">Restant dû</label>
             <input type="number" name="premium_due" class="form-control" step="0.01" min="0"
                    value="<?= htmlspecialchars((string)v('premium_due', $old, $contract, '0')) ?>">
         </div>

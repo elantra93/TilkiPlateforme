@@ -17,7 +17,7 @@ unset($_SESSION['admin_flash']);
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid px-4">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/dashboard">
-            <img src="/logoblanc.svg" alt="TILKI" height="38" style="width:auto">
+            <img src="/logoparapluie.svg" alt="TILKI" height="40" style="width:auto; filter: brightness(0) invert(1);">
             <span class="badge bg-warning text-dark small">Admin</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">

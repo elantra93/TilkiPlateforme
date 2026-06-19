@@ -19,7 +19,7 @@
             <div class="card login-card border-0">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <img src="/logobleu.svg" alt="TILKI" height="48" style="width:auto">
+                        <img src="/logoparapluie.svg" alt="TILKI" height="56" style="width:auto">
                         <p class="text-muted small mb-0 mt-2">Administration &mdash; Accès réservé</p>
                     </div>
 

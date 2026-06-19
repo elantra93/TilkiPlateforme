@@ -63,12 +63,31 @@ CREATE TABLE IF NOT EXISTS claims (
     occurrence_date DATE          NOT NULL,
     status          ENUM('ouvert','clos') NOT NULL DEFAULT 'ouvert',
     description     TEXT          DEFAULT NULL,
+    is_auto_rc      TINYINT(1)    NOT NULL DEFAULT 0,
     created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (client_id)   REFERENCES clients(id)   ON DELETE CASCADE,
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE SET NULL,
     INDEX idx_client   (client_id),
     INDEX idx_contract (contract_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Claim steps (suivi d'avancement)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS claim_steps (
+    id              INT UNSIGNED     AUTO_INCREMENT PRIMARY KEY,
+    claim_id        INT UNSIGNED     NOT NULL,
+    step_key        VARCHAR(50)      NOT NULL,
+    label           VARCHAR(255)     NOT NULL,
+    position        TINYINT UNSIGNED NOT NULL,
+    completed       TINYINT(1)       NOT NULL DEFAULT 0,
+    completed_date  DATE             DEFAULT NULL,
+    created_at      DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (claim_id) REFERENCES claims(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_claim_step     (claim_id, step_key),
+    INDEX idx_claim_position     (claim_id, position)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -79,8 +98,13 @@ CREATE TABLE IF NOT EXISTS documents (
     client_id         INT UNSIGNED  NOT NULL,
     contract_id       INT UNSIGNED  DEFAULT NULL,
     claim_id          INT UNSIGNED  DEFAULT NULL,
-    scope             ENUM('contrat','sinistre') NOT NULL,
-    category          ENUM('cotation','souscription','declaration','expertise_devis','correspondances','reglements_remboursements') NOT NULL DEFAULT 'souscription',
+    scope             ENUM('contrat','sinistre','carte') NOT NULL,
+    category          ENUM(
+                          'cotation','souscription',
+                          'declaration','expertise_devis',
+                          'correspondances','reglements_remboursements',
+                          'carte'
+                      ) NOT NULL DEFAULT 'souscription',
     doc_type          VARCHAR(100)  NOT NULL,
     original_filename VARCHAR(255)  NOT NULL,
     stored_path       VARCHAR(500)  NOT NULL,

@@ -268,29 +268,35 @@ foreach ($documents ?? [] as $doc) {
             <tr class="<?= $step['completed'] ? 'table-success' : '' ?>">
                 <td class="ps-3 text-muted small"><?= (int)$step['position'] ?></td>
                 <td class="fw-semibold small"><?= htmlspecialchars($step['label']) ?></td>
-                <form method="post"
-                      action="/admin/claims/<?= (int)$claim['id'] ?>/steps/<?= (int)$step['id'] ?>"
-                      class="d-contents">
-                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
-                    <td>
-                        <div class="form-check mb-0">
-                            <input class="form-check-input" type="checkbox" name="completed"
-                                   id="step_<?= (int)$step['id'] ?>"
-                                   <?= $step['completed'] ? 'checked' : '' ?>
-                                   onchange="this.closest('form').submit()">
-                        </div>
-                    </td>
-                    <td>
-                        <input type="date" name="completed_date" class="form-control form-control-sm"
-                               value="<?= htmlspecialchars($step['completed_date'] ?? '') ?>"
-                               <?= !$step['completed'] ? 'disabled' : '' ?>>
-                    </td>
-                    <td>
+                <td>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input step-cb" type="checkbox"
+                               id="step_<?= (int)$step['id'] ?>"
+                               data-step="<?= (int)$step['id'] ?>"
+                               <?= $step['completed'] ? 'checked' : '' ?>>
+                    </div>
+                </td>
+                <td>
+                    <input type="date" class="form-control form-control-sm step-date"
+                           data-step="<?= (int)$step['id'] ?>"
+                           value="<?= htmlspecialchars($step['completed_date'] ?? '') ?>"
+                           <?= !$step['completed'] ? 'disabled' : '' ?>>
+                </td>
+                <td>
+                    <form method="post"
+                          action="/admin/claims/<?= (int)$claim['id'] ?>/steps/<?= (int)$step['id'] ?>"
+                          class="step-form"
+                          data-step="<?= (int)$step['id'] ?>">
+                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                        <input type="hidden" name="completed" class="h-completed"
+                               value="<?= $step['completed'] ? '1' : '' ?>">
+                        <input type="hidden" name="completed_date" class="h-date"
+                               value="<?= htmlspecialchars($step['completed_date'] ?? '') ?>">
                         <button type="submit" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-save me-1"></i>Sauver
                         </button>
-                    </td>
-                </form>
+                    </form>
+                </td>
             </tr>
             <?php endforeach; ?>
             </tbody>
@@ -329,12 +335,29 @@ document.getElementById('clientSel')?.addEventListener('change', function () {
     });
 });
 
-// Enable/disable date inputs when checkbox changes
-document.querySelectorAll('input[type="checkbox"][name="completed"]').forEach(cb => {
+// Sync step checkboxes and dates to form hidden inputs
+document.querySelectorAll('.step-cb').forEach(cb => {
+    const stepId    = cb.dataset.step;
+    const row       = cb.closest('tr');
+    const dateInput = row.querySelector('.step-date');
+    const form      = row.querySelector('.step-form');
+    const hComp     = form.querySelector('.h-completed');
+    const hDate     = form.querySelector('.h-date');
+
     cb.addEventListener('change', function () {
-        const dateInput = this.closest('tr').querySelector('input[type="date"]');
-        if (dateInput) dateInput.disabled = !this.checked;
+        hComp.value = this.checked ? '1' : '';
+        if (dateInput) {
+            dateInput.disabled = !this.checked;
+            if (!this.checked) { dateInput.value = ''; hDate.value = ''; }
+        }
+        form.submit();
     });
+
+    if (dateInput) {
+        dateInput.addEventListener('change', function () {
+            hDate.value = this.value;
+        });
+    }
 });
 </script>
 
