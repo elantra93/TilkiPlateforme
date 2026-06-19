@@ -55,7 +55,9 @@ user=tilki_user  pass=TilkiDB_2024!
 ## Historique des commits récents
 
 ```
-(en attente de push) fix: boutons steps, logos parapluie, favicons, migration BDD carte
+(en attente de push) feat: Bloc 4 — paiements (migration_004, Payment model, vues admin+client)
+6a5f7ea fix(claims): bouton Accéder au formulaire grisé — modale déclaration sinistre
+194979c fix: boutons steps sinistre, logo parapluie unique, favicons, schema.sql
 0b66da2 feat: BLOCs 2-7 — PIN client, documents, paramètres, carte assurance, logos
 f3491d8 fix(hostinger): ROOT_PATH détection répertoire sibling tilki_app
 35447ee feat(admin/claims): parcours Tally pour la création de sinistre
@@ -130,12 +132,14 @@ f3491d8 fix(hostinger): ROOT_PATH détection répertoire sibling tilki_app
 | migration_001 (catégories sinistre) | ✅ appliquée | ❓ à exécuter |
 | migration_002 (claim_steps, is_auto_rc) | ✅ appliquée | ❓ à exécuter |
 | migration_003 (scope+category 'carte') | ✅ appliquée | ❌ **OBLIGATOIRE** |
+| migration_004 (payments + scope 'paiement') | ❓ à exécuter | ❌ **OBLIGATOIRE** |
 
 ### Commandes prod
 ```bash
 mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_001_sinistre_categories.sql
 mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_002_claim_steps.sql
 mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_003_carte_assurance.sql
+mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_004_payments.sql
 # migration_002 peut retourner "Duplicate column" si déjà appliquée → ignorer
 ```
 
@@ -194,9 +198,8 @@ TilkiPlateforme/
 
 ## Tâches restantes
 
-1. **Push GitHub** — token à régénérer sur https://github.com/settings/tokens
-2. **Exécuter migrations 001-003** sur la base de production
-3. **URL app** (`config['app']['url']`) : remplacer `https://VOTRE_DOMAINE` par le vrai domaine
-4. **Refus de documents** : bouton "Refuser" dans `admin/documents/pending.php` + route + méthode `AdminDocumentController::reject()`
-5. **Notification email** au client lors de la validation d'un document
-6. **Pagination** sur la liste des sinistres
+1. **Exécuter migrations 001-004** sur la base de production
+2. **URL app** (`config['app']['url']`) : remplacer `https://VOTRE_DOMAINE` par le vrai domaine
+3. **Refus de documents** : bouton "Refuser" dans `admin/documents/pending.php` + route + méthode `AdminDocumentController::reject()`
+4. **Notification email** au client lors de la validation d'un document
+5. **Pagination** sur la liste des sinistres

@@ -98,12 +98,13 @@ CREATE TABLE IF NOT EXISTS documents (
     client_id         INT UNSIGNED  NOT NULL,
     contract_id       INT UNSIGNED  DEFAULT NULL,
     claim_id          INT UNSIGNED  DEFAULT NULL,
-    scope             ENUM('contrat','sinistre','carte') NOT NULL,
+    scope             ENUM('contrat','sinistre','carte','paiement') NOT NULL,
     category          ENUM(
                           'cotation','souscription',
                           'declaration','expertise_devis',
                           'correspondances','reglements_remboursements',
-                          'carte'
+                          'carte',
+                          'paiement'
                       ) NOT NULL DEFAULT 'souscription',
     doc_type          VARCHAR(100)  NOT NULL,
     original_filename VARCHAR(255)  NOT NULL,
@@ -119,6 +120,28 @@ CREATE TABLE IF NOT EXISTS documents (
     INDEX idx_client   (client_id),
     INDEX idx_contract (contract_id),
     INDEX idx_claim    (claim_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Payments
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS payments (
+    id                INT UNSIGNED   AUTO_INCREMENT PRIMARY KEY,
+    client_id         INT UNSIGNED   NOT NULL,
+    contract_id       INT UNSIGNED   NOT NULL,
+    amount            DECIMAL(12,2)  NOT NULL,
+    method            ENUM('cheque','virement','caisse','mobile_money') NOT NULL,
+    proof_document_id INT UNSIGNED   NULL,
+    reference         VARCHAR(100)   NULL,
+    paid_at           DATE           NOT NULL,
+    note              TEXT           NULL,
+    created_by        INT UNSIGNED   NULL,
+    created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pay_client    FOREIGN KEY (client_id)         REFERENCES clients(id)   ON DELETE CASCADE,
+    CONSTRAINT fk_pay_contract  FOREIGN KEY (contract_id)       REFERENCES contracts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_pay_proof     FOREIGN KEY (proof_document_id) REFERENCES documents(id) ON DELETE SET NULL,
+    INDEX idx_pay_client   (client_id),
+    INDEX idx_pay_contract (contract_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

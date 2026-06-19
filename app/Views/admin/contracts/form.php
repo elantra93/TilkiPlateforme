@@ -15,9 +15,17 @@ function v(string $key, array $old, ?array $contract, mixed $default = ''): mixe
         <i class="bi bi-<?= $isEdit ? 'pencil' : 'plus-lg' ?> me-2"></i>
         <?= $isEdit ? 'Modifier le contrat' : 'Nouveau contrat' ?>
     </h2>
-    <a href="/admin/contracts" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Retour
-    </a>
+    <div class="d-flex gap-2">
+        <?php if ($isEdit): ?>
+        <a href="/admin/payments/create?client_id=<?= (int)$contract['client_id'] ?>&contract_id=<?= (int)$contract['id'] ?>"
+           class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-cash-coin me-1"></i>Enregistrer un paiement
+        </a>
+        <?php endif; ?>
+        <a href="/admin/contracts" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Retour
+        </a>
+    </div>
 </div>
 
 <div class="row justify-content-center">

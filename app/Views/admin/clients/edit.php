@@ -11,9 +11,14 @@
             <?= htmlspecialchars($client['first_name'] . ' ' . $client['last_name']) ?>
         </h2>
     </div>
-    <span class="badge bg-<?= $client['status'] === 'actif' ? 'success' : ($client['status'] === 'suspendu' ? 'warning text-dark' : 'secondary') ?> fs-6">
-        <?= htmlspecialchars($client['status']) ?>
-    </span>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-<?= $client['status'] === 'actif' ? 'success' : ($client['status'] === 'suspendu' ? 'warning text-dark' : 'secondary') ?> fs-6">
+            <?= htmlspecialchars($client['status']) ?>
+        </span>
+        <a href="/admin/payments/create?client_id=<?= (int)$client['id'] ?>" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-cash-coin me-1"></i>Enregistrer un paiement
+        </a>
+    </div>
 </div>
 
 <div class="row g-4">

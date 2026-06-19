@@ -63,6 +63,7 @@ $routes = [
         '/claims'                    => ['Claim',    'index'],
         '/claims/declare'            => ['Claim',    'declare'],
         '/claims/(\d+)'              => ['Claim',    'show'],
+        '/payments'                  => ['Payment',  'index'],
         '/documents/(\d+)/download'  => ['Document', 'download'],
         '/documents/(\d+)/view'      => ['Document', 'view'],
         '/account'                   => ['Account',  'show'],
@@ -88,6 +89,9 @@ $routes = [
         '/admin/claims/create'                => ['AdminClaim',      'showCreate'],
         '/admin/claims/tally-redirect'        => ['AdminClaim',      'tallyRedirect'],
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'showEdit'],
+        // Admin – Paiements
+        '/admin/payments'                     => ['AdminPayment',    'index'],
+        '/admin/payments/create'              => ['AdminPayment',    'showCreate'],
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'showUpload'],
         '/admin/documents/pending'            => ['AdminDocument',   'pending'],
@@ -117,6 +121,8 @@ $routes = [
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'edit'],
         '/admin/claims/(\d+)/steps/(\d+)'     => ['AdminClaim',      'updateStep'],
         '/admin/claims/(\d+)/upload'          => ['AdminClaim',      'uploadDoc'],
+        // Admin – Paiements
+        '/admin/payments/create'              => ['AdminPayment',    'create'],
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'upload'],
         '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],

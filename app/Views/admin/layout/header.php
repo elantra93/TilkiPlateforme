@@ -45,6 +45,11 @@ unset($_SESSION['admin_flash']);
                         <i class="bi bi-exclamation-triangle me-1"></i>Sinistres
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/payments">
+                        <i class="bi bi-cash-coin me-1"></i>Paiements
+                    </a>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                         <i class="bi bi-paperclip me-1"></i>Documents

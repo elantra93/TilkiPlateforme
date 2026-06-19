@@ -33,6 +33,9 @@ unset($_SESSION['flash']);
                 <li class="nav-item">
                     <a class="nav-link" href="/claims"><i class="bi bi-exclamation-triangle me-1"></i>Sinistres</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/payments"><i class="bi bi-cash-coin me-1"></i>Paiements</a>
+                </li>
             </ul>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
