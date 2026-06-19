@@ -68,7 +68,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
-            <form method="get" action="/claims/declare" novalidate id="declarerForm">
+            <form method="get" action="/claims/declare" novalidate id="declarerForm" target="_blank">
                 <div class="modal-body">
                     <p class="text-muted small mb-3">
                         Sélectionnez le contrat concerné. Vous serez redirigé vers le formulaire
@@ -97,9 +97,18 @@
     </div>
 </div>
 <script>
-document.getElementById('modalContractSel').addEventListener('change', function () {
-    document.getElementById('declarerSubmitBtn').disabled = !this.value;
-});
+(function () {
+    const modal = document.getElementById('declarerModal');
+    const sel   = document.getElementById('modalContractSel');
+    const btn   = document.getElementById('declarerSubmitBtn');
+
+    function syncBtn() {
+        btn.disabled = !sel.value;
+    }
+
+    sel.addEventListener('change', syncBtn);
+    modal.addEventListener('shown.bs.modal', syncBtn);
+})();
 </script>
 <?php endif; ?>
 
