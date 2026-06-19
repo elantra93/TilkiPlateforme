@@ -83,6 +83,24 @@ class Document
         return $stmt->fetch() ?: null;
     }
 
+    public static function forClientScope(int $clientId): array
+    {
+        $stmt = Database::get()->prepare(
+            "SELECT * FROM documents WHERE client_id = ? AND scope = 'client' ORDER BY created_at DESC"
+        );
+        $stmt->execute([$clientId]);
+        return $stmt->fetchAll();
+    }
+
+    public static function forContractAdmin(int $contractId): array
+    {
+        $stmt = Database::get()->prepare(
+            "SELECT * FROM documents WHERE contract_id = ? AND scope = 'contrat' ORDER BY created_at DESC"
+        );
+        $stmt->execute([$contractId]);
+        return $stmt->fetchAll();
+    }
+
     public static function archiveCarteAssurance(int $clientId): void
     {
         Database::get()->prepare(

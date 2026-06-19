@@ -56,11 +56,6 @@ unset($_SESSION['admin_flash']);
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark">
                         <li>
-                            <a class="dropdown-item" href="/admin/documents/upload">
-                                <i class="bi bi-upload me-2"></i>Uploader
-                            </a>
-                        </li>
-                        <li>
                             <a class="dropdown-item" href="/admin/documents/pending">
                                 <i class="bi bi-hourglass-split me-2"></i>En attente de validation
                             </a>

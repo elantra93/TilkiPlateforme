@@ -133,6 +133,7 @@ f3491d8 fix(hostinger): ROOT_PATH détection répertoire sibling tilki_app
 | migration_002 (claim_steps, is_auto_rc) | ✅ appliquée | ❓ à exécuter |
 | migration_003 (scope+category 'carte') | ✅ appliquée | ❌ **OBLIGATOIRE** |
 | migration_004 (payments + scope 'paiement') | ❓ à exécuter | ❌ **OBLIGATOIRE** |
+| migration_005 (scope+category 'client') | ❓ à exécuter | ❌ **OBLIGATOIRE** |
 
 ### Commandes prod
 ```bash
@@ -140,6 +141,7 @@ mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_001_sinist
 mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_002_claim_steps.sql
 mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_003_carte_assurance.sql
 mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_004_payments.sql
+mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_005_scope_client.sql
 # migration_002 peut retourner "Duplicate column" si déjà appliquée → ignorer
 ```
 

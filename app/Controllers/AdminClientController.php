@@ -114,6 +114,15 @@ class AdminClientController extends BaseController
         }
     }
 
+    private const CLIENT_DOC_TYPES = [
+        'cni'                  => "Carte Nationale d'Identité",
+        'passeport'            => 'Passeport',
+        'permis_conduire'      => 'Permis de conduire',
+        'justificatif_domicile'=> 'Justificatif de domicile',
+        'formulaire'           => 'Formulaire de souscription',
+        'autre'                => 'Autre document',
+    ];
+
     public function showEdit(string $id): void
     {
         AdminMiddleware::check();
@@ -124,10 +133,62 @@ class AdminClientController extends BaseController
             return;
         }
         $this->render('admin.clients.edit', [
-            'csrf'   => $this->csrfToken(),
-            'client' => $client,
-            'carte'  => Document::carteAssurance((int)$id),
+            'csrf'       => $this->csrfToken(),
+            'client'     => $client,
+            'carte'      => Document::carteAssurance((int)$id),
+            'clientDocs' => Document::forClientScope((int)$id),
+            'docTypes'   => self::CLIENT_DOC_TYPES,
         ]);
+    }
+
+    public function uploadDoc(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $client = Client::findById((int)$id);
+        if (!$client) {
+            http_response_code(404);
+            require APP_PATH . '/Views/errors/404.php';
+            return;
+        }
+
+        $docType = trim($_POST['doc_type'] ?? '');
+        if (!$docType || !array_key_exists($docType, self::CLIENT_DOC_TYPES)) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Type de document invalide.'];
+            $this->redirect('/admin/clients/' . $id . '/edit');
+            return;
+        }
+
+        if (empty($_FILES['document']) || $_FILES['document']['error'] === UPLOAD_ERR_NO_FILE) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Aucun fichier sélectionné.'];
+            $this->redirect('/admin/clients/' . $id . '/edit');
+            return;
+        }
+
+        try {
+            $stored = FileStorage::store($_FILES['document'], 'clients/' . $id);
+            Document::create([
+                'client_id'         => (int)$id,
+                'contract_id'       => null,
+                'claim_id'          => null,
+                'scope'             => 'client',
+                'category'          => 'client',
+                'doc_type'          => $docType,
+                'original_filename' => $stored['original_filename'],
+                'stored_path'       => $stored['stored_path'],
+                'mime_type'         => $stored['mime_type'],
+                'file_size'         => $stored['file_size'],
+                'source'            => 'admin',
+                'status'            => 'valide',
+            ]);
+            AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'client_doc_upload', "client:{$id}", $this->ip());
+            $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Document ajouté au dossier client.'];
+        } catch (\Throwable $e) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => $e->getMessage()];
+        }
+
+        $this->redirect('/admin/clients/' . $id . '/edit');
     }
 
     public function uploadCarte(string $id): void

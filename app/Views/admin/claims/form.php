@@ -192,8 +192,8 @@ foreach ($documents ?? [] as $doc) {
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small mb-1">Type de document</label>
-                    <select name="doc_type" id="claimDocTypeSel" class="form-select form-select-sm" required disabled>
-                        <option value="">— Choisir une catégorie —</option>
+                    <select name="doc_type" id="claimDocTypeSel" class="form-select form-select-sm" required>
+                        <option value="">— Choisir une catégorie d'abord —</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -311,14 +311,24 @@ foreach ($documents ?? [] as $doc) {
 <script>
 // Cascade catégorie → type de document (section upload sinistre)
 const claimDocTypes = <?= json_encode($docTypes ?? [], JSON_HEX_TAG) ?>;
+const claimDocTypeLabels = {
+    'declaration_sinistre': 'Déclaration de sinistre', 'rapport_circonstances': 'Rapport de circonstances',
+    'constat_amiable': 'Constat amiable', 'plainte': 'Plainte',
+    'rapport_expertise': "Rapport d'expertise", 'devis_reparation': 'Devis de réparation',
+    'constat_police': 'Constat de police', 'contre_expertise': 'Contre-expertise',
+    'estimation_perte': 'Estimation de perte',
+    'courrier_assureur': "Courrier assureur", 'courrier_expert': 'Courrier expert',
+    'courrier_client': 'Courrier client', 'mise_en_demeure': 'Mise en demeure',
+    'virement': 'Virement', 'cheque': 'Chèque',
+    'quittance_reglement': 'Quittance de règlement', 'decompte_indemnite': "Décompte d'indemnité",
+};
 document.getElementById('claimCatSel')?.addEventListener('change', function () {
     const sel = document.getElementById('claimDocTypeSel');
     const types = claimDocTypes[this.value] || [];
     sel.innerHTML = '<option value="">— Sélectionner —</option>';
     types.forEach(t => {
-        sel.innerHTML += `<option value="${t}">${t.replace(/_/g, ' ')}</option>`;
+        sel.add(new Option(claimDocTypeLabels[t] ?? t.replace(/_/g, ' '), t));
     });
-    sel.disabled = types.length === 0;
 });
 
 const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;

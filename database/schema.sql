@@ -98,13 +98,14 @@ CREATE TABLE IF NOT EXISTS documents (
     client_id         INT UNSIGNED  NOT NULL,
     contract_id       INT UNSIGNED  DEFAULT NULL,
     claim_id          INT UNSIGNED  DEFAULT NULL,
-    scope             ENUM('contrat','sinistre','carte','paiement') NOT NULL,
+    scope             ENUM('contrat','sinistre','carte','paiement','client') NOT NULL,
     category          ENUM(
                           'cotation','souscription',
                           'declaration','expertise_devis',
                           'correspondances','reglements_remboursements',
                           'carte',
-                          'paiement'
+                          'paiement',
+                          'client'
                       ) NOT NULL DEFAULT 'souscription',
     doc_type          VARCHAR(100)  NOT NULL,
     original_filename VARCHAR(255)  NOT NULL,

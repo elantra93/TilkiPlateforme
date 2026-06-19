@@ -138,4 +138,109 @@ function v(string $key, array $old, ?array $contract, mixed $default = ''): mixe
 </div>
 </div>
 
+<?php if ($isEdit): ?>
+<!-- ── Documents du contrat ──────────────────────────────────────────────────── -->
+<div class="row justify-content-center mt-4">
+<div class="col-xl-8">
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-paperclip me-2 text-secondary"></i>Documents du contrat
+    </div>
+    <div class="card-body p-0">
+
+        <!-- Formulaire d'ajout -->
+        <div class="p-3 border-bottom bg-light">
+            <p class="small fw-semibold mb-2"><i class="bi bi-upload me-1"></i>Ajouter un document</p>
+            <form method="post"
+                  action="/admin/contracts/<?= (int)$contract['id'] ?>/upload"
+                  enctype="multipart/form-data"
+                  class="row g-2 align-items-end" id="contractDocForm">
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Catégorie</label>
+                    <select name="category" id="contractCatSel" class="form-select form-select-sm" required>
+                        <option value="">— Choisir —</option>
+                        <option value="cotation">Cotation</option>
+                        <option value="souscription">Souscription</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Type de document</label>
+                    <select name="doc_type" id="contractDocTypeSel" class="form-select form-select-sm" required>
+                        <option value="">— Choisir une catégorie —</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">Fichier <span class="text-muted fw-normal">(PDF, image, Word, Excel – max 10 Mo)</span></label>
+                    <input type="file" name="document" class="form-control form-control-sm"
+                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-upload me-1"></i>Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Documents existants -->
+        <?php if (empty($documents)): ?>
+            <p class="text-muted small p-3 mb-0"><i class="bi bi-dash me-1 opacity-50"></i>Aucun document pour ce contrat.</p>
+        <?php else: ?>
+        <?php
+        $catLabels = ['cotation' => 'Cotation', 'souscription' => 'Souscription'];
+        $docsByCategory = ['cotation' => [], 'souscription' => []];
+        foreach ($documents as $doc) {
+            $docsByCategory[$doc['category']][] = $doc;
+        }
+        foreach ($docsByCategory as $cat => $docs):
+            if (empty($docs)) continue;
+        ?>
+        <div class="border-bottom px-3 pt-2 pb-1">
+            <p class="small fw-semibold text-muted mb-1"><?= htmlspecialchars($catLabels[$cat] ?? $cat) ?></p>
+            <?php foreach ($docs as $doc): ?>
+            <div class="d-flex align-items-center gap-2 py-1">
+                <i class="bi bi-<?= str_starts_with($doc['mime_type'], 'image/') ? 'file-earmark-image text-info' : 'file-earmark-text text-secondary' ?> flex-shrink-0"></i>
+                <span class="small flex-grow-1 text-truncate"><?= htmlspecialchars($doc['original_filename']) ?></span>
+                <span class="small text-muted"><?= date('d/m/Y', strtotime($doc['created_at'])) ?></span>
+                <a href="/documents/<?= (int)$doc['id'] ?>/download" class="btn btn-sm btn-outline-secondary" target="_blank">
+                    <i class="bi bi-download"></i>
+                </a>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+</div>
+</div>
+
+<script>
+(function () {
+    const contractDocTypes = <?= json_encode($contractDocTypes ?? [], JSON_HEX_TAG) ?>;
+    const docTypeLabels = {
+        'questionnaire': 'Questionnaire', 'cotation': 'Cotation', 'bordereau': 'Bordereau',
+        'note_de_couverture': 'Note de couverture',
+        'conditions_particulieres': 'Conditions particulières', 'attestation_assurance': "Attestation d'assurance",
+        'attestation_cedeao': 'Attestation CEDEAO', 'conditions_generales': 'Conditions générales',
+        'contrat': 'Contrat', 'avenant': 'Avenant', 'preuve_paiement': 'Preuve de paiement',
+        'quittance': 'Quittance', 'attestation': 'Attestation', 'decompte': 'Décompte',
+        'tableau_garanties': 'Tableau de garanties', 'reseau_soins': 'Réseau de soins',
+    };
+    const catSel  = document.getElementById('contractCatSel');
+    const typeSel = document.getElementById('contractDocTypeSel');
+
+    catSel.addEventListener('change', function () {
+        const types = contractDocTypes[this.value] || [];
+        typeSel.innerHTML = '<option value="">— Sélectionner —</option>';
+        types.forEach(t => {
+            const opt = new Option(docTypeLabels[t] ?? t.replace(/_/g, ' '), t);
+            typeSel.add(opt);
+        });
+    });
+})();
+</script>
+<?php endif; ?>
+
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>

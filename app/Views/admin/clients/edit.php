@@ -106,4 +106,72 @@
 
 </div>
 
+<!-- ── Documents client ──────────────────────────────────────────────────────── -->
+<div class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-folder me-2 text-primary"></i>Documents du dossier client
+    </div>
+    <div class="card-body p-0">
+
+        <!-- Formulaire d'ajout -->
+        <div class="p-3 border-bottom bg-light">
+            <p class="small fw-semibold mb-2"><i class="bi bi-upload me-1"></i>Ajouter un document</p>
+            <form method="post"
+                  action="/admin/clients/<?= (int)$client['id'] ?>/upload-doc"
+                  enctype="multipart/form-data"
+                  class="row g-2 align-items-end">
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">Type de document <span class="text-danger">*</span></label>
+                    <select name="doc_type" class="form-select form-select-sm" required>
+                        <option value="">— Choisir —</option>
+                        <?php foreach ($docTypes as $key => $label): ?>
+                        <option value="<?= htmlspecialchars($key) ?>"><?= htmlspecialchars($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small mb-1">Fichier <span class="text-muted fw-normal">(PDF, JPG, PNG – max 10 Mo)</span></label>
+                    <input type="file" name="document" class="form-control form-control-sm"
+                           accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-upload me-1"></i>Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Liste documents existants -->
+        <?php if (empty($clientDocs)): ?>
+            <p class="text-muted small p-3 mb-0"><i class="bi bi-dash me-1 opacity-50"></i>Aucun document dans le dossier.</p>
+        <?php else: ?>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>Type</th><th>Fichier</th><th>Taille</th><th>Date</th><th></th></tr>
+                </thead>
+                <tbody>
+                <?php foreach ($clientDocs as $doc): ?>
+                    <tr>
+                        <td class="small"><?= htmlspecialchars($docTypes[$doc['doc_type']] ?? $doc['doc_type']) ?></td>
+                        <td class="small text-truncate" style="max-width:220px"><?= htmlspecialchars($doc['original_filename']) ?></td>
+                        <td class="small text-muted"><?= number_format($doc['file_size']/1024,0) ?>&nbsp;Ko</td>
+                        <td class="small text-muted"><?= date('d/m/Y', strtotime($doc['created_at'])) ?></td>
+                        <td>
+                            <a href="/documents/<?= (int)$doc['id'] ?>/download"
+                               class="btn btn-sm btn-outline-secondary" target="_blank">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>

@@ -162,6 +162,8 @@ class AdminClaimController extends BaseController
                 'csrf'      => $this->csrfToken(),
                 'claim'     => $claim,
                 'steps'     => ClaimStep::forClaim((int)$id),
+                'documents' => Document::forClaimAdmin((int)$id),
+                'docTypes'  => self::DOC_TYPES,
                 'clients'   => Client::all(),
                 'contracts' => Contract::all(),
                 'old'       => $data,

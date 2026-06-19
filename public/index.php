@@ -93,7 +93,7 @@ $routes = [
         '/admin/payments'                     => ['AdminPayment',    'index'],
         '/admin/payments/create'              => ['AdminPayment',    'showCreate'],
         // Admin – Documents
-        '/admin/documents/upload'             => ['AdminDocument',   'showUpload'],
+        '/admin/documents/upload'             => ['AdminDocument',   'redirectUpload'],
         '/admin/documents/pending'            => ['AdminDocument',   'pending'],
         // Admin – File Tally
         '/admin/tally/queue'                  => ['AdminTally',      'queue'],
@@ -114,17 +114,19 @@ $routes = [
         // Admin – Clients
         '/admin/clients/create'               => ['AdminClient',     'create'],
         '/admin/clients/(\d+)/carte'          => ['AdminClient',     'uploadCarte'],
+        '/admin/clients/(\d+)/upload-doc'     => ['AdminClient',     'uploadDoc'],
         // Admin – Contracts
         '/admin/contracts/create'             => ['AdminContract',   'create'],
         '/admin/contracts/(\d+)/edit'         => ['AdminContract',   'edit'],
+        '/admin/contracts/(\d+)/upload'       => ['AdminContract',   'uploadDoc'],
         // Admin – Claims
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'edit'],
         '/admin/claims/(\d+)/steps/(\d+)'     => ['AdminClaim',      'updateStep'],
         '/admin/claims/(\d+)/upload'          => ['AdminClaim',      'uploadDoc'],
         // Admin – Paiements
         '/admin/payments/create'              => ['AdminPayment',    'create'],
-        // Admin – Documents
-        '/admin/documents/upload'             => ['AdminDocument',   'upload'],
+        // Admin – Documents (standalone upload supprimé → uniquement validation)
+        '/admin/documents/upload'             => ['AdminDocument',   'redirectUpload'],
         '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],
         // Admin – File Tally
         '/admin/tally/(\d+)/match'            => ['AdminTally',      'match'],

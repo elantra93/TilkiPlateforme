@@ -27,6 +27,12 @@ class AdminDocumentController extends BaseController
     private const CATEGORIES_CONTRAT  = ['cotation', 'souscription'];
     private const CATEGORIES_SINISTRE = ['declaration', 'expertise_devis', 'correspondances', 'reglements_remboursements'];
 
+    public function redirectUpload(): void
+    {
+        AdminMiddleware::check();
+        $this->redirect('/admin/documents/pending');
+    }
+
     public function showUpload(): void
     {
         AdminMiddleware::check();
