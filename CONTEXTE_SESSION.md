@@ -30,6 +30,7 @@ Répertoire : `/root/TilkiPlateforme`
 - **Fichiers** : `FileStorage::store()` / `FileStorage::serve()` / `FileStorage::serveInline()` (via DocumentController::view)
 - **Audit** : `AuditLogger::log(actor_type, actor_id, action, target, ip)`
 - **Encodage URL** : `http_build_query(..., PHP_QUERY_RFC3986)`
+- **Config** : secrets via `env()` (chargeur `config/env.php` + `.env` à la racine)
 
 ---
 
@@ -40,110 +41,82 @@ Répertoire : `/root/TilkiPlateforme`
 | Admin | admin@tilki.sn | Admin@Tilki2024 |
 | Client test | compte 100001 | PIN : 12345678 (initial) |
 
-### Config BDD (`config/config.php`)
+### Config BDD (via `.env` — ne pas commiter)
 ```
-host=127.0.0.1  port=3306  db=tilki_portal
-user=tilki_user  pass=TilkiDB_2024!
+DB_HOST=127.0.0.1  DB_PORT=3306  DB_NAME=tilki_portal
+DB_USER=tilki_user  DB_PASS=<dans .env local>
 ```
 
-### Config Tally
-- Secret HMAC : `19c9dcdc8e49f97c28541ca3b4a172c75d678dab57b69e6e8fccaffa7d67aa46`
+### Config Tally (via `.env`)
+- `TALLY_SECRET` et `TALLY_CLAIM_FORM_URL` dans `.env`
 - URL formulaire sinistre : `https://tally.so/r/b5AD6E`
+
+### Push GitHub
+```bash
+git remote set-url origin https://<TOKEN>@github.com/elantra93/TilkiPlateforme.git && git push origin main
+```
+> Régénérer le token sur https://github.com/settings/tokens si expiré.
 
 ---
 
 ## Historique des commits récents
 
 ```
-(en attente de push) feat: Bloc 4 — paiements (migration_004, Payment model, vues admin+client)
+f476e60 feat(deploy): config sans secret, env.php, .htaccess, README_DEPLOY
+c19a7d7 feat(docs): Blocs 5+6 — upload contextuel, suppression page standalone
+d19074d feat(payments): Bloc 4 — gestion des paiements (migration, modèle, vues admin+client)
 6a5f7ea fix(claims): bouton Accéder au formulaire grisé — modale déclaration sinistre
 194979c fix: boutons steps sinistre, logo parapluie unique, favicons, schema.sql
-0b66da2 feat: BLOCs 2-7 — PIN client, documents, paramètres, carte assurance, logos
-f3491d8 fix(hostinger): ROOT_PATH détection répertoire sibling tilki_app
-35447ee feat(admin/claims): parcours Tally pour la création de sinistre
-9c4bbb5 feat(ui): 3 états visuels pour les sections documentaires (rouge/gris/vert)
 ```
-
-> **Push** : `git remote set-url origin https://<TOKEN>@github.com/elantra93/TilkiPlateforme.git && git push origin main`
-> Le token précédent a été exposé — en régénérer un sur GitHub.
 
 ---
 
 ## Fonctionnalités implémentées (terminées)
 
-### Session 2026-06-19 — Corrections
+### Session 2026-06-19
 
-#### Boutons étapes sinistre (admin/claims/form.php)
-- `<form>` était imbriqué dans `<tr>` (HTML invalide → foster-parenté hors tableau par le browser)
-- Corrigé : form déplacé dans le dernier `<td>`, avec hidden inputs `completed`/`completed_date`
-- JS mis à jour pour syncer checkbox + date → hidden inputs avant submit
-- `AdminClaimController::updateStep` : `isset($_POST['completed'])` → `!empty()`
+#### Déploiement Git autonome
+- `config/config.php` versionné, 100 % `env()`, URL figée `https://tilki.digital`
+- `config/env.php` : chargeur `.env` (aucun secret)
+- `.env.example` : modèle versionné avec toutes les clés
+- `.htaccess` racine : `Deny from all`
+- `README_DEPLOY.md` : procédure complète de déploiement
 
-#### Logo unique parapluie
-- Tous les headers (client bg-primary, admin bg-dark) : `logoparapluie.svg` + `filter: brightness(0) invert(1)` (blanc)
-- Pages login (fond clair / carte blanche) : `logoparapluie.svg` bleu direct, h=64/56
-- `logoblanc.svg` et `logobleu.svg` ne sont plus référencés dans les vues
+#### Blocs 5+6 — Upload documents contextuel
+- `/admin/documents/upload` supprimé → redirige vers `/admin/documents/pending`
+- Nav admin : lien "Uploader" retiré
+- **Fiche client** : section "Documents dossier client" (scope=`client`, 6 types)
+- **Fiche contrat** : section "Documents du contrat" (scope=`contrat`, cascade catégorie→type branch-aware)
+- **Fiche sinistre** : `claimDocTypeSel` plus `disabled` à l'init ; labels FR lisibles ; chemin d'erreur corrigé
+- `Document::forClientScope()` et `Document::forContractAdmin()` ajoutés
 
-#### Favicons manquants
-- Ajout `<link rel="icon" href="/logoparapluie.svg">` dans `auth/forgot_password.php` et `auth/reset_password.php`
+#### Bloc 4 — Paiements
+- Table `payments`, modèle `Payment`, `AdminPaymentController`, `PaymentController`
+- Vue admin (liste + formulaire) et vue client (lecture seule + téléchargement preuve)
+- Bouton "Enregistrer un paiement" sur fiche client et fiche contrat
 
-#### Label technique
-- `admin/contracts/form.php` : "Restant dû (premium_due)" → "Restant dû"
+#### Bouton « Accéder au formulaire » (modale sinistre)
+- `shown.bs.modal` + IIFE — couvre le cas un seul contrat pré-sélectionné
+- `target="_blank"` : Tally s'ouvre dans un nouvel onglet
 
-#### Carte d'assurance non affichée côté client (Bloc 2)
-- **Racine** : `migration_003` non exécutée → `scope='carte'` absent de l'ENUM → INSERT silencieusement rejeté
-- Migrations 001 + 003 appliquées sur BDD locale (002 était déjà là)
-- `schema.sql` mis à jour : ENUMs complets, `is_auto_rc` sur claims, table `claim_steps`
-- **À faire en prod** : exécuter les 3 migrations (voir section ci-dessous)
-
----
-
-### BLOCs précédents (terminés)
-
-#### BLOC 2 — Code PIN client
-- PIN initial `12345678` (hashé bcrypt) + `must_change_password=1` à la création
-- Validation `^[0-9]{4,8}$` sur changePassword et resetPassword
-- Anti-bruteforce : 5 tentatives / blocage 15 min (`Auth::attempt`)
-
-#### BLOC 3 — Contrat : suppression mise en forme conditionnelle
-- Carte "Documents du contrat" : neutre, sans border-danger ni bg-danger
-- Types requis : mention `(requis)` en texte, sans couleur
-
-#### BLOC 4 — Sinistres : upload client dans Correspondances
-- `DocumentController::CLIENT_DOC_TYPES` : `courrier_client => correspondances`
-
-#### BLOC 5 — Page Paramètres de compte (`/account`)
-- `AccountController` : `show()` + `changePin()`
-- Carte d'assurance : affichage inline image + bouton Plein écran + Télécharger
-
-#### BLOC 6 — Admin : carte d'assurance par client
-- `Document::carteAssurance()` / `archiveCarteAssurance()` — une seule carte active par client
-
-#### BLOC 7 — Logos SVG
-- `public/logoparapluie.svg` : pictogramme parapluie (bleu, monochrome) → favicon + logo unique
-- `logoblanc.svg` / `logobleu.svg` conservés dans public/ mais plus utilisés dans les vues
+#### Boutons étapes sinistre + logos + favicons
+- `<form>` dans `<td>`, hidden inputs sync, `isset` → `!empty`
+- Logo parapluie unifié (filtre CSS blanc sur fonds sombres)
+- Favicons sur forgot_password et reset_password
 
 ---
 
 ## Migrations BDD — état
 
-| Migration | BDD locale | BDD prod (à vérifier) |
-|---|---|---|
-| migration_001 (catégories sinistre) | ✅ appliquée | ❓ à exécuter |
-| migration_002 (claim_steps, is_auto_rc) | ✅ appliquée | ❓ à exécuter |
-| migration_003 (scope+category 'carte') | ✅ appliquée | ❌ **OBLIGATOIRE** |
-| migration_004 (payments + scope 'paiement') | ❓ à exécuter | ❌ **OBLIGATOIRE** |
-| migration_005 (scope+category 'client') | ❓ à exécuter | ❌ **OBLIGATOIRE** |
+| Migration | BDD prod |
+|---|---|
+| migration_001 (catégories sinistre) | ✅ appliquée |
+| migration_002 (claim_steps, is_auto_rc) | ✅ appliquée |
+| migration_003 (scope+category `carte`) | ✅ appliquée |
+| migration_004 (payments + scope `paiement`) | ✅ appliquée |
+| migration_005 (scope+category `client`) | ✅ appliquée |
 
-### Commandes prod
-```bash
-mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_001_sinistre_categories.sql
-mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_002_claim_steps.sql
-mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_003_carte_assurance.sql
-mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_004_payments.sql
-mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_005_scope_client.sql
-# migration_002 peut retourner "Duplicate column" si déjà appliquée → ignorer
-```
+**Toutes les migrations sont à jour en production.**
 
 ---
 
@@ -153,55 +126,54 @@ mysql -u tilki_user -pTilkiDB_2024! tilki_portal < database/migration_005_scope_
 TilkiPlateforme/
 ├── app/
 │   ├── Controllers/
-│   │   ├── AccountController.php          ← paramètres client (PIN + carte)
-│   │   ├── AdminClaimController.php       ← edit + updateStep (hidden inputs)
-│   │   ├── AdminClientController.php      ← showEdit + uploadCarte
-│   │   ├── AdminDocumentController.php    ← upload + validate (pas de refus encore)
+│   │   ├── AccountController.php
+│   │   ├── AdminClaimController.php       ← steps (hidden inputs), uploadDoc
+│   │   ├── AdminClientController.php      ← uploadCarte, uploadDoc (scope=client)
+│   │   ├── AdminContractController.php    ← uploadDoc (scope=contrat)
+│   │   ├── AdminDocumentController.php    ← pending + validate ; upload → redirect
+│   │   ├── AdminPaymentController.php     ← index, showCreate, create
+│   │   ├── PaymentController.php          ← index client (lecture seule)
 │   │   ├── ClaimController.php
 │   │   ├── ContractController.php
-│   │   ├── DocumentController.php         ← download + view (inline) + upload client
+│   │   ├── DocumentController.php
 │   │   └── TallyClaimWebhookController.php
 │   ├── Models/
 │   │   ├── Client.php
-│   │   ├── Claim.php
-│   │   ├── ClaimStep.php
+│   │   ├── Claim.php / ClaimStep.php
 │   │   ├── Contract.php
-│   │   └── Document.php                   ← carteAssurance, archiveCarteAssurance
+│   │   ├── Document.php                   ← forClientScope, forContractAdmin
+│   │   └── Payment.php                    ← listByClient, listByContract, listAll
 │   ├── Services/
-│   │   ├── Auth.php                       ← anti-bruteforce clients
-│   │   ├── AuditLogger.php
+│   │   ├── Auth.php / AuditLogger.php
 │   │   ├── ContractDocTypes.php
-│   │   ├── Database.php
-│   │   ├── FileStorage.php
+│   │   ├── Database.php / FileStorage.php
 │   │   └── TallyUrlBuilder.php
 │   └── Views/
-│       ├── account/settings.php           ← carte + PIN
-│       ├── admin/claims/form.php          ← edit sinistre + steps (form dans td)
-│       ├── admin/clients/edit.php         ← fiche client + upload carte
-│       ├── admin/contracts/form.php
-│       ├── admin/documents/pending.php    ← valider (refus pas encore implémenté)
-│       ├── admin/layout/header.php        ← logoparapluie blanc (filter CSS)
-│       ├── auth/login.php                 ← logoparapluie bleu h=64
-│       ├── claims/show.php
-│       ├── contracts/show.php
-│       └── layout/header.php             ← logoparapluie blanc (filter CSS)
+│       ├── admin/claims/form.php          ← upload sinistre (doc type non disabled)
+│       ├── admin/clients/edit.php         ← carte + docs client
+│       ├── admin/contracts/form.php       ← docs contrat + upload
+│       ├── admin/payments/create.php + index.php
+│       ├── payments/index.php             ← vue client paiements
+│       └── …
+├── config/
+│   ├── config.php                         ← versionné, 100% env()
+│   └── env.php                            ← chargeur .env (versionné)
 ├── database/
-│   ├── schema.sql                         ← mis à jour (ENUMs complets + claim_steps)
-│   ├── migration_001_sinistre_categories.sql
-│   ├── migration_002_claim_steps.sql
-│   └── migration_003_carte_assurance.sql
+│   ├── schema.sql                         ← ENUMs complets + payments
+│   ├── migration_001 → 005
+├── .env.example                           ← modèle versionné (sans valeurs)
+├── .htaccess                              ← Deny from all (racine)
 ├── public/
 │   ├── index.php                          ← router
-│   └── logoparapluie.svg                  ← logo unique (bleu monochrome)
-└── config/config.php
+│   ├── .htaccess                          ← front-controller + security headers
+│   └── logoparapluie.svg
+└── README_DEPLOY.md
 ```
 
 ---
 
 ## Tâches restantes
 
-1. **Exécuter migrations 001-004** sur la base de production
-2. **URL app** (`config['app']['url']`) : remplacer `https://VOTRE_DOMAINE` par le vrai domaine
-3. **Refus de documents** : bouton "Refuser" dans `admin/documents/pending.php` + route + méthode `AdminDocumentController::reject()`
-4. **Notification email** au client lors de la validation d'un document
-5. **Pagination** sur la liste des sinistres
+1. **Refus de documents** : bouton "Refuser" dans `admin/documents/pending.php` + route + `AdminDocumentController::reject()`
+2. **Notification email** au client lors de la validation d'un document
+3. **Pagination** sur la liste des sinistres
