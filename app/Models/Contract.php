@@ -56,8 +56,16 @@ class Contract
     {
         $db = Database::get();
         $db->prepare(
-            'INSERT INTO contracts (client_id, branche, policy_number, insurer, effective_date, expiry_date, premium_total, premium_due, currency, status)
-             VALUES (:client_id, :branche, :policy_number, :insurer, :effective_date, :expiry_date, :premium_total, :premium_due, :currency, :status)'
+            'INSERT INTO contracts
+             (client_id, branche, policy_number, insurer,
+              effective_date, expiry_date, emission_date,
+              premium_total, premium_due, premium_net, premium_fees,
+              currency, status)
+             VALUES
+             (:client_id, :branche, :policy_number, :insurer,
+              :effective_date, :expiry_date, :emission_date,
+              :premium_total, :premium_due, :premium_net, :premium_fees,
+              :currency, :status)'
         )->execute($data);
         return (int)$db->lastInsertId();
     }
@@ -65,9 +73,12 @@ class Contract
     public static function update(int $id, array $data): void
     {
         Database::get()->prepare(
-            'UPDATE contracts SET branche=:branche, policy_number=:policy_number, insurer=:insurer,
-             effective_date=:effective_date, expiry_date=:expiry_date, premium_total=:premium_total,
-             currency=:currency, status=:status WHERE id=:id'
+            'UPDATE contracts
+             SET branche=:branche, policy_number=:policy_number, insurer=:insurer,
+                 effective_date=:effective_date, expiry_date=:expiry_date, emission_date=:emission_date,
+                 premium_total=:premium_total, premium_net=:premium_net, premium_fees=:premium_fees,
+                 currency=:currency, status=:status
+             WHERE id=:id'
         )->execute(array_merge($data, ['id' => $id]));
     }
 }

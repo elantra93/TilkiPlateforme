@@ -8,6 +8,7 @@ use App\Models\Contract;
 use App\Models\Document;
 use App\Models\Payment;
 use App\Services\AuditLogger;
+use App\Services\Branches;
 use App\Services\ContractDocTypes;
 use App\Services\FileStorage;
 
@@ -36,6 +37,8 @@ class AdminContractController extends BaseController
             'csrf'     => $this->csrfToken(),
             'contract' => null,
             'clients'  => Client::all(),
+            'branches' => Branches::BRANCHES,
+            'insurers' => Branches::INSURERS,
             'old'      => [],
         ]);
     }
@@ -54,6 +57,8 @@ class AdminContractController extends BaseController
                 'csrf'     => $this->csrfToken(),
                 'contract' => null,
                 'clients'  => Client::all(),
+                'branches' => Branches::BRANCHES,
+                'insurers' => Branches::INSURERS,
                 'old'      => $old,
                 'error'    => 'Tous les champs obligatoires doivent être remplis.',
             ]);
@@ -61,7 +66,8 @@ class AdminContractController extends BaseController
         }
 
         try {
-            $data['premium_due'] = $data['premium_total']; // initial = total (aucun paiement validé)
+            $data['premium_due']   = $data['premium_total']; // initial = total (aucun paiement validé)
+            $data['emission_date'] = $data['emission_date'] ?: null;
             $id = Contract::create($data);
             AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'contract_created', "contract:{$id}", $this->ip());
             $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Contrat créé avec succès.'];
@@ -71,6 +77,8 @@ class AdminContractController extends BaseController
                 'csrf'     => $this->csrfToken(),
                 'contract' => null,
                 'clients'  => Client::all(),
+                'branches' => Branches::BRANCHES,
+                'insurers' => Branches::INSURERS,
                 'old'      => $old,
                 'error'    => 'Erreur : ' . $e->getMessage(),
             ]);
@@ -110,6 +118,8 @@ class AdminContractController extends BaseController
             'csrf'             => $this->csrfToken(),
             'contract'         => $contract,
             'clients'          => Client::all(),
+            'branches'         => Branches::BRANCHES,
+            'insurers'         => Branches::INSURERS,
             'old'              => [],
             'premiumDue'       => $premiumDue,
             'documents'        => Document::forContractAdmin((int)$id),
@@ -143,6 +153,8 @@ class AdminContractController extends BaseController
                 'csrf'             => $this->csrfToken(),
                 'contract'         => $contract,
                 'clients'          => Client::all(),
+                'branches'         => Branches::BRANCHES,
+                'insurers'         => Branches::INSURERS,
                 'old'              => $data,
                 'premiumDue'       => $premiumDue,
                 'error'            => 'Erreur : ' . $e->getMessage(),
@@ -206,15 +218,22 @@ class AdminContractController extends BaseController
 
     private function collectFields(): array
     {
-        $status = $_POST['status'] ?? 'actif';
+        $status        = $_POST['status']  ?? 'actif';
+        $emissionDate  = trim($_POST['emission_date'] ?? '');
+        $branche       = trim($_POST['branche']       ?? '');
+        $insurer       = trim($_POST['insurer']        ?? '');
+
         return [
             'client_id'      => (int)($_POST['client_id'] ?? 0),
-            'branche'        => trim($_POST['branche']        ?? ''),
-            'policy_number'  => trim($_POST['policy_number']  ?? ''),
-            'insurer'        => trim($_POST['insurer']         ?? ''),
-            'effective_date' => $_POST['effective_date']  ?? '',
-            'expiry_date'    => $_POST['expiry_date']     ?? '',
+            'branche'        => in_array($branche, Branches::BRANCHES, true) ? $branche : $branche,
+            'policy_number'  => trim($_POST['policy_number'] ?? ''),
+            'insurer'        => in_array($insurer, Branches::INSURERS, true) ? $insurer : $insurer,
+            'effective_date' => trim($_POST['effective_date'] ?? ''),
+            'expiry_date'    => trim($_POST['expiry_date']    ?? ''),
+            'emission_date'  => $emissionDate ?: null,
             'premium_total'  => (float)($_POST['premium_total'] ?? 0),
+            'premium_net'    => (float)($_POST['premium_net']   ?? 0),
+            'premium_fees'   => (float)($_POST['premium_fees']  ?? 0),
             'currency'       => strtoupper(trim($_POST['currency'] ?? 'XOF')) ?: 'XOF',
             'status'         => in_array($status, self::STATUSES, true) ? $status : 'actif',
         ];
