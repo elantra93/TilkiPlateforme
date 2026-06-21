@@ -34,7 +34,7 @@ unset($_SESSION['flash']);
                     <a class="nav-link" href="/claims"><i class="bi bi-exclamation-triangle me-1"></i>Sinistres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/payments"><i class="bi bi-cash-coin me-1"></i>Paiements</a>
+                    <a class="nav-link" href="/devis"><i class="bi bi-pencil-square me-1"></i>Obtenir un devis</a>
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">

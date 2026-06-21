@@ -10,7 +10,7 @@
 
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 tbl-card-mobile">
             <thead class="table-dark">
                 <tr>
                     <th>Client</th>
@@ -30,16 +30,16 @@
                 <?php endif; ?>
                 <?php foreach ($contracts as $c): ?>
                 <tr>
-                    <td>
+                    <td data-label="Client">
                         <div class="fw-semibold small"><?= htmlspecialchars($c['first_name'] . ' ' . $c['last_name']) ?></div>
                         <div class="text-muted" style="font-size:.75rem"><code><?= htmlspecialchars($c['account_number']) ?></code></div>
                     </td>
-                    <td><?= htmlspecialchars($c['branche']) ?></td>
-                    <td><code class="text-body"><?= htmlspecialchars($c['policy_number']) ?></code></td>
-                    <td><?= htmlspecialchars($c['insurer']) ?></td>
-                    <td><?= date('d/m/Y', strtotime($c['effective_date'])) ?></td>
-                    <td><?= date('d/m/Y', strtotime($c['expiry_date'])) ?></td>
-                    <td class="text-end">
+                    <td data-label="Branche"><?= htmlspecialchars($c['branche']) ?></td>
+                    <td data-label="N° Police"><code class="text-body"><?= htmlspecialchars($c['policy_number']) ?></code></td>
+                    <td data-label="Assureur"><?= htmlspecialchars($c['insurer']) ?></td>
+                    <td data-label="Date d'effet"><?= date('d/m/Y', strtotime($c['effective_date'])) ?></td>
+                    <td data-label="Échéance"><?= date('d/m/Y', strtotime($c['expiry_date'])) ?></td>
+                    <td data-label="Restant dû">
                         <?php if ((float)$c['premium_due'] <= 0): ?>
                             <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">À jour</span>
                         <?php else: ?>
@@ -48,12 +48,12 @@
                             </span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="Statut">
                         <span class="badge bg-<?= $c['status'] === 'actif' ? 'success' : 'secondary' ?>">
                             <?= htmlspecialchars($c['status']) ?>
                         </span>
                     </td>
-                    <td>
+                    <td data-label="">
                         <a href="/admin/contracts/<?= (int)$c['id'] ?>/edit"
                            class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-pencil"></i>

@@ -114,3 +114,98 @@ body.login-page {
 
 /* form inline dans table */
 .d-contents { display: contents; }
+
+/* ================================================================
+   RESPONSIVE — Mobile-first (BLOC 1)
+   ================================================================ */
+
+/* Tableaux → cartes empilées sur mobile (< 768 px) */
+@media (max-width: 767.98px) {
+    .tbl-card-mobile {
+        border: none !important;
+        background: transparent !important;
+    }
+    .tbl-card-mobile thead {
+        display: none;
+    }
+    .tbl-card-mobile tbody,
+    .tbl-card-mobile tbody tr {
+        display: block;
+    }
+    .tbl-card-mobile tbody tr {
+        border: 1px solid #e5e7eb !important;
+        border-radius: .75rem;
+        margin-bottom: .625rem;
+        padding: .5rem .875rem;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .tbl-card-mobile tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .35rem 0;
+        border: none !important;
+        font-size: .875rem;
+        border-bottom: 1px solid #f3f4f6 !important;
+    }
+    .tbl-card-mobile tbody tr td:last-child {
+        border-bottom: none !important;
+        padding-top: .5rem;
+    }
+    .tbl-card-mobile tbody td::before {
+        content: attr(data-label);
+        font-size: .7rem;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        flex-shrink: 0;
+        margin-right: .75rem;
+        min-width: 6rem;
+    }
+    /* Cellule sans label (boutons d'action) */
+    .tbl-card-mobile tbody td[data-label=""]::before {
+        display: none;
+    }
+    .tbl-card-mobile tbody td[data-label=""] {
+        justify-content: flex-end;
+    }
+
+    /* Formulaires : taille ≥ 16px pour éviter le zoom auto sur iOS */
+    .form-control,
+    .form-select,
+    .form-control-sm,
+    .form-select-sm {
+        font-size: 1rem !important;
+    }
+
+    /* Boutons accessibles au pouce */
+    .btn { min-height: 2.5rem; }
+    .btn-sm { min-height: 2.1rem; }
+
+    /* Alerte restant dû pleine largeur sur dashboard */
+    .alert[style*="max-width"] {
+        max-width: 100% !important;
+    }
+
+    /* Upload forms (sinistre/contrat) : empilement vertical */
+    .d-flex.gap-2.flex-wrap.align-items-end {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+}
+
+/* Ajustements petits mobiles (< 576 px) */
+@media (max-width: 575.98px) {
+    main.container,
+    main.container-fluid {
+        padding-left: .875rem;
+        padding-right: .875rem;
+        padding-top: 1rem;
+    }
+    .card-body { padding: .875rem; }
+    h2.h4, h2.h5 { font-size: 1.05rem; }
+    .navbar-brand img { max-height: 30px; }
+    .row.g-4 { --bs-gutter-y: .75rem; }
+}

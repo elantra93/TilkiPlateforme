@@ -19,7 +19,7 @@
 <?php else: ?>
     <div class="card shadow-sm">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 tbl-card-mobile">
                 <thead class="table-light">
                     <tr>
                         <th>N° Sinistre</th>
@@ -34,17 +34,17 @@
                 <tbody>
                     <?php foreach ($claims as $cl): ?>
                         <tr>
-                            <td><code><?= htmlspecialchars($cl['claim_number']) ?></code></td>
-                            <td><?= htmlspecialchars($cl['branche']) ?></td>
-                            <td><?= htmlspecialchars($cl['insurer']) ?></td>
-                            <td><?= date('d/m/Y', strtotime($cl['occurrence_date'])) ?></td>
-                            <td><?= htmlspecialchars($cl['policy_number'] ?? '—') ?></td>
-                            <td>
+                            <td data-label="N° Sinistre"><code><?= htmlspecialchars($cl['claim_number']) ?></code></td>
+                            <td data-label="Branche"><?= htmlspecialchars($cl['branche']) ?></td>
+                            <td data-label="Assureur"><?= htmlspecialchars($cl['insurer']) ?></td>
+                            <td data-label="Survenance"><?= date('d/m/Y', strtotime($cl['occurrence_date'])) ?></td>
+                            <td data-label="N° Police"><?= htmlspecialchars($cl['policy_number'] ?? '—') ?></td>
+                            <td data-label="Statut">
                                 <span class="badge bg-<?= $cl['status'] === 'ouvert' ? 'danger' : 'success' ?>">
                                     <?= htmlspecialchars($cl['status']) ?>
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="">
                                 <a href="/claims/<?= $cl['id'] ?>" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye me-1"></i>Détail
                                 </a>
@@ -96,20 +96,7 @@
         </div>
     </div>
 </div>
-<script>
-(function () {
-    const modal = document.getElementById('declarerModal');
-    const sel   = document.getElementById('modalContractSel');
-    const btn   = document.getElementById('declarerSubmitBtn');
-
-    function syncBtn() {
-        btn.disabled = !sel.value;
-    }
-
-    sel.addEventListener('change', syncBtn);
-    modal.addEventListener('shown.bs.modal', syncBtn);
-})();
-</script>
 <?php endif; ?>
 
+<script src="/assets/js/claims-modal.js"></script>
 <?php require APP_PATH . '/Views/layout/footer.php'; ?>

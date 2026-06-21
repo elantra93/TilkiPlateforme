@@ -54,7 +54,7 @@ function fmtAmount(float $v, string $cur): string {
     <?php else: ?>
     <div class="card shadow-sm">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="tbl-contracts">
+            <table class="table table-hover align-middle mb-0 tbl-card-mobile" id="tbl-contracts">
                 <thead class="table-light">
                     <tr>
                         <th>Branche</th>
@@ -71,11 +71,11 @@ function fmtAmount(float $v, string $cur): string {
                     <tr class="tbl-row-link"
                         data-href="/contracts/<?= (int)$c['id'] ?>"
                         title="Ouvrir le détail du contrat <?= htmlspecialchars($c['policy_number']) ?>">
-                        <td class="fw-semibold"><?= htmlspecialchars($c['branche']) ?></td>
-                        <td><code class="text-body"><?= htmlspecialchars($c['policy_number']) ?></code></td>
-                        <td><?= htmlspecialchars($c['insurer']) ?></td>
-                        <td><?= fmtDate($c['effective_date']) ?></td>
-                        <td>
+                        <td data-label="Branche" class="fw-semibold"><?= htmlspecialchars($c['branche']) ?></td>
+                        <td data-label="N° Police"><code class="text-body"><?= htmlspecialchars($c['policy_number']) ?></code></td>
+                        <td data-label="Assureur"><?= htmlspecialchars($c['insurer']) ?></td>
+                        <td data-label="Date d'effet"><?= fmtDate($c['effective_date']) ?></td>
+                        <td data-label="Échéance">
                             <?php
                                 $isExpiring = $c['expiry_date'] && strtotime($c['expiry_date']) < strtotime('+30 days');
                                 $cls = $isExpiring ? 'text-danger fw-semibold' : '';
@@ -87,7 +87,7 @@ function fmtAmount(float $v, string $cur): string {
                                 <?php endif; ?>
                             </span>
                         </td>
-                        <td class="text-end">
+                        <td data-label="Restant dû">
                             <?php if ((float)$c['premium_due'] <= 0): ?>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">
                                     <i class="bi bi-check2 me-1"></i>À jour
@@ -98,7 +98,7 @@ function fmtAmount(float $v, string $cur): string {
                                 </span>
                             <?php endif; ?>
                         </td>
-                        <td>
+                        <td data-label="Statut">
                             <span class="badge bg-<?= $c['status'] === 'actif' ? 'success' : 'secondary' ?>">
                                 <?= htmlspecialchars($c['status']) ?>
                             </span>
@@ -136,7 +136,7 @@ function fmtAmount(float $v, string $cur): string {
     <?php else: ?>
     <div class="card shadow-sm">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="tbl-claims">
+            <table class="table table-hover align-middle mb-0 tbl-card-mobile" id="tbl-claims">
                 <thead class="table-light">
                     <tr>
                         <th>N° Sinistre</th>
@@ -151,13 +151,13 @@ function fmtAmount(float $v, string $cur): string {
                     <tr class="tbl-row-link"
                         data-href="/claims/<?= (int)$cl['id'] ?>"
                         title="Ouvrir le sinistre <?= htmlspecialchars($cl['claim_number']) ?>">
-                        <td>
+                        <td data-label="N° Sinistre">
                             <code class="text-body"><?= htmlspecialchars($cl['claim_number']) ?></code>
                         </td>
-                        <td><?= htmlspecialchars($cl['insurer']) ?></td>
-                        <td><?= htmlspecialchars($cl['branche']) ?></td>
-                        <td><?= fmtDate($cl['occurrence_date']) ?></td>
-                        <td class="text-muted small"><?= fmtDate($cl['updated_at']) ?></td>
+                        <td data-label="Assureur"><?= htmlspecialchars($cl['insurer']) ?></td>
+                        <td data-label="Branche"><?= htmlspecialchars($cl['branche']) ?></td>
+                        <td data-label="Survenance"><?= fmtDate($cl['occurrence_date']) ?></td>
+                        <td data-label="Mis à jour" class="text-muted small"><?= fmtDate($cl['updated_at']) ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -166,15 +166,5 @@ function fmtAmount(float $v, string $cur): string {
     </div>
     <?php endif; ?>
 </section>
-
-<script>
-// Lignes cliquables
-document.querySelectorAll('.tbl-row-link').forEach(function(row) {
-    row.style.cursor = 'pointer';
-    row.addEventListener('click', function() {
-        window.location.href = this.dataset.href;
-    });
-});
-</script>
 
 <?php require APP_PATH . '/Views/layout/footer.php'; ?>

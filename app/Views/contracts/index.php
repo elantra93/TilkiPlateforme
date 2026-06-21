@@ -10,7 +10,7 @@
 <?php else: ?>
     <div class="card shadow-sm">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 tbl-card-mobile">
                 <thead class="table-light">
                     <tr>
                         <th>Branche</th>
@@ -26,18 +26,18 @@
                 <tbody>
                     <?php foreach ($contracts as $c): ?>
                         <tr>
-                            <td class="fw-semibold"><?= htmlspecialchars($c['branche']) ?></td>
-                            <td><code><?= htmlspecialchars($c['policy_number']) ?></code></td>
-                            <td><?= htmlspecialchars($c['insurer']) ?></td>
-                            <td><?= date('d/m/Y', strtotime($c['effective_date'])) ?></td>
-                            <td><?= date('d/m/Y', strtotime($c['expiry_date'])) ?></td>
-                            <td><?= number_format((float)$c['premium_total'], 0, ',', ' ') ?> <?= htmlspecialchars($c['currency']) ?></td>
-                            <td>
+                            <td data-label="Branche" class="fw-semibold"><?= htmlspecialchars($c['branche']) ?></td>
+                            <td data-label="N° Police"><code><?= htmlspecialchars($c['policy_number']) ?></code></td>
+                            <td data-label="Assureur"><?= htmlspecialchars($c['insurer']) ?></td>
+                            <td data-label="Début"><?= date('d/m/Y', strtotime($c['effective_date'])) ?></td>
+                            <td data-label="Expiration"><?= date('d/m/Y', strtotime($c['expiry_date'])) ?></td>
+                            <td data-label="Prime TTC"><?= number_format((float)$c['premium_total'], 0, ',', ' ') ?> <?= htmlspecialchars($c['currency']) ?></td>
+                            <td data-label="Statut">
                                 <span class="badge bg-<?= $c['status'] === 'actif' ? 'success' : 'secondary' ?>">
                                     <?= htmlspecialchars($c['status']) ?>
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="">
                                 <a href="/contracts/<?= $c['id'] ?>" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye me-1"></i>Détail
                                 </a>

@@ -10,7 +10,7 @@
 
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 tbl-card-mobile">
             <thead class="table-dark">
                 <tr>
                     <th>N° Compte</th>
@@ -28,17 +28,17 @@
                 <?php endif; ?>
                 <?php foreach ($clients as $c): ?>
                 <tr>
-                    <td><code><?= htmlspecialchars($c['account_number']) ?></code></td>
-                    <td class="fw-semibold"><?= htmlspecialchars($c['first_name'] . ' ' . $c['last_name']) ?></td>
-                    <td><?= htmlspecialchars($c['email']) ?></td>
-                    <td><?= htmlspecialchars($c['phone'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="N° Compte"><code><?= htmlspecialchars($c['account_number']) ?></code></td>
+                    <td data-label="Nom" class="fw-semibold"><?= htmlspecialchars($c['first_name'] . ' ' . $c['last_name']) ?></td>
+                    <td data-label="Email"><?= htmlspecialchars($c['email']) ?></td>
+                    <td data-label="Téléphone"><?= htmlspecialchars($c['phone'] ?? '—') ?></td>
+                    <td data-label="Statut">
                         <span class="badge bg-<?= $c['status'] === 'actif' ? 'success' : ($c['status'] === 'suspendu' ? 'warning text-dark' : 'secondary') ?>">
                             <?= htmlspecialchars($c['status']) ?>
                         </span>
                     </td>
-                    <td class="text-muted small"><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
-                    <td>
+                    <td data-label="Créé le" class="text-muted small"><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
+                    <td data-label="">
                         <a href="/admin/clients/<?= (int)$c['id'] ?>/edit"
                            class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-pencil me-1"></i>Fiche
