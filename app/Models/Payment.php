@@ -79,6 +79,20 @@ class Payment
         return (float)$stmt->fetchColumn();
     }
 
+    public static function sumValidatedMap(): array
+    {
+        $rows = Database::get()
+            ->query("SELECT contract_id, COALESCE(SUM(amount), 0) AS total
+                     FROM payments WHERE status = 'valide'
+                     GROUP BY contract_id")
+            ->fetchAll();
+        $map = [];
+        foreach ($rows as $r) {
+            $map[(int)$r['contract_id']] = (float)$r['total'];
+        }
+        return $map;
+    }
+
     public static function listAll(): array
     {
         return Database::get()->query(

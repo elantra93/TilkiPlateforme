@@ -67,7 +67,7 @@ class Contract
         Database::get()->prepare(
             'UPDATE contracts SET branche=:branche, policy_number=:policy_number, insurer=:insurer,
              effective_date=:effective_date, expiry_date=:expiry_date, premium_total=:premium_total,
-             premium_due=:premium_due, currency=:currency, status=:status WHERE id=:id'
+             currency=:currency, status=:status WHERE id=:id'
         )->execute(array_merge($data, ['id' => $id]));
     }
 }

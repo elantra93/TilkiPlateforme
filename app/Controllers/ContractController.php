@@ -49,6 +49,8 @@ class ContractController extends BaseController
         }
         $tallyClaimUrl = TallyUrlBuilder::claimFormUrl($client, $contract, $attestUrl);
 
+        $contract['premium_due'] = max(0.0, (float)$contract['premium_total'] - Payment::sumValidated((int)$id));
+
         $this->render('contracts.show', [
             'client'         => $client,
             'contract'       => $contract,

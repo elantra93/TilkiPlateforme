@@ -6,6 +6,7 @@ use App\Middleware\AdminMiddleware;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\Document;
+use App\Models\Payment;
 use App\Services\AuditLogger;
 use App\Services\ContractDocTypes;
 use App\Services\FileStorage;
@@ -17,8 +18,14 @@ class AdminContractController extends BaseController
     public function index(): void
     {
         AdminMiddleware::check();
+        $contracts = Contract::all();
+        $paidMap   = Payment::sumValidatedMap();
+        foreach ($contracts as &$c) {
+            $c['premium_due'] = max(0.0, (float)$c['premium_total'] - ($paidMap[(int)$c['id']] ?? 0.0));
+        }
+        unset($c);
         $this->render('admin.contracts.index', [
-            'contracts' => Contract::all(),
+            'contracts' => $contracts,
         ]);
     }
 
@@ -54,6 +61,7 @@ class AdminContractController extends BaseController
         }
 
         try {
+            $data['premium_due'] = $data['premium_total']; // initial = total (aucun paiement validé)
             $id = Contract::create($data);
             AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'contract_created', "contract:{$id}", $this->ip());
             $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Contrat créé avec succès.'];
@@ -97,12 +105,14 @@ class AdminContractController extends BaseController
             require APP_PATH . '/Views/errors/404.php';
             return;
         }
+        $premiumDue = max(0.0, (float)$contract['premium_total'] - Payment::sumValidated((int)$id));
         $this->render('admin.contracts.form', [
-            'csrf'          => $this->csrfToken(),
-            'contract'      => $contract,
-            'clients'       => Client::all(),
-            'old'           => [],
-            'documents'     => Document::forContractAdmin((int)$id),
+            'csrf'             => $this->csrfToken(),
+            'contract'         => $contract,
+            'clients'          => Client::all(),
+            'old'              => [],
+            'premiumDue'       => $premiumDue,
+            'documents'        => Document::forContractAdmin((int)$id),
             'contractDocTypes' => $this->contractDocTypesForView($contract),
         ]);
     }
@@ -128,11 +138,13 @@ class AdminContractController extends BaseController
             $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Contrat mis à jour.'];
             $this->redirect('/admin/contracts/' . $id . '/edit');
         } catch (\Throwable $e) {
+            $premiumDue = max(0.0, (float)$contract['premium_total'] - Payment::sumValidated((int)$id));
             $this->render('admin.contracts.form', [
                 'csrf'             => $this->csrfToken(),
                 'contract'         => $contract,
                 'clients'          => Client::all(),
                 'old'              => $data,
+                'premiumDue'       => $premiumDue,
                 'error'            => 'Erreur : ' . $e->getMessage(),
                 'documents'        => Document::forContractAdmin((int)$id),
                 'contractDocTypes' => $this->contractDocTypesForView($contract),
@@ -203,7 +215,6 @@ class AdminContractController extends BaseController
             'effective_date' => $_POST['effective_date']  ?? '',
             'expiry_date'    => $_POST['expiry_date']     ?? '',
             'premium_total'  => (float)($_POST['premium_total'] ?? 0),
-            'premium_due'    => (float)($_POST['premium_due']   ?? 0),
             'currency'       => strtoupper(trim($_POST['currency'] ?? 'XOF')) ?: 'XOF',
             'status'         => in_array($status, self::STATUSES, true) ? $status : 'actif',
         ];

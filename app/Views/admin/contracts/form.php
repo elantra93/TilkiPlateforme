@@ -103,8 +103,26 @@ function v(string $key, array $old, ?array $contract, mixed $default = ''): mixe
         </div>
         <div class="col-md-4">
             <label class="form-label small fw-semibold">Restant dû</label>
-            <input type="number" name="premium_due" class="form-control" step="0.01" min="0"
-                   value="<?= htmlspecialchars((string)v('premium_due', $old, $contract, '0')) ?>">
+            <?php if ($contract): ?>
+                <?php $currency = htmlspecialchars((string)v('currency', $old, $contract, 'XOF')); ?>
+                <?php if (($premiumDue ?? 0) <= 0): ?>
+                <div class="form-control-plaintext">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                        <i class="bi bi-check2 me-1"></i>À jour
+                    </span>
+                    <div class="form-text">Calculé automatiquement</div>
+                </div>
+                <?php else: ?>
+                <div class="form-control-plaintext fw-semibold text-danger">
+                    <?= number_format((float)($premiumDue ?? 0), 0, ',', ' ') ?> <?= $currency ?>
+                    <div class="form-text text-muted">prime totale – paiements validés</div>
+                </div>
+                <?php endif; ?>
+            <?php else: ?>
+            <div class="form-control-plaintext text-muted fst-italic small">
+                Calculé après création
+            </div>
+            <?php endif; ?>
         </div>
         <div class="col-md-2">
             <label class="form-label small fw-semibold">Devise</label>
