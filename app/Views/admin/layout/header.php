@@ -46,8 +46,8 @@ unset($_SESSION['admin_flash']);
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/admin/payments">
-                        <i class="bi bi-cash-coin me-1"></i>Paiements
+                    <a class="nav-link" href="/admin/devis">
+                        <i class="bi bi-pencil-square me-1"></i>Obtenir un devis
                     </a>
                 </li>
                 <li class="nav-item dropdown">
@@ -84,6 +84,14 @@ unset($_SESSION['admin_flash']);
                                 <i class="bi bi-key me-2"></i>Changer mon mot de passe
                             </a>
                         </li>
+                        <?php if (($_SESSION['admin_role'] ?? '') === 'superadmin'): ?>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="/admin/admins">
+                                <i class="bi bi-person-badge me-2"></i>Gestion des admins
+                            </a>
+                        </li>
+                        <?php endif; ?>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="post" action="/admin/logout">

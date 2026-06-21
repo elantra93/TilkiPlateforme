@@ -98,6 +98,12 @@ $routes = [
         '/admin/documents/pending'            => ['AdminDocument',   'pending'],
         // Admin – File Tally
         '/admin/tally/queue'                  => ['AdminTally',      'queue'],
+        // Admin – Devis
+        '/admin/devis'                        => ['AdminDevis',      'index'],
+        // Admin – Gestion des admins (superadmin)
+        '/admin/admins'                       => ['AdminUser',       'index'],
+        '/admin/admins/create'                => ['AdminUser',       'showCreate'],
+        '/admin/admins/(\d+)/edit'            => ['AdminUser',       'showEdit'],
     ],
     'POST' => [
         '/login'                     => ['Auth',     'login'],
@@ -133,6 +139,9 @@ $routes = [
         // Admin – File Tally
         '/admin/tally/(\d+)/match'            => ['AdminTally',      'match'],
         '/admin/tally/(\d+)/ignore'           => ['AdminTally',      'ignore'],
+        // Admin – Gestion des admins (superadmin)
+        '/admin/admins/create'                => ['AdminUser',       'create'],
+        '/admin/admins/(\d+)/edit'            => ['AdminUser',       'edit'],
         // Webhooks Tally (pas d'auth session)
         '/webhooks/tally'                     => ['TallyWebhook',      'handle'],
         '/webhooks/tally-sinistre'            => ['TallyClaimWebhook', 'handle'],
