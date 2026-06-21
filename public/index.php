@@ -124,9 +124,11 @@ $routes = [
         '/admin/clients/(\d+)/carte'          => ['AdminClient',     'uploadCarte'],
         '/admin/clients/(\d+)/upload-doc'     => ['AdminClient',     'uploadDoc'],
         // Admin – Contracts
-        '/admin/contracts/create'             => ['AdminContract',   'create'],
-        '/admin/contracts/(\d+)/edit'         => ['AdminContract',   'edit'],
-        '/admin/contracts/(\d+)/upload'       => ['AdminContract',   'uploadDoc'],
+        '/admin/contracts/create'                            => ['AdminContract', 'create'],
+        '/admin/contracts/(\d+)/edit'                        => ['AdminContract', 'edit'],
+        '/admin/contracts/(\d+)/upload'                      => ['AdminContract', 'uploadDoc'],
+        '/admin/contracts/(\d+)/payment'                     => ['AdminContract', 'addPayment'],
+        '/admin/contracts/(\d+)/payment/(\d+)/validate'      => ['AdminContract', 'validatePayment'],
         // Admin – Claims
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'edit'],
         '/admin/claims/(\d+)/steps/(\d+)'     => ['AdminClaim',      'updateStep'],

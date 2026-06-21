@@ -93,6 +93,27 @@ class Payment
         return $map;
     }
 
+    public static function validate(int $id, float $amount, int $adminId): bool
+    {
+        $stmt = Database::get()->prepare(
+            "UPDATE payments
+             SET status='valide', amount=:amount,
+                 validated_by=:validated_by, validated_at=NOW()
+             WHERE id=:id AND status='en_attente'"
+        );
+        $stmt->execute(['id' => $id, 'amount' => $amount, 'validated_by' => $adminId]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public static function findForContract(int $id, int $contractId): ?array
+    {
+        $stmt = Database::get()->prepare(
+            'SELECT * FROM payments WHERE id = ? AND contract_id = ? LIMIT 1'
+        );
+        $stmt->execute([$id, $contractId]);
+        return $stmt->fetch() ?: null;
+    }
+
     public static function listAll(): array
     {
         return Database::get()->query(

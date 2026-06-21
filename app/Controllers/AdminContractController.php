@@ -14,7 +14,8 @@ use App\Services\FileStorage;
 
 class AdminContractController extends BaseController
 {
-    private const STATUSES  = ['actif', 'expiré', 'résilié', 'suspendu'];
+    private const STATUSES       = ['actif', 'expiré', 'résilié', 'suspendu'];
+    private const PAYMENT_METHODS = ['especes', 'virement', 'cheque', 'mobile_money', 'carte'];
 
     public function index(): void
     {
@@ -122,6 +123,8 @@ class AdminContractController extends BaseController
             'insurers'         => Branches::INSURERS,
             'old'              => [],
             'premiumDue'       => $premiumDue,
+            'payments'         => Payment::listByContract((int)$id),
+            'paymentMethods'   => self::PAYMENT_METHODS,
             'documents'        => Document::forContractAdmin((int)$id),
             'contractDocTypes' => $this->contractDocTypesForView($contract),
         ]);
@@ -158,10 +161,114 @@ class AdminContractController extends BaseController
                 'old'              => $data,
                 'premiumDue'       => $premiumDue,
                 'error'            => 'Erreur : ' . $e->getMessage(),
+                'payments'         => Payment::listByContract((int)$id),
+                'paymentMethods'   => self::PAYMENT_METHODS,
                 'documents'        => Document::forContractAdmin((int)$id),
                 'contractDocTypes' => $this->contractDocTypesForView($contract),
             ]);
         }
+    }
+
+    public function addPayment(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $contract = Contract::find((int)$id);
+        if (!$contract) {
+            http_response_code(404);
+            require APP_PATH . '/Views/errors/404.php';
+            return;
+        }
+
+        $amount    = trim($_POST['amount']    ?? '');
+        $method    = trim($_POST['method']    ?? '');
+        $paidAt    = trim($_POST['paid_at']   ?? '') ?: null;
+        $reference = trim($_POST['reference'] ?? '') ?: null;
+        $note      = trim($_POST['note']      ?? '') ?: null;
+
+        if (!is_numeric($amount) || (float)$amount <= 0) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Le montant doit être supérieur à 0.'];
+            $this->redirect('/admin/contracts/' . $id . '/edit');
+            return;
+        }
+        if (!in_array($method, self::PAYMENT_METHODS, true)) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Mode de paiement invalide.'];
+            $this->redirect('/admin/contracts/' . $id . '/edit');
+            return;
+        }
+
+        $docId   = null;
+        $hasFile = !empty($_FILES['proof']) && $_FILES['proof']['error'] !== UPLOAD_ERR_NO_FILE;
+        if ($hasFile) {
+            try {
+                $stored = FileStorage::store($_FILES['proof'], 'paiements/' . $id);
+                $docId  = Document::create([
+                    'client_id'         => $contract['client_id'],
+                    'contract_id'       => (int)$id,
+                    'claim_id'          => null,
+                    'scope'             => 'paiement',
+                    'category'          => 'paiement',
+                    'doc_type'          => 'preuve_paiement',
+                    'original_filename' => $stored['original_filename'],
+                    'stored_path'       => $stored['stored_path'],
+                    'mime_type'         => $stored['mime_type'],
+                    'file_size'         => $stored['file_size'],
+                    'source'            => 'admin',
+                    'status'            => 'valide',
+                ]);
+            } catch (\Throwable $e) {
+                $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Erreur fichier : ' . $e->getMessage()];
+                $this->redirect('/admin/contracts/' . $id . '/edit');
+                return;
+            }
+        }
+
+        $payId = Payment::create([
+            'contract_id'  => (int)$id,
+            'client_id'    => $contract['client_id'],
+            'amount'       => (float)$amount,
+            'method'       => $method,
+            'document_id'  => $docId,
+            'status'       => 'valide',
+            'created_by'   => 'admin',
+            'validated_by' => (int)$_SESSION['admin_id'],
+            'validated_at' => date('Y-m-d H:i:s'),
+            'reference'    => $reference,
+            'paid_at'      => $paidAt,
+            'note'         => $note,
+        ]);
+
+        AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'contract_payment_added',
+            "contract:{$id} payment:{$payId}", $this->ip());
+        $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Paiement enregistré.'];
+        $this->redirect('/admin/contracts/' . $id . '/edit');
+    }
+
+    public function validatePayment(string $contractId, string $paymentId): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $payment = Payment::findForContract((int)$paymentId, (int)$contractId);
+        if (!$payment || $payment['status'] !== 'en_attente') {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Paiement introuvable ou déjà traité.'];
+            $this->redirect('/admin/contracts/' . $contractId . '/edit');
+            return;
+        }
+
+        $amount = trim($_POST['amount'] ?? '');
+        if (!is_numeric($amount) || (float)$amount <= 0) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Le montant doit être supérieur à 0.'];
+            $this->redirect('/admin/contracts/' . $contractId . '/edit');
+            return;
+        }
+
+        Payment::validate((int)$paymentId, (float)$amount, (int)$_SESSION['admin_id']);
+        AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'payment_validated',
+            "contract:{$contractId} payment:{$paymentId}", $this->ip());
+        $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Paiement validé.'];
+        $this->redirect('/admin/contracts/' . $contractId . '/edit');
     }
 
     public function uploadDoc(string $id): void

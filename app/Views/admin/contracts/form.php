@@ -367,6 +367,160 @@ foreach ($documents ?? [] as $doc) {
 </div>
 
 <script src="/assets/js/contract-form.js"></script>
+
+<!-- ── Paiements du contrat ──────────────────────────────────────────────────── -->
+<div class="row justify-content-center mt-4">
+<div class="col-xl-9">
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-cash-coin me-2 text-secondary"></i>Paiements</span>
+        <?php
+        $pendingCount = count(array_filter($payments ?? [], fn($p) => $p['status'] === 'en_attente'));
+        ?>
+        <?php if ($pendingCount > 0): ?>
+        <span class="badge bg-warning text-dark"><?= $pendingCount ?> en attente</span>
+        <?php endif; ?>
+    </div>
+
+    <!-- Formulaire : ajouter un paiement admin -->
+    <div class="p-3 border-bottom bg-light">
+        <p class="small fw-semibold mb-2"><i class="bi bi-plus-circle me-1"></i>Enregistrer un paiement</p>
+        <form method="post"
+              action="/admin/contracts/<?= (int)$contract['id'] ?>/payment"
+              enctype="multipart/form-data"
+              class="row g-2 align-items-end">
+            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Montant <span class="text-danger">*</span></label>
+                <input type="number" name="amount" class="form-control form-control-sm"
+                       step="0.01" min="0.01" placeholder="0.00" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Mode <span class="text-danger">*</span></label>
+                <select name="method" class="form-select form-select-sm" required>
+                    <option value="">—</option>
+                    <?php foreach ($paymentMethods ?? [] as $m): ?>
+                    <option value="<?= $m ?>"><?= htmlspecialchars(ucfirst($m)) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Date de paiement</label>
+                <input type="date" name="paid_at" class="form-control form-control-sm"
+                       value="<?= date('Y-m-d') ?>">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Référence</label>
+                <input type="text" name="reference" class="form-control form-control-sm" placeholder="optionnel">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Justificatif</label>
+                <input type="file" name="proof" class="form-control form-control-sm"
+                       accept=".pdf,.jpg,.jpeg,.png">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-save me-1"></i>Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des paiements -->
+    <?php if (empty($payments)): ?>
+    <p class="text-muted small p-3 mb-0">
+        <i class="bi bi-dash me-1 opacity-50"></i>Aucun paiement enregistré pour ce contrat.
+    </p>
+    <?php else: ?>
+    <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0 tbl-card-mobile">
+        <thead class="table-light">
+            <tr>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Mode</th>
+                <th>Créé par</th>
+                <th>Statut</th>
+                <th>Justificatif</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($payments ?? [] as $pay): ?>
+        <?php
+            $statusBadge = match($pay['status']) {
+                'valide'      => 'bg-success',
+                'en_attente'  => 'bg-warning text-dark',
+                'rejeté'      => 'bg-danger',
+                default       => 'bg-secondary',
+            };
+            $statusLabel = match($pay['status']) {
+                'valide'     => 'Validé',
+                'en_attente' => 'En attente',
+                'rejeté'     => 'Rejeté',
+                default      => htmlspecialchars($pay['status']),
+            };
+        ?>
+        <tr>
+            <td data-label="Date" class="small text-muted">
+                <?= $pay['paid_at'] ? date('d/m/Y', strtotime($pay['paid_at'])) : date('d/m/Y', strtotime($pay['created_at'])) ?>
+            </td>
+            <td data-label="Montant" class="fw-semibold">
+                <?php if ((float)$pay['amount'] > 0): ?>
+                    <?= number_format((float)$pay['amount'], 0, ',', ' ') ?>
+                    <?= htmlspecialchars($contract['currency']) ?>
+                <?php else: ?>
+                    <span class="text-muted fst-italic small">—</span>
+                <?php endif; ?>
+            </td>
+            <td data-label="Mode">
+                <span class="small"><?= htmlspecialchars(ucfirst($pay['method'])) ?></span>
+            </td>
+            <td data-label="Créé par">
+                <span class="badge <?= $pay['created_by'] === 'admin' ? 'bg-primary' : 'bg-secondary' ?> small">
+                    <?= htmlspecialchars(ucfirst($pay['created_by'])) ?>
+                </span>
+            </td>
+            <td data-label="Statut">
+                <span class="badge <?= $statusBadge ?>"><?= $statusLabel ?></span>
+            </td>
+            <td data-label="Justificatif">
+                <?php if ($pay['doc_id'] ?? null): ?>
+                <a href="/documents/<?= (int)$pay['doc_id'] ?>/download"
+                   class="btn btn-sm btn-outline-secondary py-0 px-1" target="_blank">
+                    <i class="bi bi-download"></i>
+                </a>
+                <?php else: ?>
+                <span class="text-muted small">—</span>
+                <?php endif; ?>
+            </td>
+            <td data-label="">
+                <?php if ($pay['status'] === 'en_attente'): ?>
+                <!-- Formulaire de validation -->
+                <form method="post"
+                      action="/admin/contracts/<?= (int)$contract['id'] ?>/payment/<?= (int)$pay['id'] ?>/validate"
+                      class="d-flex gap-1 align-items-center">
+                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                    <input type="number" name="amount" class="form-control form-control-sm"
+                           style="width:110px" step="0.01" min="0.01"
+                           value="<?= (float)$pay['amount'] > 0 ? htmlspecialchars((string)$pay['amount']) : '' ?>"
+                           placeholder="Montant" required>
+                    <button type="submit" class="btn btn-success btn-sm text-nowrap">
+                        <i class="bi bi-check2 me-1"></i>Valider
+                    </button>
+                </form>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    </div>
+    <?php endif; ?>
+</div>
+</div>
+</div>
+
 <?php endif; ?>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>
