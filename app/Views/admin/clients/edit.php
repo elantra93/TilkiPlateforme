@@ -160,7 +160,7 @@
                         <td class="small text-muted"><?= number_format($doc['file_size']/1024,0) ?>&nbsp;Ko</td>
                         <td class="small text-muted"><?= date('d/m/Y', strtotime($doc['created_at'])) ?></td>
                         <td>
-                            <a href="/documents/<?= (int)$doc['id'] ?>/download"
+                            <a href="/admin/documents/<?= (int)$doc['id'] ?>/download"
                                class="btn btn-sm btn-outline-secondary" target="_blank">
                                 <i class="bi bi-download"></i>
                             </a>

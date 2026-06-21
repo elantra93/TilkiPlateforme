@@ -298,7 +298,7 @@ foreach ($documents ?? [] as $doc) {
                             <?= htmlspecialchars($ud['original_filename']) ?>
                         </span>
                         <span class="text-muted small"><?= date('d/m/Y', strtotime($ud['created_at'])) ?></span>
-                        <a href="/documents/<?= (int)$ud['id'] ?>/download"
+                        <a href="/admin/documents/<?= (int)$ud['id'] ?>/download"
                            class="btn btn-sm btn-outline-secondary py-0 px-1" target="_blank">
                             <i class="bi bi-download"></i>
                         </a>
@@ -349,7 +349,7 @@ foreach ($documents ?? [] as $doc) {
                 <span class="text-muted">(<?= htmlspecialchars($docTypeLabels[$doc['doc_type']] ?? $doc['doc_type']) ?>)</span>
             </span>
             <span class="small text-muted"><?= date('d/m/Y', strtotime($doc['created_at'])) ?></span>
-            <a href="/documents/<?= (int)$doc['id'] ?>/download"
+            <a href="/admin/documents/<?= (int)$doc['id'] ?>/download"
                class="btn btn-sm btn-outline-secondary" target="_blank">
                 <i class="bi bi-download"></i>
             </a>
@@ -486,7 +486,7 @@ foreach ($documents ?? [] as $doc) {
             </td>
             <td data-label="Justificatif">
                 <?php if ($pay['doc_id'] ?? null): ?>
-                <a href="/documents/<?= (int)$pay['doc_id'] ?>/download"
+                <a href="/admin/documents/<?= (int)$pay['doc_id'] ?>/download"
                    class="btn btn-sm btn-outline-secondary py-0 px-1" target="_blank">
                     <i class="bi bi-download"></i>
                 </a>

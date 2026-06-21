@@ -7,7 +7,6 @@ use App\Models\Claim;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\Document;
-use App\Models\Client;
 use App\Services\AuditLogger;
 use App\Services\ContractDocTypes;
 use App\Services\FileStorage;
@@ -242,13 +241,6 @@ class AdminDocumentController extends BaseController
         AdminMiddleware::check();
         $doc = Document::find((int)$id);
         if (!$doc) { http_response_code(404); exit('Document introuvable.'); }
-
-        $real    = realpath($doc['stored_path']);
-        $baseDir = realpath(ROOT_PATH . '/storage');
-        if ($real === false || $baseDir === false || !str_starts_with($real, $baseDir)) {
-            http_response_code(404); exit('Fichier introuvable.');
-        }
-
         AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'doc_download', "document:{$id}", $this->ip());
         FileStorage::serve($doc['stored_path'], $doc['original_filename'], $doc['mime_type']);
     }
