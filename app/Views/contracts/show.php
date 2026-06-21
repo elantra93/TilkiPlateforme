@@ -258,35 +258,120 @@ foreach ($byCategory['souscription'] as $doc) {
             <?php endif; ?>
         </div>
 
-        <!-- ── Formulaire d'upload preuve de règlement ──────────────────── -->
+        <!-- ── Historique des paiements soumis ──────────────────────────── -->
+        <?php if (!empty($payments)): ?>
+        <?php
+        $methodLabels = [
+            'especes'      => 'Espèces',
+            'virement'     => 'Virement',
+            'cheque'       => 'Chèque',
+            'mobile_money' => 'Mobile Money',
+            'carte'        => 'Carte',
+            'caisse'       => 'Caisse',
+        ];
+        ?>
         <div class="card shadow-sm">
             <div class="card-header fw-semibold">
-                <i class="bi bi-upload me-2 text-primary"></i>Déposer une preuve de règlement
+                <i class="bi bi-clock-history me-2 text-secondary"></i>Paiements soumis
+                <span class="badge bg-secondary fw-normal ms-1"><?= count($payments) ?></span>
+            </div>
+            <ul class="list-group list-group-flush">
+                <?php foreach ($payments as $p): ?>
+                <li class="list-group-item py-3">
+                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                        <div>
+                            <div class="fw-semibold small">
+                                <?= number_format((float)$p['amount'], 0, ',', ' ') ?>&nbsp;<?= htmlspecialchars($contract['currency']) ?>
+                                <span class="text-muted fw-normal ms-1">·</span>
+                                <span class="text-muted fw-normal"><?= $methodLabels[$p['method']] ?? htmlspecialchars($p['method']) ?></span>
+                            </div>
+                            <div class="text-muted mt-1" style="font-size:.75rem">
+                                Soumis le <?= date('d/m/Y', strtotime($p['created_at'])) ?>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                            <?php if ($p['doc_id']): ?>
+                            <a href="/documents/<?= (int)$p['doc_id'] ?>/download"
+                               class="btn btn-sm btn-outline-secondary py-0">
+                                <i class="bi bi-download me-1"></i><span class="small">Preuve</span>
+                            </a>
+                            <?php endif; ?>
+                            <?php if ($p['status'] === 'valide'): ?>
+                                <span class="badge bg-success">Validé</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endif; ?>
+
+        <!-- ── Formulaire de règlement ────────────────────────────────────── -->
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-cash-coin me-2 text-primary"></i>Déposer une preuve de règlement
             </div>
             <div class="card-body">
                 <p class="small text-muted mb-3">
-                    Joignez votre reçu de paiement ou virement. Le document sera examiné par notre équipe
-                    avant d'apparaître dans cette section.
+                    Indiquez le montant réglé, le mode de paiement et joignez votre justificatif
+                    (reçu, ordre de virement…). Votre paiement sera validé par l'équipe TILKI.
                 </p>
                 <form method="post"
-                      action="/contracts/<?= (int)$contract['id'] ?>/upload"
+                      action="/contracts/<?= (int)$contract['id'] ?>/payment"
                       enctype="multipart/form-data"
                       novalidate>
                     <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">
-                            Fichier
-                            <span class="text-muted fw-normal">(PDF, JPG ou PNG – max&nbsp;10&nbsp;Mo)</span>
-                        </label>
-                        <input type="file"
-                               name="document"
-                               class="form-control"
-                               accept=".pdf,.jpg,.jpeg,.png"
-                               required>
+
+                    <div class="row g-3">
+                        <div class="col-sm-5">
+                            <label class="form-label small fw-semibold">
+                                Montant <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number"
+                                       name="amount"
+                                       class="form-control"
+                                       min="1"
+                                       step="1"
+                                       placeholder="0"
+                                       required>
+                                <span class="input-group-text"><?= htmlspecialchars($contract['currency']) ?></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-7">
+                            <label class="form-label small fw-semibold">
+                                Mode de paiement <span class="text-danger">*</span>
+                            </label>
+                            <select name="method" class="form-select" required>
+                                <option value="">— Sélectionner —</option>
+                                <option value="especes">Espèces</option>
+                                <option value="virement">Virement</option>
+                                <option value="cheque">Chèque</option>
+                                <option value="mobile_money">Mobile Money</option>
+                                <option value="carte">Carte</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">
+                                Justificatif <span class="text-danger">*</span>
+                                <span class="text-muted fw-normal">(PDF, JPG ou PNG – max&nbsp;10&nbsp;Mo)</span>
+                            </label>
+                            <input type="file"
+                                   name="document"
+                                   class="form-control"
+                                   accept=".pdf,.jpg,.jpeg,.png"
+                                   required>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-upload me-2"></i>Envoyer
-                    </button>
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-2"></i>Envoyer pour validation
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

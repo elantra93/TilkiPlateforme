@@ -12,7 +12,7 @@ use App\Services\FileStorage;
 
 class AdminPaymentController extends BaseController
 {
-    private const METHODS = ['cheque', 'virement', 'caisse', 'mobile_money'];
+    private const METHODS = ['especes', 'virement', 'cheque', 'mobile_money', 'carte'];
 
     public function index(): void
     {
@@ -136,15 +136,16 @@ class AdminPaymentController extends BaseController
         }
 
         $payId = Payment::create([
-            'client_id'         => $clientId,
-            'contract_id'       => $contractId,
-            'amount'            => (float)$amount,
-            'method'            => $method,
-            'proof_document_id' => $proofDocId,
-            'reference'         => $reference,
-            'paid_at'           => $paidAt,
-            'note'              => $note,
-            'created_by'        => (int)$_SESSION['admin_id'],
+            'contract_id' => $contractId,
+            'client_id'   => $clientId,
+            'amount'      => (float)$amount,
+            'method'      => $method,
+            'document_id' => $proofDocId,
+            'status'      => 'valide',
+            'created_by'  => 'admin',
+            'reference'   => $reference,
+            'paid_at'     => $paidAt,
+            'note'        => $note,
         ]);
 
         AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'payment_created',

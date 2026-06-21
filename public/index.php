@@ -107,6 +107,7 @@ $routes = [
         '/password/reset'            => ['Auth',     'resetPassword'],
         '/claims/(\d+)/upload'        => ['Document', 'upload'],
         '/contracts/(\d+)/upload'     => ['Document', 'uploadContract'],
+        '/contracts/(\d+)/payment'    => ['Contract', 'submitPayment'],
         // Admin – Auth
         '/admin/login'                        => ['Admin',           'login'],
         '/admin/logout'                       => ['Admin',           'logout'],

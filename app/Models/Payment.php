@@ -11,10 +11,25 @@ class Payment
         $db = Database::get();
         $db->prepare(
             'INSERT INTO payments
-             (client_id, contract_id, amount, method, proof_document_id, reference, paid_at, note, created_by)
+             (contract_id, client_id, amount, method, document_id, status, created_by,
+              validated_by, validated_at, reference, paid_at, note)
              VALUES
-             (:client_id, :contract_id, :amount, :method, :proof_document_id, :reference, :paid_at, :note, :created_by)'
-        )->execute($data);
+             (:contract_id, :client_id, :amount, :method, :document_id, :status, :created_by,
+              :validated_by, :validated_at, :reference, :paid_at, :note)'
+        )->execute([
+            'contract_id'  => $data['contract_id'],
+            'client_id'    => $data['client_id'],
+            'amount'       => $data['amount'],
+            'method'       => $data['method'],
+            'document_id'  => $data['document_id']  ?? null,
+            'status'       => $data['status']        ?? 'en_attente',
+            'created_by'   => $data['created_by'],
+            'validated_by' => $data['validated_by'] ?? null,
+            'validated_at' => $data['validated_at'] ?? null,
+            'reference'    => $data['reference']    ?? null,
+            'paid_at'      => $data['paid_at']      ?? null,
+            'note'         => $data['note']         ?? null,
+        ]);
         return (int)$db->lastInsertId();
     }
 
@@ -32,9 +47,9 @@ class Payment
                     d.id AS doc_id, d.original_filename AS proof_filename
              FROM payments p
              JOIN contracts co ON p.contract_id = co.id
-             LEFT JOIN documents d ON p.proof_document_id = d.id
+             LEFT JOIN documents d ON p.document_id = d.id
              WHERE p.client_id = ?
-             ORDER BY p.paid_at DESC, p.created_at DESC'
+             ORDER BY p.created_at DESC'
         );
         $stmt->execute([$clientId]);
         return $stmt->fetchAll();
@@ -45,12 +60,23 @@ class Payment
         $stmt = Database::get()->prepare(
             'SELECT p.*, d.id AS doc_id, d.original_filename AS proof_filename
              FROM payments p
-             LEFT JOIN documents d ON p.proof_document_id = d.id
+             LEFT JOIN documents d ON p.document_id = d.id
              WHERE p.contract_id = ?
-             ORDER BY p.paid_at DESC, p.created_at DESC'
+             ORDER BY p.created_at DESC'
         );
         $stmt->execute([$contractId]);
         return $stmt->fetchAll();
+    }
+
+    public static function sumValidated(int $contractId): float
+    {
+        $stmt = Database::get()->prepare(
+            "SELECT COALESCE(SUM(amount), 0)
+             FROM payments
+             WHERE contract_id = ? AND status = 'valide'"
+        );
+        $stmt->execute([$contractId]);
+        return (float)$stmt->fetchColumn();
     }
 
     public static function listAll(): array
@@ -62,8 +88,8 @@ class Payment
              FROM payments p
              JOIN clients cl ON p.client_id = cl.id
              JOIN contracts co ON p.contract_id = co.id
-             LEFT JOIN documents d ON p.proof_document_id = d.id
-             ORDER BY p.paid_at DESC, p.created_at DESC'
+             LEFT JOIN documents d ON p.document_id = d.id
+             ORDER BY p.created_at DESC'
         )->fetchAll();
     }
 }
