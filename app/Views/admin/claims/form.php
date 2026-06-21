@@ -308,67 +308,9 @@ foreach ($documents ?? [] as $doc) {
 </div><!-- /col -->
 </div><!-- /row -->
 
-<script>
-// Cascade catégorie → type de document (section upload sinistre)
-const claimDocTypes = <?= json_encode($docTypes ?? [], JSON_HEX_TAG) ?>;
-const claimDocTypeLabels = {
-    'declaration_sinistre': 'Déclaration de sinistre', 'rapport_circonstances': 'Rapport de circonstances',
-    'constat_amiable': 'Constat amiable', 'plainte': 'Plainte',
-    'rapport_expertise': "Rapport d'expertise", 'devis_reparation': 'Devis de réparation',
-    'constat_police': 'Constat de police', 'contre_expertise': 'Contre-expertise',
-    'estimation_perte': 'Estimation de perte',
-    'courrier_assureur': "Courrier assureur", 'courrier_expert': 'Courrier expert',
-    'courrier_client': 'Courrier client', 'mise_en_demeure': 'Mise en demeure',
-    'virement': 'Virement', 'cheque': 'Chèque',
-    'quittance_reglement': 'Quittance de règlement', 'decompte_indemnite': "Décompte d'indemnité",
-};
-document.getElementById('claimCatSel')?.addEventListener('change', function () {
-    const sel = document.getElementById('claimDocTypeSel');
-    const types = claimDocTypes[this.value] || [];
-    sel.innerHTML = '<option value="">— Sélectionner —</option>';
-    types.forEach(t => {
-        sel.add(new Option(claimDocTypeLabels[t] ?? t.replace(/_/g, ' '), t));
-    });
-});
-
-const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;
-
-document.getElementById('clientSel')?.addEventListener('change', function () {
-    const sel   = document.getElementById('contractSel');
-    const items = contractsByClient[this.value] || [];
-    sel.innerHTML = '<option value="">— Aucun —</option>';
-    items.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value       = c.id;
-        opt.textContent = c.label;
-        sel.appendChild(opt);
-    });
-});
-
-// Sync step checkboxes and dates to form hidden inputs
-document.querySelectorAll('.step-cb').forEach(cb => {
-    const stepId    = cb.dataset.step;
-    const row       = cb.closest('tr');
-    const dateInput = row.querySelector('.step-date');
-    const form      = row.querySelector('.step-form');
-    const hComp     = form.querySelector('.h-completed');
-    const hDate     = form.querySelector('.h-date');
-
-    cb.addEventListener('change', function () {
-        hComp.value = this.checked ? '1' : '';
-        if (dateInput) {
-            dateInput.disabled = !this.checked;
-            if (!this.checked) { dateInput.value = ''; hDate.value = ''; }
-        }
-        form.submit();
-    });
-
-    if (dateInput) {
-        dateInput.addEventListener('change', function () {
-            hDate.value = this.value;
-        });
-    }
-});
-</script>
+<div id="claimFormCtx"
+     data-doc-types="<?= htmlspecialchars(json_encode($docTypes ?? [], JSON_HEX_TAG)) ?>"
+     data-contracts="<?= htmlspecialchars(json_encode($contractsByClient, JSON_HEX_TAG)) ?>"></div>
+<script src="/assets/js/claim-form.js"></script>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>

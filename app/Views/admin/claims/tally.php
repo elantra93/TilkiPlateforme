@@ -75,34 +75,8 @@
 </div>
 </div>
 
-<script>
-const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;
-
-const clientSel   = document.getElementById('clientSel');
-const contractSel = document.getElementById('contractSel');
-
-function show(id) { document.getElementById(id).style.display = ''; }
-function hide(id) { document.getElementById(id).style.display = 'none'; }
-
-clientSel.addEventListener('change', function () {
-    hide('contractRow');
-    hide('submitRow');
-    contractSel.innerHTML = '<option value="">— Sélectionner une police —</option>';
-    if (!this.value) return;
-
-    (contractsByClient[this.value] || []).forEach(c => {
-        const opt = document.createElement('option');
-        opt.value       = c.id;
-        opt.textContent = c.label;
-        contractSel.appendChild(opt);
-    });
-    show('contractRow');
-});
-
-contractSel.addEventListener('change', function () {
-    if (this.value) show('submitRow');
-    else            hide('submitRow');
-});
-</script>
+<div id="claimTallyCtx"
+     data-contracts="<?= htmlspecialchars(json_encode($contractsByClient, JSON_HEX_TAG)) ?>"></div>
+<script src="/assets/js/claim-tally.js"></script>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>

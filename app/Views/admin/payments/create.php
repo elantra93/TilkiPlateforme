@@ -114,37 +114,9 @@
     </div>
 </div>
 
-<script>
-(function () {
-    const contractsByClient = <?= json_encode($contractsByClient, JSON_HEX_TAG) ?>;
-    const preContractId     = <?= (int)($preContractId ?? 0) ?>;
-
-    const clientSel   = document.getElementById('clientSel');
-    const contractSel = document.getElementById('contractSel');
-
-    function populateContracts(clientId) {
-        contractSel.innerHTML = '';
-        const placeholder = new Option('— Sélectionner un contrat —', '');
-        contractSel.add(placeholder);
-
-        const list = contractsByClient[clientId] ?? [];
-        list.forEach(c => {
-            const opt = new Option(c.label, c.id);
-            if (c.id === preContractId) opt.selected = true;
-            contractSel.add(opt);
-        });
-
-        if (list.length === 1) contractSel.selectedIndex = 1;
-    }
-
-    clientSel.addEventListener('change', function () {
-        populateContracts(this.value);
-    });
-
-    if (clientSel.value) {
-        populateContracts(clientSel.value);
-    }
-})();
-</script>
+<div id="paymentCreateCtx"
+     data-contracts="<?= htmlspecialchars(json_encode($contractsByClient, JSON_HEX_TAG)) ?>"
+     data-pre-contract="<?= (int)($preContractId ?? 0) ?>"></div>
+<script src="/assets/js/payment-create.js"></script>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>

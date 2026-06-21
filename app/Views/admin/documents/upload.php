@@ -116,137 +116,14 @@
 </div>
 </div>
 
-<script>
-const contractsByClient  = <?= json_encode($contractsByClient,  JSON_HEX_TAG) ?>;
-const claimsByClient     = <?= json_encode($claimsByClient,     JSON_HEX_TAG) ?>;
-const docTypes           = <?= json_encode($docTypes,           JSON_HEX_TAG) ?>;
-const branchDocTypes     = <?= json_encode($branchDocTypes,     JSON_HEX_TAG) ?>;
-const genericSouscription= <?= json_encode($genericSouscription,JSON_HEX_TAG) ?>;
-
-const catLabels = {
-    cotation:                  'Cotation',
-    souscription:              'Documents du contrat',
-    declaration:               'Déclaration',
-    expertise_devis:           "Rapports d'expertises et devis",
-    correspondances:           'Correspondances',
-    reglements_remboursements: 'Règlements et remboursements',
-};
-const catContrat  = <?= json_encode($catContrat,  JSON_HEX_TAG) ?>;
-const catSinistre = <?= json_encode($catSinistre, JSON_HEX_TAG) ?>;
-
-const clientSel   = document.getElementById('clientSel');
-const contractSel = document.getElementById('contractSel');
-const claimSel    = document.getElementById('claimSel');
-const categorySel = document.getElementById('categorySel');
-const docTypeSel  = document.getElementById('docTypeSel');
-
-function show(id)  { document.getElementById(id).style.display = ''; }
-function hide(id)  { document.getElementById(id).style.display = 'none'; }
-
-function resetFrom(step) {
-    if (step <= 2) { hide('scopeRow');    document.querySelectorAll('input[name=scope]').forEach(r => r.checked = false); }
-    if (step <= 3) { hide('contractRow'); hide('claimRow'); contractSel.innerHTML = '<option value="">—</option>'; claimSel.innerHTML = '<option value="">—</option>'; }
-    if (step <= 4) { hide('categoryRow'); hide('docTypeRow'); categorySel.innerHTML = '<option value="">— Choisir —</option>'; docTypeSel.innerHTML = '<option value="">—</option>'; }
-    if (step <= 5) { hide('fileRow'); hide('submitRow'); }
-}
-
-function populateCategories(cats) {
-    categorySel.innerHTML = '<option value="">— Choisir —</option>';
-    cats.forEach(c => {
-        categorySel.innerHTML += `<option value="${c}">${catLabels[c] ?? c}</option>`;
-    });
-}
-
-// Retourne la branche du contrat sélectionné (string normalisée)
-function selectedContractBranche() {
-    const cid = contractSel.value;
-    if (!cid) return null;
-    for (const list of Object.values(contractsByClient)) {
-        for (const c of list) {
-            if (String(c.id) === String(cid)) return c.branche;
-        }
-    }
-    return null;
-}
-
-function populateDocTypes(category) {
-    docTypeSel.innerHTML = '<option value="">— Sélectionner —</option>';
-
-    if (category === 'souscription') {
-        const branche  = selectedContractBranche();
-        const specific = branche ? (branchDocTypes[branche] ?? null) : null;
-        if (specific) {
-            specific.forEach(t => {
-                const suffix = t.required ? '' : ' (optionnel)';
-                docTypeSel.innerHTML += `<option value="${t.key}">${t.label}${suffix}</option>`;
-            });
-        } else {
-            genericSouscription.forEach(t => {
-                docTypeSel.innerHTML += `<option value="${t}">${t.replace(/_/g, ' ')}</option>`;
-            });
-        }
-    } else {
-        (docTypes[category] || []).forEach(t => {
-            docTypeSel.innerHTML += `<option value="${t}">${t.replace(/_/g, ' ')}</option>`;
-        });
-    }
-
-    show('docTypeRow');
-    show('fileRow');
-    show('submitRow');
-}
-
-clientSel.addEventListener('change', function () {
-    resetFrom(2);
-    if (!this.value) return;
-    contractSel.innerHTML = '<option value="">— Sélectionner —</option>';
-    (contractsByClient[this.value] || []).forEach(c => {
-        contractSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
-    });
-    claimSel.innerHTML = '<option value="">— Sélectionner —</option>';
-    (claimsByClient[this.value] || []).forEach(c => {
-        claimSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
-    });
-    show('scopeRow');
-});
-
-document.querySelectorAll('input[name=scope]').forEach(radio => {
-    radio.addEventListener('change', function () {
-        resetFrom(3);
-        const clientId = clientSel.value;
-        if (this.value === 'contrat') {
-            contractSel.innerHTML = '<option value="">— Sélectionner un contrat —</option>';
-            (contractsByClient[clientId] || []).forEach(c => {
-                contractSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
-            });
-            show('contractRow'); hide('claimRow');
-        } else {
-            claimSel.innerHTML = '<option value="">— Sélectionner un sinistre —</option>';
-            (claimsByClient[clientId] || []).forEach(c => {
-                claimSel.innerHTML += `<option value="${c.id}">${c.label}</option>`;
-            });
-            show('claimRow'); hide('contractRow');
-        }
-        populateCategories(this.value === 'contrat' ? catContrat : catSinistre);
-        show('categoryRow');
-    });
-});
-
-[contractSel, claimSel].forEach(sel => {
-    sel.addEventListener('change', function () {
-        resetFrom(4);
-        if (!this.value) return;
-        const scope = document.querySelector('input[name=scope]:checked')?.value;
-        populateCategories(scope === 'sinistre' ? catSinistre : catContrat);
-        show('categoryRow');
-    });
-});
-
-categorySel.addEventListener('change', function () {
-    resetFrom(5);
-    if (!this.value) return;
-    populateDocTypes(this.value);
-});
-</script>
+<div id="docUploadCtx"
+     data-contracts="<?= htmlspecialchars(json_encode($contractsByClient,   JSON_HEX_TAG)) ?>"
+     data-claims="<?= htmlspecialchars(json_encode($claimsByClient,         JSON_HEX_TAG)) ?>"
+     data-doc-types="<?= htmlspecialchars(json_encode($docTypes,            JSON_HEX_TAG)) ?>"
+     data-branch-doc-types="<?= htmlspecialchars(json_encode($branchDocTypes, JSON_HEX_TAG)) ?>"
+     data-generic="<?= htmlspecialchars(json_encode($genericSouscription,   JSON_HEX_TAG)) ?>"
+     data-cat-contrat="<?= htmlspecialchars(json_encode($catContrat,        JSON_HEX_TAG)) ?>"
+     data-cat-sinistre="<?= htmlspecialchars(json_encode($catSinistre,      JSON_HEX_TAG)) ?>"></div>
+<script src="/assets/js/document-upload.js"></script>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>

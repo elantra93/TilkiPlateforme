@@ -138,18 +138,6 @@ function tallyFieldPreview(string $jsonPayload, int $max = 6): array
 </div>
 <?php endif; ?>
 
-<script>
-document.querySelectorAll('#statusFilter .nav-link').forEach(link => {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.querySelectorAll('#statusFilter .nav-link').forEach(l => l.classList.remove('active'));
-        this.classList.add('active');
-        const filter = this.dataset.filter;
-        document.querySelectorAll('.entry-card').forEach(card => {
-            card.style.display = (filter === 'all' || card.dataset.status === filter) ? '' : 'none';
-        });
-    });
-});
-</script>
+<script src="/assets/js/tally-queue.js"></script>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>
