@@ -64,6 +64,7 @@ $routes = [
         '/claims/declare'            => ['Claim',    'declare'],
         '/claims/(\d+)'              => ['Claim',    'show'],
         '/payments'                  => ['Payment',  'index'],
+        '/devis'                     => ['Devis',    'index'],
         '/documents/(\d+)/download'  => ['Document', 'download'],
         '/documents/(\d+)/view'      => ['Document', 'view'],
         '/account'                   => ['Account',  'show'],
