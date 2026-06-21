@@ -121,7 +121,7 @@ class Document
     public static function pending(): array
     {
         return Database::get()->query(
-            "SELECT d.*, c.first_name, c.last_name, c.account_number,
+            "SELECT d.*, c.first_name, c.last_name, c.account_number, c.email,
                     co.policy_number, cl.claim_number
              FROM documents d
              JOIN clients c ON d.client_id = c.id
@@ -135,6 +135,12 @@ class Document
     public static function validateDoc(int $id): void
     {
         Database::get()->prepare("UPDATE documents SET status = 'valide' WHERE id = ?")
+            ->execute([$id]);
+    }
+
+    public static function rejectDoc(int $id): void
+    {
+        Database::get()->prepare("UPDATE documents SET status = 'rejeté' WHERE id = ?")
             ->execute([$id]);
     }
 

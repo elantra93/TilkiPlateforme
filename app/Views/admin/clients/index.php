@@ -27,7 +27,7 @@
                 <tr><td colspan="6" class="text-center text-muted py-4">Aucun client.</td></tr>
                 <?php endif; ?>
                 <?php foreach ($clients as $c): ?>
-                <tr>
+                <tr class="tbl-row-link" data-href="/admin/clients/<?= (int)$c['id'] ?>/edit">
                     <td data-label="N° Compte"><code><?= htmlspecialchars($c['account_number']) ?></code></td>
                     <td data-label="Nom" class="fw-semibold"><?= htmlspecialchars($c['first_name'] . ' ' . $c['last_name']) ?></td>
                     <td data-label="Email"><?= htmlspecialchars($c['email']) ?></td>

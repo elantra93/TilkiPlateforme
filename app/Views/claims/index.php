@@ -33,7 +33,7 @@
                 </thead>
                 <tbody>
                     <?php foreach ($claims as $cl): ?>
-                        <tr>
+                        <tr class="tbl-row-link" data-href="/claims/<?= (int)$cl['id'] ?>">
                             <td data-label="N° Sinistre"><code><?= htmlspecialchars($cl['claim_number']) ?></code></td>
                             <td data-label="Branche"><?= htmlspecialchars($cl['branche']) ?></td>
                             <td data-label="Assureur"><?= htmlspecialchars($cl['insurer']) ?></td>

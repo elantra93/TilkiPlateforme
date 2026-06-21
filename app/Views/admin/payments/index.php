@@ -13,14 +13,15 @@
 <?php else: ?>
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <?php $labels = ['cheque'=>'Chèque','virement'=>'Virement','caisse'=>'Caisse','mobile_money'=>'Mobile Money']; ?>
+        <table class="table table-hover align-middle mb-0 tbl-card-mobile">
             <thead class="table-light">
                 <tr>
                     <th>Date</th>
                     <th>Client</th>
                     <th>Police</th>
                     <th>Branche</th>
-                    <th class="text-end">Montant</th>
+                    <th>Montant</th>
                     <th>Mode</th>
                     <th>Référence</th>
                     <th>Preuve</th>
@@ -29,28 +30,25 @@
             <tbody>
             <?php foreach ($payments as $p): ?>
                 <tr>
-                    <td><?= date('d/m/Y', strtotime($p['paid_at'])) ?></td>
-                    <td>
-                        <a href="/admin/clients/<?= (int)$p['client_id'] ?>/edit" class="text-decoration-none">
+                    <td data-label="Date"><?= date('d/m/Y', strtotime($p['paid_at'])) ?></td>
+                    <td data-label="Client">
+                        <a href="/admin/clients/<?= (int)$p['client_id'] ?>/edit" class="text-decoration-none fw-semibold">
                             <?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?>
                         </a>
-                        <br><small class="text-muted"><?= htmlspecialchars($p['account_number']) ?></small>
+                        <div class="text-muted" style="font-size:.75rem"><?= htmlspecialchars($p['account_number']) ?></div>
                     </td>
-                    <td><code><?= htmlspecialchars($p['policy_number']) ?></code></td>
-                    <td><?= htmlspecialchars($p['branche']) ?></td>
-                    <td class="text-end fw-semibold">
+                    <td data-label="Police"><code><?= htmlspecialchars($p['policy_number']) ?></code></td>
+                    <td data-label="Branche"><?= htmlspecialchars($p['branche']) ?></td>
+                    <td data-label="Montant" class="fw-semibold">
                         <?= number_format((float)$p['amount'], 0, ',', ' ') ?>&nbsp;XOF
                     </td>
-                    <td>
-                        <?php
-                        $labels = ['cheque'=>'Chèque','virement'=>'Virement','caisse'=>'Caisse','mobile_money'=>'Mobile Money'];
-                        ?>
+                    <td data-label="Mode">
                         <span class="badge bg-secondary"><?= $labels[$p['method']] ?? htmlspecialchars($p['method']) ?></span>
                     </td>
-                    <td><?= htmlspecialchars($p['reference'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="Référence"><?= htmlspecialchars($p['reference'] ?? '—') ?></td>
+                    <td data-label="Preuve">
                         <?php if ($p['doc_id']): ?>
-                            <a href="/documents/<?= (int)$p['doc_id'] ?>/download"
+                            <a href="/admin/documents/<?= (int)$p['doc_id'] ?>/download"
                                class="btn btn-sm btn-outline-secondary" target="_blank">
                                 <i class="bi bi-download me-1"></i>Télécharger
                             </a>

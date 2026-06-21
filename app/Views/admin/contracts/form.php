@@ -496,19 +496,20 @@ foreach ($documents ?? [] as $doc) {
             </td>
             <td data-label="">
                 <?php if ($pay['status'] === 'en_attente'): ?>
-                <!-- Formulaire de validation -->
-                <form method="post"
-                      action="/admin/contracts/<?= (int)$contract['id'] ?>/payment/<?= (int)$pay['id'] ?>/validate"
-                      class="d-flex gap-1 align-items-center">
-                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
-                    <input type="number" name="amount" class="form-control form-control-sm"
-                           style="width:110px" step="0.01" min="0.01"
-                           value="<?= (float)$pay['amount'] > 0 ? htmlspecialchars((string)$pay['amount']) : '' ?>"
-                           placeholder="Montant" required>
-                    <button type="submit" class="btn btn-success btn-sm text-nowrap">
-                        <i class="bi bi-check2 me-1"></i>Valider
-                    </button>
-                </form>
+                <button type="button" class="btn btn-sm btn-outline-primary btn-verify"
+                    data-verify-type="payment"
+                    data-id="<?= (int)$pay['id'] ?>"
+                    data-contract-id="<?= (int)$contract['id'] ?>"
+                    data-amount="<?= (float)$pay['amount'] ?>"
+                    data-method="<?= htmlspecialchars($pay['method']) ?>"
+                    data-reference="<?= htmlspecialchars($pay['reference'] ?? '') ?>"
+                    data-date="<?= htmlspecialchars($pay['paid_at'] ? date('d/m/Y', strtotime($pay['paid_at'])) : date('d/m/Y', strtotime($pay['created_at']))) ?>"
+                    data-created-by="<?= htmlspecialchars($pay['created_by']) ?>"
+                    data-status="<?= htmlspecialchars($pay['status']) ?>"
+                    data-doc-id="<?= ($pay['doc_id'] ?? '') ? (int)$pay['doc_id'] : '' ?>"
+                    data-csrf="<?= htmlspecialchars($csrf) ?>">
+                    <i class="bi bi-eye me-1"></i>Vérifier
+                </button>
                 <?php endif; ?>
             </td>
         </tr>

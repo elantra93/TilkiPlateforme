@@ -7,9 +7,11 @@ use App\Models\Claim;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\Document;
+use App\Models\Client;
 use App\Services\AuditLogger;
 use App\Services\ContractDocTypes;
 use App\Services\FileStorage;
+use App\Services\Mailer;
 
 class AdminDocumentController extends BaseController
 {
@@ -169,7 +171,116 @@ class AdminDocumentController extends BaseController
 
         Document::validateDoc((int)$id);
         AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'doc_validated', "document:{$id}", $this->ip());
+
+        $client = Client::findById((int)$doc['client_id']);
+        if ($client) {
+            Mailer::send(
+                $client['email'],
+                $client['first_name'] . ' ' . $client['last_name'],
+                'Document validé – TILKI Assurances',
+                self::emailHtml($client, $doc, true)
+            );
+        }
+
         $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Document validé.'];
         $this->redirect('/admin/documents/pending');
+    }
+
+    public function reject(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $doc = Document::find((int)$id);
+        if (!$doc) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Document introuvable.'];
+            $this->redirect('/admin/documents/pending');
+            return;
+        }
+
+        Document::rejectDoc((int)$id);
+        AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'doc_rejected', "document:{$id}", $this->ip());
+
+        $client = Client::findById((int)$doc['client_id']);
+        if ($client) {
+            Mailer::send(
+                $client['email'],
+                $client['first_name'] . ' ' . $client['last_name'],
+                'Document refusé – TILKI Assurances',
+                self::emailHtml($client, $doc, false)
+            );
+        }
+
+        $_SESSION['admin_flash'] = ['type' => 'warning', 'msg' => 'Document refusé.'];
+        $this->redirect('/admin/documents/pending');
+    }
+
+    public function preview(string $id): void
+    {
+        AdminMiddleware::check();
+        $doc = Document::find((int)$id);
+        if (!$doc) { http_response_code(404); exit('Document introuvable.'); }
+
+        $real    = realpath($doc['stored_path']);
+        $baseDir = realpath(ROOT_PATH . '/storage');
+        if ($real === false || $baseDir === false || !str_starts_with($real, $baseDir)) {
+            http_response_code(404); exit('Fichier introuvable.');
+        }
+
+        AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'doc_preview', "document:{$id}", $this->ip());
+        header('Content-Type: ' . $doc['mime_type']);
+        header('Content-Disposition: inline; filename="' . rawurlencode($doc['original_filename']) . '"');
+        header('Content-Length: ' . filesize($real));
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: private, no-store');
+        readfile($real);
+        exit;
+    }
+
+    public function adminDownload(string $id): void
+    {
+        AdminMiddleware::check();
+        $doc = Document::find((int)$id);
+        if (!$doc) { http_response_code(404); exit('Document introuvable.'); }
+
+        $real    = realpath($doc['stored_path']);
+        $baseDir = realpath(ROOT_PATH . '/storage');
+        if ($real === false || $baseDir === false || !str_starts_with($real, $baseDir)) {
+            http_response_code(404); exit('Fichier introuvable.');
+        }
+
+        AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'doc_download', "document:{$id}", $this->ip());
+        FileStorage::serve($doc['stored_path'], $doc['original_filename'], $doc['mime_type']);
+    }
+
+    private static function emailHtml(array $client, array $doc, bool $validated): string
+    {
+        $name    = htmlspecialchars($client['first_name'] . ' ' . $client['last_name']);
+        $type    = htmlspecialchars($doc['doc_type']);
+        $color   = $validated ? '#16a34a' : '#dc2626';
+        $icon    = $validated ? '✅' : '❌';
+        $title   = $validated ? 'Document validé' : 'Document refusé';
+        $message = $validated
+            ? 'Votre document de type <strong>' . $type . '</strong> a été <strong>validé</strong> par notre équipe. Vous pouvez le consulter dans votre espace client.'
+            : 'Votre document de type <strong>' . $type . '</strong> n\'a pas pu être accepté en l\'état. Nous vous invitons à nous contacter ou à soumettre à nouveau le document corrigé.';
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="fr"><head><meta charset="UTF-8"></head>
+        <body style="font-family:system-ui,sans-serif;background:#f9fafb;margin:0;padding:20px">
+        <div style="max-width:580px;margin:auto;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb">
+          <div style="background:{$color};padding:24px 28px">
+            <p style="color:#fff;font-size:1.25rem;font-weight:700;margin:0">{$icon} {$title}</p>
+          </div>
+          <div style="padding:28px">
+            <p>Bonjour <strong>{$name}</strong>,</p>
+            <p>{$message}</p>
+            <p style="color:#6b7280;font-size:.85em;border-top:1px solid #e5e7eb;padding-top:16px;margin-top:24px">
+              — L'équipe TILKI Assurances
+            </p>
+          </div>
+        </div>
+        </body></html>
+        HTML;
     }
 }

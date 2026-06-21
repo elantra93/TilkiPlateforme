@@ -25,7 +25,7 @@
                 </thead>
                 <tbody>
                     <?php foreach ($contracts as $c): ?>
-                        <tr>
+                        <tr class="tbl-row-link" data-href="/contracts/<?= (int)$c['id'] ?>">
                             <td data-label="Branche" class="fw-semibold"><?= htmlspecialchars($c['branche']) ?></td>
                             <td data-label="N° Police"><code><?= htmlspecialchars($c['policy_number']) ?></code></td>
                             <td data-label="Assureur"><?= htmlspecialchars($c['insurer']) ?></td>

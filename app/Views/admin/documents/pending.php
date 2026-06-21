@@ -8,9 +8,6 @@
             <span class="badge bg-warning text-dark ms-1"><?= count($docs) ?></span>
         <?php endif; ?>
     </h2>
-    <a href="/admin/documents/upload" class="btn btn-sm btn-primary">
-        <i class="bi bi-upload me-1"></i>Uploader un document
-    </a>
 </div>
 
 <?php if (empty($docs)): ?>
@@ -23,7 +20,7 @@
 <?php else: ?>
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 tbl-card-mobile">
             <thead class="table-dark">
                 <tr>
                     <th>Date dépôt</th>
@@ -38,13 +35,18 @@
             </thead>
             <tbody>
                 <?php foreach ($docs as $doc): ?>
+                <?php
+                    $uploader = $doc['source'] === 'client'
+                        ? htmlspecialchars($doc['first_name'] . ' ' . $doc['last_name'])
+                        : ($doc['source'] === 'tally' ? 'Formulaire Tally' : 'Administration');
+                ?>
                 <tr>
-                    <td class="text-muted small"><?= date('d/m/Y H:i', strtotime($doc['created_at'])) ?></td>
-                    <td>
+                    <td data-label="Date dépôt" class="text-muted small"><?= date('d/m/Y H:i', strtotime($doc['created_at'])) ?></td>
+                    <td data-label="Client">
                         <div class="fw-semibold small"><?= htmlspecialchars($doc['first_name'] . ' ' . $doc['last_name']) ?></div>
                         <div class="text-muted" style="font-size:.75rem"><code><?= htmlspecialchars($doc['account_number']) ?></code></div>
                     </td>
-                    <td class="small">
+                    <td data-label="Contrat / Sinistre" class="small">
                         <?php if ($doc['scope'] === 'contrat' && $doc['policy_number']): ?>
                             <i class="bi bi-file-earmark-text text-primary me-1"></i>
                             <code><?= htmlspecialchars($doc['policy_number']) ?></code>
@@ -55,24 +57,31 @@
                             <span class="text-muted">—</span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="Famille">
                         <span class="badge bg-<?= $doc['category'] === 'cotation' ? 'info' : 'success' ?> bg-opacity-75">
                             <?= htmlspecialchars($doc['category']) ?>
                         </span>
                     </td>
-                    <td class="small"><?= htmlspecialchars($doc['doc_type']) ?></td>
-                    <td class="small text-truncate" style="max-width:180px" title="<?= htmlspecialchars($doc['original_filename']) ?>">
+                    <td data-label="Type" class="small"><?= htmlspecialchars($doc['doc_type']) ?></td>
+                    <td data-label="Fichier" class="small text-truncate" style="max-width:180px" title="<?= htmlspecialchars($doc['original_filename']) ?>">
                         <?= htmlspecialchars($doc['original_filename']) ?>
                     </td>
-                    <td class="small text-muted"><?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko</td>
-                    <td>
-                        <form method="post" action="/admin/documents/<?= (int)$doc['id'] ?>/validate"
-                              onsubmit="return confirm('Valider ce document ?')">
-                            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
-                            <button type="submit" class="btn btn-sm btn-success">
-                                <i class="bi bi-check-lg me-1"></i>Valider
-                            </button>
-                        </form>
+                    <td data-label="Taille" class="small text-muted"><?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko</td>
+                    <td data-label="">
+                        <button type="button" class="btn btn-sm btn-primary btn-verify"
+                            data-verify-type="document"
+                            data-id="<?= (int)$doc['id'] ?>"
+                            data-name="<?= htmlspecialchars($doc['original_filename']) ?>"
+                            data-size="<?= (int)$doc['file_size'] ?>"
+                            data-mime="<?= htmlspecialchars($doc['mime_type']) ?>"
+                            data-date="<?= htmlspecialchars(date('d/m/Y H:i', strtotime($doc['created_at']))) ?>"
+                            data-source="<?= htmlspecialchars($doc['source']) ?>"
+                            data-uploader="<?= $uploader ?>"
+                            data-doc-type="<?= htmlspecialchars($doc['doc_type']) ?>"
+                            data-category="<?= htmlspecialchars($doc['category']) ?>"
+                            data-csrf="<?= htmlspecialchars($csrf) ?>">
+                            <i class="bi bi-eye me-1"></i>Vérifier
+                        </button>
                     </td>
                 </tr>
                 <?php endforeach; ?>

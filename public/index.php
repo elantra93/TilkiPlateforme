@@ -96,6 +96,8 @@ $routes = [
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'redirectUpload'],
         '/admin/documents/pending'            => ['AdminDocument',   'pending'],
+        '/admin/documents/(\d+)/preview'      => ['AdminDocument',   'preview'],
+        '/admin/documents/(\d+)/download'     => ['AdminDocument',   'adminDownload'],
         // Admin – File Tally
         '/admin/tally/queue'                  => ['AdminTally',      'queue'],
         // Admin – Devis
@@ -135,9 +137,10 @@ $routes = [
         '/admin/claims/(\d+)/upload'          => ['AdminClaim',      'uploadDoc'],
         // Admin – Paiements
         '/admin/payments/create'              => ['AdminPayment',    'create'],
-        // Admin – Documents (standalone upload supprimé → uniquement validation)
+        // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'redirectUpload'],
         '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],
+        '/admin/documents/(\d+)/reject'       => ['AdminDocument',   'reject'],
         // Admin – File Tally
         '/admin/tally/(\d+)/match'            => ['AdminTally',      'match'],
         '/admin/tally/(\d+)/ignore'           => ['AdminTally',      'ignore'],

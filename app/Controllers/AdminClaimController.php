@@ -23,11 +23,22 @@ class AdminClaimController extends BaseController
         'reglements_remboursements' => ['virement', 'cheque', 'quittance_reglement', 'decompte_indemnite'],
     ];
 
+    private const PER_PAGE = 20;
+
     public function index(): void
     {
         AdminMiddleware::check();
+        $page   = max(1, (int)($_GET['page'] ?? 1));
+        $total  = Claim::countAll();
+        $pages  = (int)ceil($total / self::PER_PAGE);
+        $page   = min($page, max(1, $pages));
+        $claims = Claim::allPaginated(self::PER_PAGE, ($page - 1) * self::PER_PAGE);
+
         $this->render('admin.claims.index', [
-            'claims' => Claim::all(),
+            'claims' => $claims,
+            'page'   => $page,
+            'pages'  => $pages,
+            'total'  => $total,
         ]);
     }
 

@@ -10,37 +10,35 @@
 <?php else: ?>
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <?php $methodLabels = ['cheque'=>'Chèque','virement'=>'Virement','caisse'=>'Caisse','mobile_money'=>'Mobile Money']; ?>
+        <table class="table table-hover align-middle mb-0 tbl-card-mobile">
             <thead class="table-light">
                 <tr>
                     <th>Date</th>
                     <th>Police</th>
                     <th>Branche</th>
-                    <th class="text-end">Montant</th>
+                    <th>Montant</th>
                     <th>Mode</th>
                     <th>Référence</th>
                     <th>Preuve</th>
                 </tr>
             </thead>
             <tbody>
-            <?php
-            $methodLabels = ['cheque'=>'Chèque','virement'=>'Virement','caisse'=>'Caisse','mobile_money'=>'Mobile Money'];
-            foreach ($payments as $p):
-            ?>
+            <?php foreach ($payments as $p): ?>
                 <tr>
-                    <td><?= date('d/m/Y', strtotime($p['paid_at'])) ?></td>
-                    <td><code><?= htmlspecialchars($p['policy_number']) ?></code></td>
-                    <td><?= htmlspecialchars($p['branche']) ?></td>
-                    <td class="text-end fw-semibold">
+                    <td data-label="Date"><?= date('d/m/Y', strtotime($p['paid_at'])) ?></td>
+                    <td data-label="Police"><code><?= htmlspecialchars($p['policy_number']) ?></code></td>
+                    <td data-label="Branche"><?= htmlspecialchars($p['branche']) ?></td>
+                    <td data-label="Montant" class="fw-semibold">
                         <?= number_format((float)$p['amount'], 0, ',', ' ') ?>&nbsp;XOF
                     </td>
-                    <td>
+                    <td data-label="Mode">
                         <span class="badge bg-secondary">
                             <?= $methodLabels[$p['method']] ?? htmlspecialchars($p['method']) ?>
                         </span>
                     </td>
-                    <td><?= htmlspecialchars($p['reference'] ?? '—') ?></td>
-                    <td>
+                    <td data-label="Référence"><?= htmlspecialchars($p['reference'] ?? '—') ?></td>
+                    <td data-label="Preuve">
                         <?php if ($p['doc_id']): ?>
                             <a href="/documents/<?= (int)$p['doc_id'] ?>/download"
                                class="btn btn-sm btn-outline-primary">

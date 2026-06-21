@@ -58,6 +58,25 @@ class Claim
         )->fetchAll();
     }
 
+    public static function countAll(): int
+    {
+        return (int)Database::get()->query('SELECT COUNT(*) FROM claims')->fetchColumn();
+    }
+
+    public static function allPaginated(int $limit, int $offset): array
+    {
+        $stmt = Database::get()->prepare(
+            'SELECT cl.*, c.first_name, c.last_name, c.account_number, co.policy_number
+             FROM claims cl
+             JOIN clients c ON cl.client_id = c.id
+             LEFT JOIN contracts co ON cl.contract_id = co.id
+             ORDER BY cl.created_at DESC
+             LIMIT ? OFFSET ?'
+        );
+        $stmt->execute([$limit, $offset]);
+        return $stmt->fetchAll();
+    }
+
     public static function find(int $id): ?array
     {
         $stmt = Database::get()->prepare('SELECT * FROM claims WHERE id = ? LIMIT 1');

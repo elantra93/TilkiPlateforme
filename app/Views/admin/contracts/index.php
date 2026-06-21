@@ -29,7 +29,7 @@
                 <tr><td colspan="9" class="text-center text-muted py-4">Aucun contrat.</td></tr>
                 <?php endif; ?>
                 <?php foreach ($contracts as $c): ?>
-                <tr>
+                <tr class="tbl-row-link" data-href="/admin/contracts/<?= (int)$c['id'] ?>/edit">
                     <td data-label="Client">
                         <div class="fw-semibold small"><?= htmlspecialchars($c['first_name'] . ' ' . $c['last_name']) ?></div>
                         <div class="text-muted" style="font-size:.75rem"><code><?= htmlspecialchars($c['account_number']) ?></code></div>
