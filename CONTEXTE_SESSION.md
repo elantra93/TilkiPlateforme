@@ -1,7 +1,7 @@
 # Contexte de session — TilkiPlateforme
 
 > Ouvrir ce fichier au début d'une nouvelle session Claude Code pour reprendre le travail.
-> Dernière mise à jour : 2026-06-19
+> Dernière mise à jour : 2026-06-21
 
 ---
 
@@ -172,8 +172,33 @@ TilkiPlateforme/
 
 ---
 
+## Session 2026-06-21 (suite)
+
+### BLOC 1 – Tableaux responsive
+- `tbl-card-mobile` + `data-label` ajoutés sur : `admin/payments/index.php`, `admin/documents/pending.php`, `payments/index.php` (client)
+
+### BLOC 2 – Lignes cliquables
+- `app.js` : stopPropagation sur liens/boutons internes, navigation clavier (Entrée), tabindex=0
+- `data-href` + classe `tbl-row-link` sur toutes les listes : contrats, sinistres, clients (client + admin)
+
+### BLOC 3 – Popup de vérification (CSP stricte, JS externe)
+- `verify-modal.js` : modale Bootstrap `#verifyModal` dans admin footer, données via `data-*`
+- `AdminDocumentController::preview()` et `adminDownload()` : endpoints sécurisés admin
+- Routes GET : `/admin/documents/{id}/preview`, `/admin/documents/{id}/download`
+- `pending.php` : bouton « Vérifier » remplace formulaire inline + confirm() supprimé
+- Fiche contrat admin : bouton « Vérifier » sur paiements en attente
+
+### Tâches 1-3 implémentées
+- **Refus docs** : `Document::rejectDoc()`, `AdminDocumentController::reject()`, route POST `/admin/documents/{id}/reject`
+- **Email** : `Mailer::send()` appelé sur validate et reject (mail() + SMTP selon config)
+- **Pagination sinistres** : `Claim::countAll/allPaginated`, 20/page, contrôles Bootstrap
+
+### Audit prod 2026-06-21 — bugs corrigés
+- **Fatal error** : `use App\Models\Client` dupliqué dans `AdminDocumentController` → 500 sur `/admin/documents/pending`
+- **Downloads admin** : liens `/documents/{id}/download` (route cliente) dans 4 vues admin → AuthMiddleware rejetait l'admin faute de `client_id` ; corrigé en `/admin/documents/{id}/download`
+- **Note** : `.htaccess` ignoré par Nginx (X-Frame-Options, CSP, php_flag tous inactifs) ; seul HSTS est dans nginx.conf
+- **Note** : Token GitHub expiré — régénérer sur https://github.com/settings/tokens
+
 ## Tâches restantes
 
-1. **Refus de documents** : bouton "Refuser" dans `admin/documents/pending.php` + route + `AdminDocumentController::reject()`
-2. **Notification email** au client lors de la validation d'un document
-3. **Pagination** sur la liste des sinistres
+*(Toutes les tâches 1-3 initiales sont terminées. BLOCs 1/2/3 livrés.)*
