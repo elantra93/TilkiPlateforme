@@ -38,6 +38,6 @@ class Branches
         'SUNU Assurances Vie Sénégal',
         'UAB Sénégal',
         'Wafa Assurance Sénégal',
-        'ZENITH Assurances',
+        'NOVELIA Gestion Santé',
     ];
 }
