@@ -74,10 +74,51 @@ class Client
     {
         $db = Database::get();
         $db->prepare(
-            'INSERT INTO clients (account_number, first_name, last_name, email, phone, password_hash, must_change_password, status)
-             VALUES (:account_number, :first_name, :last_name, :email, :phone, :password_hash, :must_change_password, :status)'
+            'INSERT INTO clients
+                (account_number, first_name, last_name, email, phone, password_hash,
+                 must_change_password, status, account_type,
+                 company_name, company_rccm, company_dfe, company_address,
+                 company_city, company_country, company_contact_name, company_contact_phone)
+             VALUES
+                (:account_number, :first_name, :last_name, :email, :phone, :password_hash,
+                 :must_change_password, :status, :account_type,
+                 :company_name, :company_rccm, :company_dfe, :company_address,
+                 :company_city, :company_country, :company_contact_name, :company_contact_phone)'
         )->execute($data);
         return (int)$db->lastInsertId();
+    }
+
+    public static function updateInfo(int $id, array $data): void
+    {
+        $data['id'] = $id;
+        Database::get()->prepare(
+            'UPDATE clients SET
+                first_name = :first_name, last_name = :last_name,
+                email = :email, phone = :phone, status = :status,
+                account_type = :account_type,
+                company_name = :company_name, company_rccm = :company_rccm,
+                company_dfe = :company_dfe, company_address = :company_address,
+                company_city = :company_city, company_country = :company_country,
+                company_contact_name = :company_contact_name,
+                company_contact_phone = :company_contact_phone,
+                updated_at = NOW()
+             WHERE id = :id'
+        )->execute($data);
+    }
+
+    public static function updateEntreprise(int $id, array $data): void
+    {
+        $data['id'] = $id;
+        Database::get()->prepare(
+            'UPDATE clients SET
+                company_name = :company_name, company_rccm = :company_rccm,
+                company_dfe = :company_dfe, company_address = :company_address,
+                company_city = :company_city, company_country = :company_country,
+                company_contact_name = :company_contact_name,
+                company_contact_phone = :company_contact_phone,
+                updated_at = NOW()
+             WHERE id = :id'
+        )->execute($data);
     }
 
     public static function nextAccountNumber(): string

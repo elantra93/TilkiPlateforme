@@ -40,7 +40,10 @@ class AdminClientController extends BaseController
         $phone         = trim($_POST['phone']          ?? '') ?: null;
         $status        = $_POST['status']              ?? 'actif';
         $accountNumber = trim($_POST['account_number'] ?? '');
-        $old           = compact('firstName', 'lastName', 'email', 'phone', 'status', 'accountNumber');
+        $accountType   = in_array($_POST['account_type'] ?? '', ['individuel','entreprise'], true)
+                         ? $_POST['account_type'] : 'individuel';
+        $old           = compact('firstName','lastName','email','phone','status','accountNumber','accountType')
+                       + self::extractEnterprisePost();
 
         if (!$firstName || !$lastName || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->render('admin.clients.create', [
@@ -80,15 +83,25 @@ class AdminClientController extends BaseController
         }
 
         try {
+            $ent = self::extractEnterprisePost();
             $id = Client::create([
-                'account_number'       => $accountNumber,
-                'first_name'           => $firstName,
-                'last_name'            => $lastName,
-                'email'                => $email,
-                'phone'                => $phone,
-                'password_hash'        => password_hash('12345678', PASSWORD_BCRYPT),
-                'must_change_password' => 1,
-                'status'               => $status,
+                'account_number'        => $accountNumber,
+                'first_name'            => $firstName,
+                'last_name'             => $lastName,
+                'email'                 => $email,
+                'phone'                 => $phone,
+                'password_hash'         => password_hash('12345678', PASSWORD_BCRYPT),
+                'must_change_password'  => 1,
+                'status'                => $status,
+                'account_type'          => $accountType,
+                'company_name'          => $ent['company_name'],
+                'company_rccm'          => $ent['company_rccm'],
+                'company_dfe'           => $ent['company_dfe'],
+                'company_address'       => $ent['company_address'],
+                'company_city'          => $ent['company_city'],
+                'company_country'       => $ent['company_country'] ?: "Côte d'Ivoire",
+                'company_contact_name'  => $ent['company_contact_name'],
+                'company_contact_phone' => $ent['company_contact_phone'],
             ]);
 
             AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'client_created', "client:{$id}", $this->ip());
@@ -112,6 +125,78 @@ class AdminClientController extends BaseController
                 'error'             => 'Erreur : ' . $e->getMessage(),
             ]);
         }
+    }
+
+    private static function extractEnterprisePost(): array
+    {
+        return [
+            'company_name'          => trim($_POST['company_name']          ?? '') ?: null,
+            'company_rccm'          => trim($_POST['company_rccm']          ?? '') ?: null,
+            'company_dfe'           => trim($_POST['company_dfe']           ?? '') ?: null,
+            'company_address'       => trim($_POST['company_address']       ?? '') ?: null,
+            'company_city'          => trim($_POST['company_city']          ?? '') ?: null,
+            'company_country'       => trim($_POST['company_country']       ?? '') ?: "Côte d'Ivoire",
+            'company_contact_name'  => trim($_POST['company_contact_name']  ?? '') ?: null,
+            'company_contact_phone' => trim($_POST['company_contact_phone'] ?? '') ?: null,
+        ];
+    }
+
+    public function edit(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $client = Client::findById((int)$id);
+        if (!$client) {
+            http_response_code(404);
+            require APP_PATH . '/Views/errors/404.php';
+            return;
+        }
+
+        $firstName   = trim($_POST['first_name']   ?? '');
+        $lastName    = trim($_POST['last_name']    ?? '');
+        $email       = trim(strtolower($_POST['email'] ?? ''));
+        $phone       = trim($_POST['phone']        ?? '') ?: null;
+        $status      = $_POST['status']            ?? 'actif';
+        $accountType = $_POST['account_type']      ?? 'individuel';
+
+        if (!$firstName || !$lastName || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Prénom, nom et adresse e-mail valide sont obligatoires.'];
+            $this->redirect('/admin/clients/' . $id . '/edit');
+            return;
+        }
+
+        if (!in_array($status,      ['actif','inactif','suspendu'],    true)) $status      = 'actif';
+        if (!in_array($accountType, ['individuel','entreprise'],       true)) $accountType = 'individuel';
+
+        $ent = self::extractEnterprisePost();
+
+        if ($accountType === 'entreprise' && empty($ent['company_name'])) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'La raison sociale est obligatoire pour un compte entreprise.'];
+            $this->redirect('/admin/clients/' . $id . '/edit');
+            return;
+        }
+
+        Client::updateInfo((int)$id, [
+            'first_name'            => $firstName,
+            'last_name'             => $lastName,
+            'email'                 => $email,
+            'phone'                 => $phone,
+            'status'                => $status,
+            'account_type'          => $accountType,
+            'company_name'          => $ent['company_name'],
+            'company_rccm'          => $ent['company_rccm'],
+            'company_dfe'           => $ent['company_dfe'],
+            'company_address'       => $ent['company_address'],
+            'company_city'          => $ent['company_city'],
+            'company_country'       => $ent['company_country'],
+            'company_contact_name'  => $ent['company_contact_name'],
+            'company_contact_phone' => $ent['company_contact_phone'],
+        ]);
+
+        AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'client_updated', "client:{$id}", $this->ip());
+        $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Fiche client mise à jour.'];
+        $this->redirect('/admin/clients/' . $id . '/edit');
     }
 
     private const CLIENT_DOC_TYPES = [

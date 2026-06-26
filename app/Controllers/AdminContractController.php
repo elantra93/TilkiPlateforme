@@ -3,10 +3,13 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AdminMiddleware;
+use App\Models\Beneficiary;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\Document;
+use App\Models\Insurer;
 use App\Models\Payment;
+use App\Models\Vehicle;
 use App\Services\AuditLogger;
 use App\Services\Branches;
 use App\Services\ContractDocTypes;
@@ -39,7 +42,7 @@ class AdminContractController extends BaseController
             'contract' => null,
             'clients'  => Client::all(),
             'branches' => Branches::BRANCHES,
-            'insurers' => Branches::INSURERS,
+            'insurers' => Insurer::allActive(),
             'old'      => [],
         ]);
     }
@@ -53,13 +56,13 @@ class AdminContractController extends BaseController
         $old  = $data;
 
         if (!$data['client_id'] || !$data['branche'] || !$data['policy_number'] ||
-            !$data['insurer'] || !$data['effective_date'] || !$data['expiry_date']) {
+            (!$data['insurer_id'] && !$data['insurer']) || !$data['effective_date'] || !$data['expiry_date']) {
             $this->render('admin.contracts.form', [
                 'csrf'     => $this->csrfToken(),
                 'contract' => null,
                 'clients'  => Client::all(),
                 'branches' => Branches::BRANCHES,
-                'insurers' => Branches::INSURERS,
+                'insurers' => Insurer::allActive(),
                 'old'      => $old,
                 'error'    => 'Tous les champs obligatoires doivent être remplis.',
             ]);
@@ -79,7 +82,7 @@ class AdminContractController extends BaseController
                 'contract' => null,
                 'clients'  => Client::all(),
                 'branches' => Branches::BRANCHES,
-                'insurers' => Branches::INSURERS,
+                'insurers' => Insurer::allActive(),
                 'old'      => $old,
                 'error'    => 'Erreur : ' . $e->getMessage(),
             ]);
@@ -120,13 +123,15 @@ class AdminContractController extends BaseController
             'contract'         => $contract,
             'clients'          => Client::all(),
             'branches'         => Branches::BRANCHES,
-            'insurers'         => Branches::INSURERS,
+            'insurers'         => Insurer::allActive(),
             'old'              => [],
             'premiumDue'       => $premiumDue,
             'payments'         => Payment::listByContract((int)$id),
             'paymentMethods'   => self::PAYMENT_METHODS,
             'documents'        => Document::forContractAdmin((int)$id),
             'contractDocTypes' => $this->contractDocTypesForView($contract),
+            'vehicles'         => Vehicle::forContract((int)$id),
+            'beneficiaries'    => Beneficiary::forContract((int)$id),
         ]);
     }
 
@@ -157,7 +162,7 @@ class AdminContractController extends BaseController
                 'contract'         => $contract,
                 'clients'          => Client::all(),
                 'branches'         => Branches::BRANCHES,
-                'insurers'         => Branches::INSURERS,
+                'insurers'         => Insurer::allActive(),
                 'old'              => $data,
                 'premiumDue'       => $premiumDue,
                 'error'            => 'Erreur : ' . $e->getMessage(),
@@ -165,6 +170,8 @@ class AdminContractController extends BaseController
                 'paymentMethods'   => self::PAYMENT_METHODS,
                 'documents'        => Document::forContractAdmin((int)$id),
                 'contractDocTypes' => $this->contractDocTypesForView($contract),
+                'vehicles'         => Vehicle::forContract((int)$id),
+            'beneficiaries'    => Beneficiary::forContract((int)$id),
             ]);
         }
     }
@@ -325,16 +332,19 @@ class AdminContractController extends BaseController
 
     private function collectFields(): array
     {
-        $status        = $_POST['status']  ?? 'actif';
-        $emissionDate  = trim($_POST['emission_date'] ?? '');
-        $branche       = trim($_POST['branche']       ?? '');
-        $insurer       = trim($_POST['insurer']        ?? '');
+        $status       = $_POST['status'] ?? 'actif';
+        $emissionDate = trim($_POST['emission_date'] ?? '');
+        $branche      = trim($_POST['branche']       ?? '');
+        $insurerId    = (int)($_POST['insurer_id']   ?? 0);
+        $insurerObj   = $insurerId > 0 ? Insurer::find($insurerId) : null;
+        $insurerText  = $insurerObj ? $insurerObj['name'] : trim($_POST['insurer'] ?? '');
 
         return [
             'client_id'      => (int)($_POST['client_id'] ?? 0),
-            'branche'        => in_array($branche, Branches::BRANCHES, true) ? $branche : $branche,
+            'branche'        => $branche,
             'policy_number'  => trim($_POST['policy_number'] ?? ''),
-            'insurer'        => in_array($insurer, Branches::INSURERS, true) ? $insurer : $insurer,
+            'insurer'        => $insurerText,
+            'insurer_id'     => $insurerObj ? $insurerId : null,
             'effective_date' => trim($_POST['effective_date'] ?? ''),
             'expiry_date'    => trim($_POST['expiry_date']    ?? ''),
             'emission_date'  => $emissionDate ?: null,

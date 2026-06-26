@@ -105,7 +105,7 @@ class Claim
         Database::get()->prepare(
             'UPDATE claims SET claim_number=:claim_number, contract_id=:contract_id, insurer=:insurer,
              branche=:branche, occurrence_date=:occurrence_date, status=:status, description=:description,
-             is_auto_rc=:is_auto_rc
+             is_auto_rc=:is_auto_rc, vehicle_id=:vehicle_id
              WHERE id=:id'
         )->execute(array_merge($data, ['id' => $id]));
     }

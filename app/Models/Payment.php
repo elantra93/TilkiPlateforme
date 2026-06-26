@@ -105,6 +105,51 @@ class Payment
         return $stmt->rowCount() > 0;
     }
 
+    public static function validateById(int $id, int $adminId): bool
+    {
+        $stmt = Database::get()->prepare(
+            "UPDATE payments
+             SET status='valide', validated_by=:admin_id, validated_at=NOW()
+             WHERE id=:id AND status='en_attente'"
+        );
+        $stmt->execute(['id' => $id, 'admin_id' => $adminId]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public static function reject(int $id, string $reason, int $adminId): bool
+    {
+        $stmt = Database::get()->prepare(
+            "UPDATE payments
+             SET status='rejeté', rejected_reason=:reason,
+                 rejected_by=:admin_id, rejected_at=NOW()
+             WHERE id=:id AND status='en_attente'"
+        );
+        $stmt->execute(['id' => $id, 'reason' => $reason, 'admin_id' => $adminId]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public static function listPending(): array
+    {
+        return Database::get()->query(
+            "SELECT p.*, cl.first_name, cl.last_name, cl.account_number,
+                    co.policy_number, co.branche, co.insurer,
+                    d.id AS doc_id, d.original_filename AS proof_filename
+             FROM payments p
+             JOIN clients cl ON p.client_id = cl.id
+             JOIN contracts co ON p.contract_id = co.id
+             LEFT JOIN documents d ON p.document_id = d.id
+             WHERE p.status = 'en_attente'
+             ORDER BY p.created_at ASC"
+        )->fetchAll();
+    }
+
+    public static function countPending(): int
+    {
+        return (int)Database::get()
+            ->query("SELECT COUNT(*) FROM payments WHERE status='en_attente'")
+            ->fetchColumn();
+    }
+
     public static function findForContract(int $id, int $contractId): ?array
     {
         $stmt = Database::get()->prepare(

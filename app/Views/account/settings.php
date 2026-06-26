@@ -5,6 +5,8 @@
     <h4 class="fw-bold mb-0"><i class="bi bi-person-gear me-2 text-primary"></i>Paramètres de compte</h4>
 </div>
 
+<?php $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise'; ?>
+
 <div class="row g-4">
 
     <!-- ── Carte d'assurance ───────────────────────────────────────────────── -->
@@ -108,5 +110,103 @@
     </div>
 
 </div>
+
+<?php if ($isEntreprise): ?>
+<!-- ── Identité entreprise ────────────────────────────────────────────────────── -->
+<div class="row g-4 mt-0">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold">
+                <i class="bi bi-building text-primary"></i>Identité entreprise
+            </div>
+            <div class="card-body">
+
+                <?php if (!empty($pinError)): ?>
+                <?php /* pinError réutilisé pour ne pas multiplier les variables flash */ ?>
+                <?php endif; ?>
+
+                <form method="post" action="/account/entreprise" novalidate>
+                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Raison sociale <span class="text-danger">*</span></label>
+                            <input type="text" name="company_name" class="form-control"
+                                   value="<?= htmlspecialchars($client['company_name'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">N° RCCM</label>
+                            <input type="text" name="company_rccm" class="form-control font-monospace"
+                                   value="<?= htmlspecialchars($client['company_rccm'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">N° DFE</label>
+                            <input type="text" name="company_dfe" class="form-control font-monospace"
+                                   value="<?= htmlspecialchars($client['company_dfe'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-semibold">Adresse du siège</label>
+                            <input type="text" name="company_address" class="form-control"
+                                   value="<?= htmlspecialchars($client['company_address'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Ville</label>
+                            <input type="text" name="company_city" class="form-control"
+                                   value="<?= htmlspecialchars($client['company_city'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Interlocuteur</label>
+                            <input type="text" name="company_contact_name" class="form-control"
+                                   value="<?= htmlspecialchars($client['company_contact_name'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Téléphone du contact</label>
+                            <input type="tel" name="company_contact_phone" class="form-control"
+                                   value="<?= htmlspecialchars($client['company_contact_phone'] ?? '') ?>">
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-floppy me-2"></i>Enregistrer les informations entreprise
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Checklist côté client -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex align-items-center gap-2 fw-semibold">
+                <i class="bi bi-clipboard-check text-primary"></i>Dossier entreprise
+            </div>
+            <div class="card-body p-3">
+                <p class="small text-muted mb-3">
+                    Complétez ces informations pour accélérer vos souscriptions.
+                </p>
+                <ul class="list-unstyled mb-0 small">
+                    <?php
+                    $checks = [
+                        'Raison sociale'    => !empty($client['company_name']),
+                        'N° RCCM'          => !empty($client['company_rccm']),
+                        'N° DFE'           => !empty($client['company_dfe']),
+                        'Adresse'          => !empty($client['company_address']),
+                        'Interlocuteur'    => !empty($client['company_contact_name']),
+                    ];
+                    foreach ($checks as $label => $done): ?>
+                    <li class="d-flex align-items-center gap-2 py-1 border-bottom">
+                        <i class="bi bi-<?= $done ? 'check-circle-fill text-success' : 'circle text-muted opacity-50' ?>"></i>
+                        <span class="<?= $done ? '' : 'text-muted' ?>"><?= $label ?></span>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <?php require APP_PATH . '/Views/layout/footer.php'; ?>

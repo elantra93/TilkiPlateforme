@@ -30,7 +30,7 @@
                 <input type="text" class="form-control form-control-sm font-monospace fw-bold"
                        value="<?= htmlspecialchars($credentials['account_number']) ?>" readonly id="acc">
                 <button class="btn btn-outline-secondary btn-sm" type="button"
-                        onclick="navigator.clipboard.writeText(document.getElementById('acc').value)">
+                        data-copy-target="acc">
                     <i class="bi bi-clipboard"></i>
                 </button>
             </div>
@@ -41,7 +41,7 @@
                 <input type="text" class="form-control form-control-sm font-monospace fw-bold"
                        value="<?= htmlspecialchars($credentials['pin']) ?>" readonly id="pwd">
                 <button class="btn btn-outline-secondary btn-sm" type="button"
-                        onclick="navigator.clipboard.writeText(document.getElementById('pwd').value)">
+                        data-copy-target="pwd">
                     <i class="bi bi-clipboard"></i>
                 </button>
             </div>
@@ -60,7 +60,7 @@
 <?php else: ?>
 <!-- ── Formulaire ─────────────────────────────────────────────────────────── -->
 <div class="row justify-content-center">
-    <div class="col-lg-6">
+    <div class="col-lg-8">
         <div class="card shadow-sm">
             <div class="card-body p-4">
 
@@ -71,6 +71,27 @@
                 <form method="post" action="/admin/clients/create" novalidate>
                     <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
 
+                    <!-- Type de compte -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold d-block">Type de compte</label>
+                        <div class="btn-group" role="group">
+                            <?php $atVal = $old['accountType'] ?? 'individuel'; ?>
+                            <input type="radio" class="btn-check" name="account_type" id="at_create_ind"
+                                   value="individuel" data-account-type-toggle
+                                   <?= $atVal === 'individuel' ? 'checked' : '' ?>>
+                            <label class="btn btn-outline-primary" for="at_create_ind">
+                                <i class="bi bi-person me-1"></i>Individuel
+                            </label>
+                            <input type="radio" class="btn-check" name="account_type" id="at_create_ent"
+                                   value="entreprise" data-account-type-toggle
+                                   <?= $atVal === 'entreprise' ? 'checked' : '' ?>>
+                            <label class="btn btn-outline-primary" for="at_create_ent">
+                                <i class="bi bi-building me-1"></i>Entreprise
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Identité de base -->
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Prénom <span class="text-danger">*</span></label>
@@ -92,10 +113,10 @@
                             <input type="tel" name="phone" class="form-control"
                                    value="<?= htmlspecialchars($old['phone'] ?? '') ?>">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label small fw-semibold">Statut</label>
                             <select name="status" class="form-select">
-                                <?php foreach (['actif', 'inactif', 'suspendu'] as $s): ?>
+                                <?php foreach (['actif','inactif','suspendu'] as $s): ?>
                                 <option value="<?= $s ?>" <?= ($old['status'] ?? 'actif') === $s ? 'selected' : '' ?>>
                                     <?= ucfirst($s) ?>
                                 </option>
@@ -109,8 +130,52 @@
                             <input type="text" name="account_number" class="form-control font-monospace"
                                    value="<?= htmlspecialchars($old['accountNumber'] ?? $nextAccountNumber) ?>"
                                    maxlength="6" pattern="\d{6}" inputmode="numeric" required>
-                            <div class="form-text">
-                                <i class="bi bi-pencil me-1"></i>Suggéré selon la séquence annuelle — modifiable.
+                            <div class="form-text"><i class="bi bi-pencil me-1"></i>Suggéré — modifiable.</div>
+                        </div>
+                    </div>
+
+                    <!-- Identité entreprise (masquée par défaut) -->
+                    <div data-enterprise-section
+                         class="<?= $atVal === 'entreprise' ? '' : 'd-none' ?>">
+                        <hr class="my-4">
+                        <p class="small fw-semibold text-primary mb-3">
+                            <i class="bi bi-building me-1"></i>Identité entreprise
+                        </p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Raison sociale <span class="text-danger">*</span></label>
+                                <input type="text" name="company_name" class="form-control"
+                                       value="<?= htmlspecialchars($old['company_name'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">N° RCCM</label>
+                                <input type="text" name="company_rccm" class="form-control font-monospace"
+                                       value="<?= htmlspecialchars($old['company_rccm'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">N° DFE</label>
+                                <input type="text" name="company_dfe" class="form-control font-monospace"
+                                       value="<?= htmlspecialchars($old['company_dfe'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold">Adresse du siège</label>
+                                <input type="text" name="company_address" class="form-control"
+                                       value="<?= htmlspecialchars($old['company_address'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Ville</label>
+                                <input type="text" name="company_city" class="form-control"
+                                       value="<?= htmlspecialchars($old['company_city'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Interlocuteur</label>
+                                <input type="text" name="company_contact_name" class="form-control"
+                                       value="<?= htmlspecialchars($old['company_contact_name'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Téléphone du contact</label>
+                                <input type="tel" name="company_contact_phone" class="form-control"
+                                       value="<?= htmlspecialchars($old['company_contact_phone'] ?? '') ?>">
                             </div>
                         </div>
                     </div>

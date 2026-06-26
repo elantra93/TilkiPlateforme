@@ -11,6 +11,13 @@ define('CONFIG_PATH', ROOT_PATH . '/config/config.php');
 define('APP_PATH',    ROOT_PATH . '/app');
 define('STORAGE_PATH',ROOT_PATH . '/storage');
 
+// ── Security headers ──────────────────────────────────────────────────────────
+// style-src keeps 'unsafe-inline' until all inline styles are externalized (post-A2)
+header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'");
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
 // ── HTTPS redirect ────────────────────────────────────────────────────────────
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
@@ -92,6 +99,7 @@ $routes = [
         '/admin/claims/(\d+)/edit'            => ['AdminClaim',      'showEdit'],
         // Admin – Paiements
         '/admin/payments'                     => ['AdminPayment',    'index'],
+        '/admin/payments/pending'             => ['AdminPayment',    'pending'],
         '/admin/payments/create'              => ['AdminPayment',    'showCreate'],
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'redirectUpload'],
@@ -102,6 +110,17 @@ $routes = [
         '/admin/tally/queue'                  => ['AdminTally',      'queue'],
         // Admin – Devis
         '/admin/devis'                        => ['AdminDevis',      'index'],
+        // Admin – Assureurs
+        '/admin/insurers'                     => ['AdminInsurer',    'index'],
+        '/admin/insurers/create'              => ['AdminInsurer',    'showCreate'],
+        '/admin/insurers/(\d+)/edit'          => ['AdminInsurer',    'showEdit'],
+        // Admin – Véhicules
+        '/admin/vehicles/(\d+)/edit'          => ['AdminVehicle',       'showEdit'],
+        // Admin – Bénéficiaires
+        '/admin/beneficiaries/(\d+)/edit'     => ['AdminBeneficiary',   'showEdit'],
+        // Admin – Relances
+        '/admin/relances'                     => ['AdminRelance',        'index'],
+        '/admin/relances/(\d+)'               => ['AdminRelance',        'forContract'],
         // Admin – Gestion des admins (superadmin)
         '/admin/admins'                       => ['AdminUser',       'index'],
         '/admin/admins/create'                => ['AdminUser',       'showCreate'],
@@ -112,6 +131,7 @@ $routes = [
         '/logout'                    => ['Auth',     'logout'],
         '/password/change'           => ['Auth',     'changePassword'],
         '/account/pin'               => ['Account',  'changePin'],
+        '/account/entreprise'        => ['Account',  'updateEntreprise'],
         '/password/forgot'           => ['Auth',     'forgotPassword'],
         '/password/reset'            => ['Auth',     'resetPassword'],
         '/claims/(\d+)/upload'        => ['Document', 'upload'],
@@ -123,6 +143,7 @@ $routes = [
         '/admin/password/change'              => ['Admin',           'changePassword'],
         // Admin – Clients
         '/admin/clients/create'               => ['AdminClient',     'create'],
+        '/admin/clients/(\d+)/edit'           => ['AdminClient',     'edit'],
         '/admin/clients/(\d+)/carte'          => ['AdminClient',     'uploadCarte'],
         '/admin/clients/(\d+)/upload-doc'     => ['AdminClient',     'uploadDoc'],
         // Admin – Contracts
@@ -137,6 +158,8 @@ $routes = [
         '/admin/claims/(\d+)/upload'          => ['AdminClaim',      'uploadDoc'],
         // Admin – Paiements
         '/admin/payments/create'              => ['AdminPayment',    'create'],
+        '/admin/payments/(\d+)/validate'      => ['AdminPayment',    'validate'],
+        '/admin/payments/(\d+)/reject'        => ['AdminPayment',    'reject'],
         // Admin – Documents
         '/admin/documents/upload'             => ['AdminDocument',   'redirectUpload'],
         '/admin/documents/(\d+)/validate'     => ['AdminDocument',   'validate'],
@@ -144,6 +167,21 @@ $routes = [
         // Admin – File Tally
         '/admin/tally/(\d+)/match'            => ['AdminTally',      'match'],
         '/admin/tally/(\d+)/ignore'           => ['AdminTally',      'ignore'],
+        // Admin – Assureurs
+        '/admin/insurers/create'              => ['AdminInsurer',    'create'],
+        '/admin/insurers/(\d+)/edit'          => ['AdminInsurer',    'edit'],
+        '/admin/insurers/(\d+)/toggle'        => ['AdminInsurer',    'toggleActive'],
+        // Admin – Véhicules
+        '/admin/contracts/(\d+)/vehicles/create'      => ['AdminVehicle',       'create'],
+        '/admin/vehicles/(\d+)/edit'                  => ['AdminVehicle',       'edit'],
+        '/admin/vehicles/(\d+)/delete'                => ['AdminVehicle',       'delete'],
+        // Admin – Bénéficiaires
+        '/admin/contracts/(\d+)/beneficiaries/create' => ['AdminBeneficiary',   'create'],
+        '/admin/beneficiaries/(\d+)/edit'             => ['AdminBeneficiary',   'edit'],
+        '/admin/beneficiaries/(\d+)/delete'           => ['AdminBeneficiary',   'delete'],
+        // Admin – Relances
+        '/admin/relances/run'                         => ['AdminRelance',        'runAll'],
+        '/admin/relances/(\d+)/send'                  => ['AdminRelance',        'send'],
         // Admin – Gestion des admins (superadmin)
         '/admin/admins/create'                => ['AdminUser',       'create'],
         '/admin/admins/(\d+)/edit'            => ['AdminUser',       'edit'],

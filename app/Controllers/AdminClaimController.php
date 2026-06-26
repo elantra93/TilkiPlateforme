@@ -8,6 +8,7 @@ use App\Models\ClaimStep;
 use App\Models\Client;
 use App\Models\Contract;
 use App\Models\Document;
+use App\Models\Vehicle;
 use App\Services\AuditLogger;
 use App\Services\FileStorage;
 use App\Services\TallyUrlBuilder;
@@ -128,6 +129,7 @@ class AdminClaimController extends BaseController
         // Ensure steps exist (lazy init for claims created before migration)
         ClaimStep::initForClaim((int)$id, (bool)$claim['is_auto_rc']);
 
+        $contractId = (int)($claim['contract_id'] ?? 0);
         $this->render('admin.claims.form', [
             'csrf'      => $this->csrfToken(),
             'claim'     => $claim,
@@ -136,6 +138,7 @@ class AdminClaimController extends BaseController
             'docTypes'  => self::DOC_TYPES,
             'clients'   => Client::all(),
             'contracts' => Contract::all(),
+            'vehicles'  => $contractId ? Vehicle::forContract($contractId) : [],
             'old'       => [],
         ]);
     }
@@ -266,9 +269,11 @@ class AdminClaimController extends BaseController
     {
         $status     = $_POST['status'] ?? 'ouvert';
         $contractId = (int)($_POST['contract_id'] ?? 0) ?: null;
+        $vehicleId  = (int)($_POST['vehicle_id']  ?? 0) ?: null;
         return [
             'client_id'       => (int)($_POST['client_id'] ?? 0),
             'contract_id'     => $contractId,
+            'vehicle_id'      => $vehicleId,
             'claim_number'    => trim($_POST['claim_number']    ?? ''),
             'insurer'         => trim($_POST['insurer']          ?? ''),
             'branche'         => trim($_POST['branche']          ?? ''),

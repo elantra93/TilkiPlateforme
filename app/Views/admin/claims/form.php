@@ -135,6 +135,26 @@ foreach ($contracts as $c) {
             </div>
         </div>
 
+        <!-- Véhicule concerné (si flotte disponible) -->
+        <?php if (!empty($vehicles)): ?>
+        <div class="col-md-6">
+            <label class="form-label small fw-semibold">
+                Véhicule concerné <span class="text-muted fw-normal">(optionnel)</span>
+            </label>
+            <select name="vehicle_id" class="form-select">
+                <option value="">— Aucun —</option>
+                <?php foreach ($vehicles as $veh): ?>
+                <option value="<?= (int)$veh['id'] ?>"
+                    <?= (int)v('vehicle_id', $old, $claim, 0) === (int)$veh['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($veh['immatriculation']) ?>
+                    — <?= htmlspecialchars($veh['marque']) ?>
+                    <?php if ($veh['modele']): ?><?= htmlspecialchars($veh['modele']) ?><?php endif; ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
+
         <div class="col-12">
             <label class="form-label small fw-semibold">Description</label>
             <textarea name="description" class="form-control" rows="3"><?= htmlspecialchars((string)v('description', $old, $claim)) ?></textarea>
@@ -216,7 +236,7 @@ foreach ($documents ?? [] as $doc) {
             <div class="px-3 py-2 d-flex align-items-center gap-2 bg-white">
                 <i class="bi <?= $catInfo['icon'] ?> <?= $catInfo['color'] ?> small"></i>
                 <span class="small fw-semibold"><?= htmlspecialchars($catInfo['label']) ?></span>
-                <span class="badge bg-secondary fw-normal ms-1" style="font-size:.7rem"><?= count($docs) ?></span>
+                <span class="badge bg-secondary fw-normal ms-1 fs-2xs"><?= count($docs) ?></span>
             </div>
             <?php if (empty($docs)): ?>
             <div class="px-3 py-2 text-muted small fst-italic">Aucun document.</div>
@@ -226,7 +246,7 @@ foreach ($documents ?? [] as $doc) {
                 <li class="list-group-item d-flex justify-content-between align-items-center py-2 ps-4">
                     <div>
                         <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                        <span class="text-muted ms-2" style="font-size:.72rem">
+                        <span class="text-muted ms-2 fs-xxs">
                             <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
                             &bull; <?= number_format($doc['file_size'] / 1024, 0) ?> Ko
                             &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>

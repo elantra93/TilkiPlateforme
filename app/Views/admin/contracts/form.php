@@ -114,15 +114,32 @@ $docTypeLabels = [
         <!-- Assureur -->
         <div class="col-12">
             <label class="form-label small fw-semibold">Assureur <span class="text-danger">*</span></label>
-            <select name="insurer" class="form-select" required>
-                <option value="">— Sélectionner —</option>
+            <?php
+            // Pré-sélection : insurer_id en priorité, sinon match par nom sur l'ancienne valeur texte
+            $selInsId = (int)v('insurer_id', $old, $contract, 0);
+            if (!$selInsId && ($oldInsurerText = v('insurer', $old, $contract, ''))) {
+                foreach ($insurers as $_i) {
+                    if ($_i['name'] === $oldInsurerText) { $selInsId = (int)$_i['id']; break; }
+                }
+            }
+            ?>
+            <select name="insurer_id" class="form-select" required>
+                <option value="">— Sélectionner un assureur —</option>
                 <?php foreach ($insurers as $ins): ?>
-                <option value="<?= htmlspecialchars($ins) ?>"
-                    <?= v('insurer', $old, $contract) === $ins ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($ins) ?>
+                <option value="<?= (int)$ins['id'] ?>"
+                    <?= $selInsId === (int)$ins['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($ins['name']) ?>
+                    <?php if ($ins['short_name']): ?>
+                    (<?= htmlspecialchars($ins['short_name']) ?>)
+                    <?php endif; ?>
                 </option>
                 <?php endforeach; ?>
             </select>
+            <div class="form-text">
+                <a href="/admin/insurers" target="_blank" class="small">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Gérer les assureurs
+                </a>
+            </div>
         </div>
 
         <!-- Dates -->
@@ -522,6 +539,274 @@ foreach ($documents ?? [] as $doc) {
 </div>
 </div>
 
+<!-- ── Flotte / Véhicules ────────────────────────────────────────────────────── -->
+<?php
+$_isVehicleBranche = in_array(strtolower(trim($contract['branche'] ?? '')), ['automobile', 'moto'], true);
+$vehicles ??= [];
+?>
+<?php if ($isEdit): ?>
+<div class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-car-front me-2 text-primary"></i>Flotte / Véhicules
+            <?php if (!empty($vehicles)): ?>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1"><?= count($vehicles) ?></span>
+            <?php endif; ?>
+        </span>
+        <button type="button" class="btn btn-sm btn-outline-primary"
+                data-bs-toggle="collapse" data-bs-target="#addVehicleCollapse"
+                aria-expanded="false">
+            <i class="bi bi-plus-lg me-1"></i>Ajouter
+        </button>
+    </div>
+
+    <!-- Formulaire d'ajout inline -->
+    <div class="collapse" id="addVehicleCollapse">
+        <div class="card-body border-bottom bg-light p-3">
+            <form method="post"
+                  action="/admin/contracts/<?= (int)$contract['id'] ?>/vehicles/create"
+                  novalidate>
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Immat. <span class="text-danger">*</span></label>
+                        <input type="text" name="immatriculation" class="form-control form-control-sm font-monospace text-uppercase"
+                               placeholder="AB 123 CI" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Marque <span class="text-danger">*</span></label>
+                        <input type="text" name="marque" class="form-control form-control-sm"
+                               placeholder="Toyota" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Modèle</label>
+                        <input type="text" name="modele" class="form-control form-control-sm"
+                               placeholder="Corolla">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-semibold">Année</label>
+                        <input type="number" name="annee" class="form-control form-control-sm"
+                               min="1970" max="<?= date('Y') + 1 ?>" placeholder="<?= date('Y') ?>">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Énergie</label>
+                        <select name="energie" class="form-select form-select-sm">
+                            <option value="">—</option>
+                            <?php foreach (\App\Models\Vehicle::ENERGIES as $e): ?>
+                            <option value="<?= $e ?>"><?= ucfirst($e) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Usage</label>
+                        <select name="usage" class="form-select form-select-sm">
+                            <?php foreach (\App\Models\Vehicle::USAGES as $u): ?>
+                            <option value="<?= $u ?>"><?= ucfirst($u) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Valeur vénale (XOF)</label>
+                        <input type="number" name="valeur_venale" class="form-control form-control-sm"
+                               min="0" step="1000" placeholder="5000000">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des véhicules -->
+    <?php if (empty($vehicles)): ?>
+    <div class="card-body text-muted small text-center py-4">
+        <i class="bi bi-car-front opacity-25 fs-2 d-block mb-2"></i>
+        Aucun véhicule enregistré pour ce contrat.
+    </div>
+    <?php else: ?>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Immatriculation</th>
+                    <th>Marque / Modèle</th>
+                    <th>Année</th>
+                    <th>Énergie</th>
+                    <th>Usage</th>
+                    <th class="text-end">Valeur vénale</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($vehicles as $veh): ?>
+            <tr>
+                <td class="font-monospace fw-semibold"><?= htmlspecialchars($veh['immatriculation']) ?></td>
+                <td>
+                    <?= htmlspecialchars($veh['marque']) ?>
+                    <?php if ($veh['modele']): ?>
+                    <span class="text-muted"><?= htmlspecialchars($veh['modele']) ?></span>
+                    <?php endif; ?>
+                </td>
+                <td class="text-muted"><?= $veh['annee'] ?: '—' ?></td>
+                <td class="text-muted"><?= $veh['energie'] ? ucfirst($veh['energie']) : '—' ?></td>
+                <td class="text-muted"><?= ucfirst($veh['usage']) ?></td>
+                <td class="text-end text-muted">
+                    <?= $veh['valeur_venale'] ? number_format((float)$veh['valeur_venale'], 0, ',', ' ') . ' XOF' : '—' ?>
+                </td>
+                <td class="text-end text-nowrap">
+                    <a href="/admin/vehicles/<?= (int)$veh['id'] ?>/edit"
+                       class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="post" action="/admin/vehicles/<?= (int)$veh['id'] ?>/delete"
+                          class="d-inline" data-confirm="Supprimer ce véhicule ?">
+                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
+
+<!-- ── Bénéficiaires ─────────────────────────────────────────────────────────── -->
+<?php $beneficiaries ??= []; ?>
+<?php if ($isEdit): ?>
+<div class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-person-heart me-2 text-success"></i>Bénéficiaires
+            <?php if (!empty($beneficiaries)): ?>
+            <span class="badge bg-success-subtle text-success border border-success-subtle ms-1"><?= count($beneficiaries) ?></span>
+            <?php endif; ?>
+        </span>
+        <button type="button" class="btn btn-sm btn-outline-success"
+                data-bs-toggle="collapse" data-bs-target="#addBeneficiaryCollapse"
+                aria-expanded="false">
+            <i class="bi bi-plus-lg me-1"></i>Ajouter
+        </button>
+    </div>
+
+    <!-- Formulaire d'ajout inline -->
+    <div class="collapse" id="addBeneficiaryCollapse">
+        <div class="card-body border-bottom bg-light p-3">
+            <form method="post"
+                  action="/admin/contracts/<?= (int)$contract['id'] ?>/beneficiaries/create"
+                  novalidate>
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Nom <span class="text-danger">*</span></label>
+                        <input type="text" name="last_name" class="form-control form-control-sm text-uppercase"
+                               placeholder="NOM" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Prénom <span class="text-danger">*</span></label>
+                        <input type="text" name="first_name" class="form-control form-control-sm"
+                               placeholder="Prénom" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Naissance</label>
+                        <input type="date" name="birth_date" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-semibold">Genre</label>
+                        <select name="gender" class="form-select form-select-sm">
+                            <option value="">—</option>
+                            <?php foreach (\App\Models\Beneficiary::GENDERS as $code => $lbl): ?>
+                            <option value="<?= $code ?>"><?= $lbl ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Lien</label>
+                        <select name="relation" class="form-select form-select-sm">
+                            <?php foreach (\App\Models\Beneficiary::RELATIONS as $rel): ?>
+                            <option value="<?= $rel ?>"><?= ucfirst($rel) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Matricule</label>
+                        <input type="text" name="matricule" class="form-control form-control-sm font-monospace"
+                               placeholder="N° adhérent">
+                    </div>
+                    <div class="col-md-1 d-flex flex-column align-items-center">
+                        <label class="form-label small fw-semibold text-center">Principal</label>
+                        <input type="checkbox" name="is_principal" class="form-check-input mt-1">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des bénéficiaires -->
+    <?php if (empty($beneficiaries)): ?>
+    <div class="card-body text-muted small text-center py-4">
+        <i class="bi bi-people opacity-25 fs-2 d-block mb-2"></i>
+        Aucun bénéficiaire enregistré pour ce contrat.
+    </div>
+    <?php else: ?>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom / Prénom</th>
+                    <th>Naissance</th>
+                    <th>Genre</th>
+                    <th>Lien</th>
+                    <th>Matricule</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($beneficiaries as $ben): ?>
+            <tr>
+                <td>
+                    <span class="fw-semibold"><?= htmlspecialchars($ben['last_name']) ?></span>
+                    <?= htmlspecialchars($ben['first_name']) ?>
+                    <?php if ($ben['is_principal']): ?>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle ms-1 small">Principal</span>
+                    <?php endif; ?>
+                </td>
+                <td class="text-muted">
+                    <?= $ben['birth_date'] ? date('d/m/Y', strtotime($ben['birth_date'])) : '—' ?>
+                </td>
+                <td class="text-muted"><?= $ben['gender'] ?: '—' ?></td>
+                <td class="text-muted"><?= ucfirst($ben['relation']) ?></td>
+                <td class="font-monospace text-muted small"><?= htmlspecialchars($ben['matricule'] ?? '—') ?></td>
+                <td class="text-end text-nowrap">
+                    <a href="/admin/beneficiaries/<?= (int)$ben['id'] ?>/edit"
+                       class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="post" action="/admin/beneficiaries/<?= (int)$ben['id'] ?>/delete"
+                          class="d-inline" data-confirm="Supprimer ce bénéficiaire ?">
+                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+</div>
 <?php endif; ?>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>

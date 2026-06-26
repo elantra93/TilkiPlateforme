@@ -18,8 +18,69 @@ class AdminPaymentController extends BaseController
     {
         AdminMiddleware::check();
         $this->render('admin.payments.index', [
-            'payments' => Payment::listAll(),
+            'payments'        => Payment::listAll(),
+            'countPending'    => Payment::countPending(),
         ]);
+    }
+
+    public function pending(): void
+    {
+        AdminMiddleware::check();
+        $this->render('admin.payments.pending', [
+            'payments' => Payment::listPending(),
+            'csrf'     => $this->csrfToken(),
+        ]);
+    }
+
+    public function validate(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $payment = Payment::find((int)$id);
+        if (!$payment || $payment['status'] !== 'en_attente') {
+            $_SESSION['admin_flash'] = ['type' => 'warning', 'msg' => 'Paiement introuvable ou déjà traité.'];
+            $this->redirect('/admin/payments/pending');
+            return;
+        }
+
+        $ok = Payment::validateById((int)$id, (int)$_SESSION['admin_id']);
+        if ($ok) {
+            AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'payment_validated', "payment:{$id}", $this->ip());
+            $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Paiement validé avec succès.'];
+        } else {
+            $_SESSION['admin_flash'] = ['type' => 'warning', 'msg' => 'Impossible de valider ce paiement.'];
+        }
+        $this->redirect('/admin/payments/pending');
+    }
+
+    public function reject(string $id): void
+    {
+        AdminMiddleware::check();
+        $this->verifyCsrf();
+
+        $payment = Payment::find((int)$id);
+        if (!$payment || $payment['status'] !== 'en_attente') {
+            $_SESSION['admin_flash'] = ['type' => 'warning', 'msg' => 'Paiement introuvable ou déjà traité.'];
+            $this->redirect('/admin/payments/pending');
+            return;
+        }
+
+        $reason = trim($_POST['rejected_reason'] ?? '');
+        if (!$reason) {
+            $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Veuillez saisir un motif de rejet.'];
+            $this->redirect('/admin/payments/pending');
+            return;
+        }
+
+        $ok = Payment::reject((int)$id, $reason, (int)$_SESSION['admin_id']);
+        if ($ok) {
+            AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'payment_rejected', "payment:{$id}", $this->ip());
+            $_SESSION['admin_flash'] = ['type' => 'success', 'msg' => 'Paiement rejeté.'];
+        } else {
+            $_SESSION['admin_flash'] = ['type' => 'warning', 'msg' => 'Impossible de rejeter ce paiement.'];
+        }
+        $this->redirect('/admin/payments/pending');
     }
 
     public function showCreate(): void

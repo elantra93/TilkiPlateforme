@@ -165,7 +165,8 @@ class AdminController extends BaseController
             'claims'          => (int)$db->query('SELECT COUNT(*) FROM claims')->fetchColumn(),
             'claims_ouverts'  => (int)$db->query("SELECT COUNT(*) FROM claims WHERE status='ouvert'")->fetchColumn(),
             'documents'       => (int)$db->query('SELECT COUNT(*) FROM documents')->fetchColumn(),
-            'docs_attente'    => (int)$db->query("SELECT COUNT(*) FROM documents WHERE status='en_attente'")->fetchColumn(),
+            'docs_attente'      => (int)$db->query("SELECT COUNT(*) FROM documents WHERE status='en_attente'")->fetchColumn(),
+            'payments_pending'  => (int)$db->query("SELECT COUNT(*) FROM payments WHERE status='en_attente'")->fetchColumn(),
         ];
 
         $recentAttempts = $db->query(
