@@ -1,6 +1,22 @@
-# Bloquer tout accès web direct aux fichiers de l'application.
-# Sur un VPS où le web root est configuré sur le dossier racine du dépôt,
-# ceci protège app/, config/, storage/, database/ etc.
-# Sur Hostinger (public_html/ = web root), ce fichier n'est pas servi
-# mais il est versionné pour documenter l'intention.
-Deny from all
+RewriteEngine On
+
+# Redirige www vers non-www
+RewriteCond %{HTTP_HOST} ^www\.tilki\.digital$ [NC]
+RewriteRule ^(.*)$ https://tilki.digital/$1 [R=301,L]
+
+# Bloquer l'accès aux fichiers et dossiers sensibles
+RewriteRule ^\.env          - [F,L]
+RewriteRule ^\.git(/|$)     - [F,L]
+RewriteRule ^config(/|$)    - [F,L]
+RewriteRule ^app(/|$)       - [F,L]
+RewriteRule ^database(/|$)  - [F,L]
+RewriteRule ^scripts(/|$)   - [F,L]
+RewriteRule ^storage(/|$)   - [F,L]
+
+<FilesMatch "(^\.env|\.env\..*|\.sql|composer\.(json|lock))$">
+    Require all denied
+</FilesMatch>
+
+# Funnel vers public/
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L]
