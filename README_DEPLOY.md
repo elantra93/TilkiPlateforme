@@ -5,7 +5,7 @@
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/elantra93/TilkiPlateforme.git tilki_app
+git clone -b beta https://github.com/elantra93/TilkiPlateforme.git tilki_app
 ```
 
 ### 2. Créer le fichier `.env`
@@ -61,7 +61,7 @@ chmod 755 tilki_app/storage/documents tilki_app/storage/logs
 ## Mise à jour (déploiement continu)
 
 ```bash
-git -C tilki_app pull origin main
+git -C tilki_app pull origin beta
 # Appliquer les nouvelles migrations si présentes
 ```
 
