@@ -30,7 +30,7 @@ class Vehicle
         $db = Database::get();
         $db->prepare(
             'INSERT INTO vehicles
-             (contract_id, client_id, immatriculation, marque, modele, annee, energie, usage, valeur_venale)
+             (contract_id, client_id, immatriculation, marque, modele, annee, energie, `usage`, valeur_venale)
              VALUES
              (:contract_id, :client_id, :immatriculation, :marque, :modele, :annee, :energie, :usage, :valeur_venale)'
         )->execute($data);
@@ -43,7 +43,7 @@ class Vehicle
         Database::get()->prepare(
             'UPDATE vehicles
              SET immatriculation=:immatriculation, marque=:marque, modele=:modele,
-                 annee=:annee, energie=:energie, usage=:usage, valeur_venale=:valeur_venale
+                 annee=:annee, energie=:energie, `usage`=:usage, valeur_venale=:valeur_venale
              WHERE id=:id'
         )->execute($data);
     }
