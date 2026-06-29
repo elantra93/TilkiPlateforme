@@ -3,8 +3,10 @@ $pageTitle     = 'Mes contrats – TILKI';
 $isEntreprise  = ($client['account_type'] ?? 'individuel') === 'entreprise';
 $titre         = $isEntreprise ? 'Nos contrats' : 'Mes contrats';
 $actifs        = count(array_filter($contracts, fn($c) => $c['status'] === 'actif'));
-$vehicleCounts = $vehicleCounts ?? [];
-$vehicleBranches = ['auto', 'automobile', 'moto', 'flotte automobile'];
+$vehicleCounts      = $vehicleCounts ?? [];
+$beneficiaryCounts  = $beneficiaryCounts ?? [];
+$vehicleBranches    = ['auto', 'automobile', 'moto', 'flotte automobile'];
+$santeBranches      = ['santé individuelle', 'santé groupe', 'santé'];
 ?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
@@ -40,10 +42,15 @@ $vehicleBranches = ['auto', 'automobile', 'moto', 'flotte automobile'];
                     <div class="small text-muted mt-1 d-flex flex-wrap gap-2">
                         <span class="font-mono"><?= htmlspecialchars($c['policy_number']) ?></span>
                         <?php
-                        $nbVeh = (int)($vehicleCounts[(int)$c['id']] ?? 0);
-                        if ($nbVeh > 0 && in_array(mb_strtolower(trim($c['branche'])), $vehicleBranches, true)):
+                        $nbVeh  = (int)($vehicleCounts[(int)$c['id']] ?? 0);
+                        $nbBen  = (int)($beneficiaryCounts[(int)$c['id']] ?? 0);
+                        $bLower = mb_strtolower(trim($c['branche']));
+                        if ($nbVeh > 0 && in_array($bLower, $vehicleBranches, true)):
                         ?>
                         <span>&middot; <?= $nbVeh ?>&nbsp;véhicule<?= $nbVeh > 1 ? 's' : '' ?></span>
+                        <?php endif; ?>
+                        <?php if ($nbBen > 0 && in_array($bLower, $santeBranches, true)): ?>
+                        <span>&middot; <?= $nbBen ?>&nbsp;bénéficiaire<?= $nbBen > 1 ? 's' : '' ?></span>
                         <?php endif; ?>
                         <?php if (!empty($c['expiry_date'])): ?>
                         <span>&middot; échéance <?= date('d/m/Y', strtotime($c['expiry_date'])) ?></span>

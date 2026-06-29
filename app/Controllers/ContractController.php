@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace App\Controllers;
 
+use App\Models\Beneficiary;
 use App\Models\Contract;
 use App\Models\Document;
 use App\Models\Payment;
@@ -26,9 +27,10 @@ class ContractController extends BaseController
         unset($c);
 
         $this->render('contracts.index', [
-            'client'        => Auth::client(),
-            'contracts'     => $contracts,
-            'vehicleCounts' => Vehicle::countByContractForClient($clientId),
+            'client'            => Auth::client(),
+            'contracts'         => $contracts,
+            'vehicleCounts'     => Vehicle::countByContractForClient($clientId),
+            'beneficiaryCounts' => Beneficiary::countByContractForClient($clientId),
         ]);
     }
 
@@ -60,17 +62,21 @@ class ContractController extends BaseController
         $contract['premium_due'] = max(0.0, (float)$contract['premium_total'] - Payment::sumValidated((int)$id));
 
         $this->render('contracts.show', [
-            'client'          => $client,
-            'contract'        => $contract,
-            'documents'       => Document::forContract((int)$id, $clientId),
-            'payments'        => Payment::listByContract((int)$id),
-            'vehicles'        => Branches::isVehicleBranche($contract['branche'])
-                                    ? Vehicle::forContract((int)$id)
-                                    : [],
-            'csrf'            => $this->csrfToken(),
-            'tallyClaimUrl'   => $tallyClaimUrl,
-            'branchDocTypes'  => ContractDocTypes::forBranche($contract['branche']),
-            'isVehicleBranche'=> Branches::isVehicleBranche($contract['branche']),
+            'client'            => $client,
+            'contract'          => $contract,
+            'documents'         => Document::forContract((int)$id, $clientId),
+            'payments'          => Payment::listByContract((int)$id),
+            'vehicles'          => Branches::isVehicleBranche($contract['branche'])
+                                      ? Vehicle::forContract((int)$id)
+                                      : [],
+            'beneficiaries'     => Branches::isSanteBranche($contract['branche'])
+                                      ? Beneficiary::forContract((int)$id)
+                                      : [],
+            'csrf'              => $this->csrfToken(),
+            'tallyClaimUrl'     => $tallyClaimUrl,
+            'branchDocTypes'    => ContractDocTypes::forBranche($contract['branche']),
+            'isVehicleBranche'  => Branches::isVehicleBranche($contract['branche']),
+            'isSanteBranche'    => Branches::isSanteBranche($contract['branche']),
         ]);
     }
 

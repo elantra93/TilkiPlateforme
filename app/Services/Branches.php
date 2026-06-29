@@ -46,4 +46,11 @@ class Branches
             true
         );
     }
+
+    // Retourne true si la branche est une branche santé (bénéficiaires)
+    public static function isSanteBranche(string $branche): bool
+    {
+        $b = mb_strtolower(trim($branche));
+        return $b === 'santé individuelle' || $b === 'santé groupe' || $b === 'santé';
+    }
 }

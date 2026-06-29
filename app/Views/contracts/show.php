@@ -321,6 +321,68 @@ foreach ($byCategory['souscription'] as $doc) {
         </div>
         <?php endif; ?>
 
+        <!-- ── Bénéficiaires santé ───────────────────────────────────────── -->
+        <?php
+        $beneficiaries ??= [];
+        $isSanteBranche ??= false;
+        $relationLabels = [
+            'souscripteur' => 'Souscripteur',
+            'conjoint'     => 'Conjoint(e)',
+            'enfant'       => 'Enfant',
+            'parent'       => 'Parent',
+            'autre'        => 'Autre',
+        ];
+        ?>
+        <?php if ($isSanteBranche): ?>
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold d-flex align-items-center gap-2">
+                <i class="bi bi-person-heart text-success"></i>
+                Bénéficiaires
+                <?php if (!empty($beneficiaries)): ?>
+                <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal ms-1"><?= count($beneficiaries) ?></span>
+                <?php endif; ?>
+            </div>
+            <?php if (empty($beneficiaries)): ?>
+            <div class="card-body text-muted small text-center py-4">
+                <i class="bi bi-person-heart opacity-25 fs-2 d-block mb-2"></i>
+                Aucun bénéficiaire enregistré. Contactez votre conseiller.
+            </div>
+            <?php else: ?>
+            <ul class="list-group list-group-flush">
+                <?php foreach ($beneficiaries as $ben): ?>
+                <li class="list-group-item py-3">
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+                        <div>
+                            <div class="fw-semibold text-body d-flex align-items-center gap-2">
+                                <?= htmlspecialchars($ben['first_name'] . ' ' . $ben['last_name']) ?>
+                                <?php if ($ben['is_principal']): ?>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-normal" style="font-size:.65rem">Principal</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="small text-muted mt-1 d-flex flex-wrap gap-2">
+                                <span><?= $relationLabels[$ben['relation']] ?? ucfirst($ben['relation']) ?></span>
+                                <?php if ($ben['gender']): ?>
+                                <span>&middot; <?= $ben['gender'] === 'M' ? 'Homme' : 'Femme' ?></span>
+                                <?php endif; ?>
+                                <?php if ($ben['birth_date']): ?>
+                                <span>&middot; né<?= $ben['gender'] === 'F' ? 'e' : '' ?> le <?= date('d/m/Y', strtotime($ben['birth_date'])) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php if ($ben['matricule']): ?>
+                        <div class="text-end flex-shrink-0">
+                            <div class="small text-muted">N° adhérent</div>
+                            <div class="small fw-semibold font-monospace"><?= htmlspecialchars($ben['matricule']) ?></div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
         <!-- ── Historique des paiements soumis ──────────────────────────── -->
         <?php if (!empty($payments)): ?>
         <?php
