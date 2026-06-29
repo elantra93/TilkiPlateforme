@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Middleware\AdminMiddleware;
 use App\Models\Insurer;
 use App\Services\AuditLogger;
+use App\Services\Branches;
 
 class AdminInsurerController extends BaseController
 {
@@ -20,9 +21,10 @@ class AdminInsurerController extends BaseController
     {
         AdminMiddleware::check();
         $this->render('admin.insurers.form', [
-            'csrf'    => $this->csrfToken(),
-            'insurer' => null,
-            'old'     => [],
+            'csrf'     => $this->csrfToken(),
+            'insurer'  => null,
+            'branches' => Branches::BRANCHES,
+            'old'      => [],
         ]);
     }
 
@@ -36,20 +38,22 @@ class AdminInsurerController extends BaseController
 
         if (!$name) {
             $this->render('admin.insurers.form', [
-                'csrf'    => $this->csrfToken(),
-                'insurer' => null,
-                'old'     => compact('name', 'shortName', 'country', 'isActive'),
-                'error'   => 'La dénomination est obligatoire.',
+                'csrf'     => $this->csrfToken(),
+                'insurer'  => null,
+                'branches' => Branches::BRANCHES,
+                'old'      => array_merge(compact('name', 'shortName', 'country', 'isActive'), ['branches' => array_values(array_filter($_POST['branches'] ?? []))]),
+                'error'    => 'La dénomination est obligatoire.',
             ]);
             return;
         }
 
         if (Insurer::isNameTaken($name)) {
             $this->render('admin.insurers.form', [
-                'csrf'    => $this->csrfToken(),
-                'insurer' => null,
-                'old'     => compact('name', 'shortName', 'country', 'isActive'),
-                'error'   => "Un assureur nommé « {$name} » existe déjà.",
+                'csrf'     => $this->csrfToken(),
+                'insurer'  => null,
+                'branches' => Branches::BRANCHES,
+                'old'      => array_merge(compact('name', 'shortName', 'country', 'isActive'), ['branches' => array_values(array_filter($_POST['branches'] ?? []))]),
+                'error'    => "Un assureur nommé « {$name} » existe déjà.",
             ]);
             return;
         }
@@ -58,6 +62,7 @@ class AdminInsurerController extends BaseController
             'name'       => $name,
             'short_name' => $shortName ?: null,
             'country'    => $country,
+            'branches'   => array_values(array_filter($_POST['branches'] ?? [])),
             'is_active'  => $isActive,
         ]);
         AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'insurer_created', "insurer:{$id}", $this->ip());
@@ -75,9 +80,10 @@ class AdminInsurerController extends BaseController
             return;
         }
         $this->render('admin.insurers.form', [
-            'csrf'    => $this->csrfToken(),
-            'insurer' => $insurer,
-            'old'     => [],
+            'csrf'     => $this->csrfToken(),
+            'insurer'  => $insurer,
+            'branches' => Branches::BRANCHES,
+            'old'      => [],
         ]);
     }
 
@@ -98,20 +104,22 @@ class AdminInsurerController extends BaseController
 
         if (!$name) {
             $this->render('admin.insurers.form', [
-                'csrf'    => $this->csrfToken(),
-                'insurer' => $insurer,
-                'old'     => compact('name', 'shortName', 'country', 'isActive'),
-                'error'   => 'La dénomination est obligatoire.',
+                'csrf'     => $this->csrfToken(),
+                'insurer'  => $insurer,
+                'branches' => Branches::BRANCHES,
+                'old'      => array_merge(compact('name', 'shortName', 'country', 'isActive'), ['branches' => array_values(array_filter($_POST['branches'] ?? []))]),
+                'error'    => 'La dénomination est obligatoire.',
             ]);
             return;
         }
 
         if (Insurer::isNameTaken($name, (int)$id)) {
             $this->render('admin.insurers.form', [
-                'csrf'    => $this->csrfToken(),
-                'insurer' => $insurer,
-                'old'     => compact('name', 'shortName', 'country', 'isActive'),
-                'error'   => "Un autre assureur porte déjà ce nom.",
+                'csrf'     => $this->csrfToken(),
+                'insurer'  => $insurer,
+                'branches' => Branches::BRANCHES,
+                'old'      => array_merge(compact('name', 'shortName', 'country', 'isActive'), ['branches' => array_values(array_filter($_POST['branches'] ?? []))]),
+                'error'    => "Un autre assureur porte déjà ce nom.",
             ]);
             return;
         }
@@ -120,6 +128,7 @@ class AdminInsurerController extends BaseController
             'name'       => $name,
             'short_name' => $shortName ?: null,
             'country'    => $country,
+            'branches'   => array_values(array_filter($_POST['branches'] ?? [])),
             'is_active'  => $isActive,
         ]);
         AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'insurer_updated', "insurer:{$id}", $this->ip());

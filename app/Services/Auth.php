@@ -38,7 +38,10 @@ class Auth
         session_regenerate_id(true);
         $_SESSION['client_id']            = (int)$client['id'];
         $_SESSION['account_number']       = $client['account_number'];
-        $_SESSION['client_name']          = $client['first_name'] . ' ' . $client['last_name'];
+        $_SESSION['client_name']          = $client['account_type'] === 'entreprise'
+            ? ($client['company_name'] ?: $client['first_name'] . ' ' . $client['last_name'])
+            : $client['first_name'] . ' ' . $client['last_name'];
+        $_SESSION['client_type']          = $client['account_type'] ?? 'individuel';
         $_SESSION['must_change_password'] = (bool)$client['must_change_password'];
         $_SESSION['_init']                = time();
 

@@ -1,11 +1,51 @@
-<?php $pageTitle = 'Paramètres de compte – TILKI'; ?>
+<?php $pageTitle = 'Mon compte – TILKI'; ?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
-<div class="mb-3">
-    <h4 class="fw-bold mb-0"><i class="bi bi-person-gear me-2 text-primary"></i>Paramètres de compte</h4>
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">Mon compte</h4>
 </div>
 
 <?php $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise'; ?>
+
+<!-- ── Identité ───────────────────────────────────────────────────────── -->
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row mb-0 small">
+            <dt class="col-sm-4 text-muted py-2 border-bottom">Titulaire</dt>
+            <dd class="col-sm-8 fw-semibold py-2 border-bottom">
+                <?php if ($isEntreprise): ?>
+                    <?= htmlspecialchars($client['company_name'] ?? '') ?>
+                <?php else: ?>
+                    <?= htmlspecialchars(($client['first_name'] ?? '') . ' ' . ($client['last_name'] ?? '')) ?>
+                <?php endif; ?>
+            </dd>
+
+            <dt class="col-sm-4 text-muted py-2 border-bottom">N° de compte</dt>
+            <dd class="col-sm-8 py-2 border-bottom font-mono fw-semibold"><?= htmlspecialchars($client['account_number'] ?? '') ?></dd>
+
+            <dt class="col-sm-4 text-muted py-2 border-bottom">Type de compte</dt>
+            <dd class="col-sm-8 py-2 border-bottom">
+                <?= $isEntreprise ? 'Entreprise' : 'Particulier' ?>
+                <span class="text-muted fw-normal ms-1 small">· non modifiable</span>
+            </dd>
+
+            <?php if (!empty($client['phone'])): ?>
+            <dt class="col-sm-4 text-muted py-2 border-bottom">Téléphone</dt>
+            <dd class="col-sm-8 py-2 border-bottom"><?= htmlspecialchars($client['phone']) ?></dd>
+            <?php endif; ?>
+
+            <?php if (!empty($client['address'])): ?>
+            <dt class="col-sm-4 text-muted py-2 border-bottom">Adresse</dt>
+            <dd class="col-sm-8 py-2 border-bottom"><?= htmlspecialchars($client['address']) ?></dd>
+            <?php endif; ?>
+
+            <?php if (!$isEntreprise && !empty($client['id_type'])): ?>
+            <dt class="col-sm-4 text-muted py-2">Pièce d'identité</dt>
+            <dd class="col-sm-8 py-2"><?= htmlspecialchars(strtoupper($client['id_type'])) ?></dd>
+            <?php endif; ?>
+        </dl>
+    </div>
+</div>
 
 <div class="row g-4">
 

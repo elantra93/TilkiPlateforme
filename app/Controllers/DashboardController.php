@@ -20,14 +20,31 @@ class DashboardController extends BaseController
         }
         unset($c);
 
-        $openClaims = Claim::openForClient($clientId);
-        $totalDue   = array_sum(array_column($contracts, 'premium_due'));
+        $openClaims  = Claim::openForClient($clientId);
+        $totalDue    = array_sum(array_column($contracts, 'premium_due'));
+        $activeCount = count(array_filter($contracts, fn($c) => $c['status'] === 'actif'));
+
+        // Prochaine échéance parmi les contrats actifs avec date future
+        $nextExpiry     = null;
+        $nextExpiryDays = null;
+        foreach ($contracts as $c) {
+            if ($c['status'] !== 'actif' || empty($c['expiry_date'])) continue;
+            $days = (int)ceil((strtotime($c['expiry_date']) - time()) / 86400);
+            if ($days < 0) continue;
+            if ($nextExpiryDays === null || $days < $nextExpiryDays) {
+                $nextExpiryDays = $days;
+                $nextExpiry     = $c;
+            }
+        }
 
         $this->render('dashboard.index', [
-            'client'     => Auth::client(),
-            'contracts'  => $contracts,
-            'openClaims' => $openClaims,
-            'totalDue'   => (float)$totalDue,
+            'client'         => Auth::client(),
+            'contracts'      => $contracts,
+            'openClaims'     => $openClaims,
+            'totalDue'       => (float)$totalDue,
+            'activeCount'    => $activeCount,
+            'nextExpiry'     => $nextExpiry,
+            'nextExpiryDays' => $nextExpiryDays,
         ]);
     }
 }

@@ -2,7 +2,9 @@
 <?php require APP_PATH . '/Views/admin/layout/header.php'; ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="h5 fw-bold mb-0"><i class="bi bi-building me-2"></i>Assureurs</h2>
+    <h2 class="h5 fw-bold mb-0">
+        <i class="bi bi-building me-2"></i>Référentiel assureurs
+    </h2>
     <a href="/admin/insurers/create" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-lg me-1"></i>Ajouter un assureur
     </a>
@@ -14,10 +16,10 @@ $inactive = array_filter($insurers, fn($i) => !$i['is_active']);
 ?>
 
 <!-- Actifs -->
-<div class="card shadow-sm mb-4">
+<div class="card mb-4">
     <div class="card-header d-flex align-items-center gap-2 fw-semibold">
         <i class="bi bi-check-circle text-success"></i>
-        Actifs
+        Compagnies partenaires
         <span class="badge bg-success-subtle text-success border border-success-subtle ms-1"><?= count($active) ?></span>
     </div>
     <?php if (empty($active)): ?>
@@ -25,82 +27,94 @@ $inactive = array_filter($insurers, fn($i) => !$i['is_active']);
         <i class="bi bi-dash opacity-50 me-1"></i>Aucun assureur actif.
     </div>
     <?php else: ?>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Dénomination</th>
-                    <th>Sigle</th>
-                    <th>Pays</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($active as $ins): ?>
-            <tr>
-                <td class="fw-semibold small"><?= htmlspecialchars($ins['name']) ?></td>
-                <td class="small text-muted font-monospace"><?= htmlspecialchars($ins['short_name'] ?? '—') ?></td>
-                <td class="small text-muted"><?= htmlspecialchars($ins['country']) ?></td>
-                <td class="text-end text-nowrap">
+    <ul class="list-group list-group-flush">
+        <?php foreach ($active as $ins): ?>
+        <li class="list-group-item px-4 py-3">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                <div class="min-w-0">
+                    <div class="fw-semibold text-body mb-1">
+                        <?= htmlspecialchars($ins['name']) ?>
+                        <?php if (!empty($ins['short_name'])): ?>
+                        <span class="text-muted fw-normal small ms-1 font-mono"><?= htmlspecialchars($ins['short_name']) ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        <?php if (!empty($ins['branches'])): ?>
+                            <?php foreach ($ins['branches'] as $b): ?>
+                            <span class="badge tk-branch-badge"><?= htmlspecialchars($b) ?></span>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <span class="small text-muted fst-italic">Aucune branche renseignée</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="d-flex gap-1 flex-shrink-0">
                     <a href="/admin/insurers/<?= (int)$ins['id'] ?>/edit"
-                       class="btn btn-sm btn-outline-secondary me-1">
+                       class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-pencil"></i>
                     </a>
                     <form method="post" action="/admin/insurers/<?= (int)$ins['id'] ?>/toggle"
-                          class="d-inline" data-confirm="Désactiver cet assureur ?">
+                          class="d-inline"
+                          onsubmit="return confirm('Désactiver cet assureur ?')">
                         <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
-                        <button type="submit" class="btn btn-sm btn-outline-warning"
-                                title="Désactiver">
+                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Désactiver">
                             <i class="bi bi-toggle-on"></i>
                         </button>
                     </form>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
+                </div>
+            </div>
+        </li>
+        <?php endforeach; ?>
+    </ul>
     <?php endif; ?>
 </div>
 
 <!-- Inactifs -->
 <?php if (!empty($inactive)): ?>
-<div class="card shadow-sm">
+<div class="card">
     <div class="card-header d-flex align-items-center gap-2 fw-semibold text-muted">
         <i class="bi bi-slash-circle"></i>
-        Inactifs (masqués dans les formulaires)
+        Inactifs
         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-1"><?= count($inactive) ?></span>
+        <span class="small fw-normal ms-1">(masqués dans les formulaires de contrats)</span>
     </div>
-    <div class="table-responsive">
-        <table class="table align-middle mb-0">
-            <thead class="table-light">
-                <tr><th>Dénomination</th><th>Sigle</th><th>Pays</th><th></th></tr>
-            </thead>
-            <tbody>
-            <?php foreach ($inactive as $ins): ?>
-            <tr class="text-muted">
-                <td class="small"><?= htmlspecialchars($ins['name']) ?></td>
-                <td class="small font-monospace"><?= htmlspecialchars($ins['short_name'] ?? '—') ?></td>
-                <td class="small"><?= htmlspecialchars($ins['country']) ?></td>
-                <td class="text-end text-nowrap">
+    <ul class="list-group list-group-flush">
+        <?php foreach ($inactive as $ins): ?>
+        <li class="list-group-item px-4 py-3 opacity-60">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="small fw-semibold text-muted">
+                        <?= htmlspecialchars($ins['name']) ?>
+                        <?php if (!empty($ins['short_name'])): ?>
+                        <span class="fw-normal ms-1 font-mono"><?= htmlspecialchars($ins['short_name']) ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (!empty($ins['branches'])): ?>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        <?php foreach ($ins['branches'] as $b): ?>
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size:.65rem"><?= htmlspecialchars($b) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="d-flex gap-1 flex-shrink-0">
                     <a href="/admin/insurers/<?= (int)$ins['id'] ?>/edit"
-                       class="btn btn-sm btn-outline-secondary me-1">
+                       class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-pencil"></i>
                     </a>
                     <form method="post" action="/admin/insurers/<?= (int)$ins['id'] ?>/toggle"
-                          class="d-inline" data-confirm="Réactiver cet assureur ?">
+                          class="d-inline"
+                          onsubmit="return confirm('Réactiver cet assureur ?')">
                         <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
-                        <button type="submit" class="btn btn-sm btn-outline-success"
-                                title="Réactiver">
+                        <button type="submit" class="btn btn-sm btn-outline-success" title="Réactiver">
                             <i class="bi bi-toggle-off"></i>
                         </button>
                     </form>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
+                </div>
+            </div>
+        </li>
+        <?php endforeach; ?>
+    </ul>
 </div>
 <?php endif; ?>
 

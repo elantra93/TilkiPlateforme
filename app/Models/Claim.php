@@ -88,8 +88,8 @@ class Claim
     {
         $db = Database::get();
         $db->prepare(
-            'INSERT INTO claims (client_id, contract_id, claim_number, insurer, branche, occurrence_date, status, description, is_auto_rc)
-             VALUES (:client_id, :contract_id, :claim_number, :insurer, :branche, :occurrence_date, :status, :description, :is_auto_rc)'
+            'INSERT INTO claims (client_id, contract_id, claim_number, insurer, branche, occurrence_date, status, description, is_auto_rc, vehicle_id)
+             VALUES (:client_id, :contract_id, :claim_number, :insurer, :branche, :occurrence_date, :status, :description, :is_auto_rc, :vehicle_id)'
         )->execute($data);
         return (int)$db->lastInsertId();
     }

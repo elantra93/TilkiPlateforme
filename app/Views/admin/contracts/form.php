@@ -538,10 +538,11 @@ foreach ($documents ?? [] as $doc) {
 </div>
 </div>
 </div>
+<?php endif; ?>
 
 <!-- ── Flotte / Véhicules ────────────────────────────────────────────────────── -->
 <?php
-$_isVehicleBranche = in_array(strtolower(trim($contract['branche'] ?? '')), ['automobile', 'moto'], true);
+$_isVehicleBranche = in_array(mb_strtolower(trim($contract['branche'] ?? '')), ['automobile', 'auto', 'moto', 'flotte automobile'], true);
 $vehicles ??= [];
 ?>
 <?php if ($isEdit): ?>

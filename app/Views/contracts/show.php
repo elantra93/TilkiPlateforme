@@ -115,7 +115,7 @@ foreach ($byCategory['souscription'] as $doc) {
                         <div class="me-3 overflow-hidden">
                             <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
                             <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                            <div class="text-muted mt-1" style="font-size:.75rem">
+                            <div class="text-muted mt-1 fs-xs">
                                 <?= htmlspecialchars($doc['doc_type']) ?>
                                 &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                 &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
@@ -150,20 +150,30 @@ foreach ($byCategory['souscription'] as $doc) {
                     $docs       = $souscriptionByType[$expected['key']] ?? [];
                     $isRequired = $expected['required'] ?? false;
                 ?>
+                <?php
+                    $hasDocs     = !empty($docs);
+                    $firstDoc    = $hasDocs ? $docs[0] : null;
+                    $isFourni    = $hasDocs && $firstDoc['status'] === 'valide';
+                    $isEnAttente = $hasDocs && $firstDoc['status'] !== 'valide';
+                ?>
                 <li class="list-group-item py-3">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div class="flex-grow-1">
-                            <div class="small fw-semibold mb-1 text-body">
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="small fw-semibold mb-1 text-body d-flex align-items-center gap-2 flex-wrap">
                                 <?= htmlspecialchars($expected['label']) ?>
-                                <?php if ($isRequired): ?>
-                                    <span class="text-muted fw-normal">(requis)</span>
+                                <?php if ($isFourni): ?>
+                                    <span class="badge tk-doc-fourni">fourni</span>
+                                <?php elseif ($isEnAttente): ?>
+                                    <span class="badge tk-doc-attente">en attente</span>
+                                <?php elseif ($isRequired): ?>
+                                    <span class="badge tk-doc-requis">requis</span>
                                 <?php endif; ?>
                             </div>
                             <?php if (!empty($docs)): ?>
                                 <?php foreach ($docs as $doc): ?>
                                 <div class="d-flex align-items-center gap-2 mt-1">
                                     <i class="bi <?= docIcon($doc['mime_type']) ?> small"></i>
-                                    <span style="font-size:.78rem" class="text-muted">
+                                    <span class="fs-sm7 text-muted">
                                         <?= htmlspecialchars($doc['original_filename']) ?>
                                         &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                         &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
@@ -171,7 +181,7 @@ foreach ($byCategory['souscription'] as $doc) {
                                 </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <div class="text-muted opacity-75" style="font-size:.78rem">
+                                <div class="text-muted opacity-75 fs-sm7">
                                     <i class="bi bi-dash me-1"></i>Aucun document pour le moment
                                 </div>
                             <?php endif; ?>
@@ -183,8 +193,6 @@ foreach ($byCategory['souscription'] as $doc) {
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-download me-1"></i>Télécharger
                                 </a>
-                                <?php else: ?>
-                                <span class="badge bg-warning text-dark">En attente</span>
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
@@ -202,7 +210,7 @@ foreach ($byCategory['souscription'] as $doc) {
                     <div class="me-3 overflow-hidden">
                         <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
                         <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                        <div class="text-muted mt-1" style="font-size:.75rem">
+                        <div class="text-muted mt-1 fs-xs">
                             <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
                             &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                             &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
@@ -234,7 +242,7 @@ foreach ($byCategory['souscription'] as $doc) {
                         <div class="me-3 overflow-hidden">
                             <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
                             <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                            <div class="text-muted mt-1" style="font-size:.75rem">
+                            <div class="text-muted mt-1 fs-xs">
                                 <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
                                 &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                 &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
@@ -257,6 +265,61 @@ foreach ($byCategory['souscription'] as $doc) {
             <?php endif; ?>
             <?php endif; ?>
         </div>
+
+        <!-- ── Flotte / Véhicules ─────────────────────────────────────── -->
+        <?php
+        $vehicles ??= [];
+        $isVehicleBranche ??= false;
+        ?>
+        <?php if ($isVehicleBranche): ?>
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold d-flex align-items-center gap-2">
+                <i class="bi bi-car-front text-primary"></i>
+                Flotte / Véhicules
+                <?php if (!empty($vehicles)): ?>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-normal ms-1"><?= count($vehicles) ?></span>
+                <?php endif; ?>
+            </div>
+            <?php if (empty($vehicles)): ?>
+            <div class="card-body text-muted small text-center py-4">
+                <i class="bi bi-car-front opacity-25 fs-2 d-block mb-2"></i>
+                Aucun véhicule enregistré. Contactez votre conseiller.
+            </div>
+            <?php else: ?>
+            <ul class="list-group list-group-flush">
+                <?php foreach ($vehicles as $veh): ?>
+                <li class="list-group-item py-3">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold font-monospace text-body">
+                                <?= htmlspecialchars($veh['immatriculation']) ?>
+                            </div>
+                            <div class="small text-muted mt-1 d-flex flex-wrap gap-2">
+                                <span><?= htmlspecialchars($veh['marque']) ?><?= $veh['modele'] ? ' ' . htmlspecialchars($veh['modele']) : '' ?></span>
+                                <?php if ($veh['annee']): ?>
+                                <span>&middot; <?= (int)$veh['annee'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($veh['energie']): ?>
+                                <span>&middot; <?= ucfirst($veh['energie']) ?></span>
+                                <?php endif; ?>
+                                <span>&middot; <?= ucfirst($veh['usage']) ?></span>
+                            </div>
+                        </div>
+                        <?php if ($veh['valeur_venale']): ?>
+                        <div class="text-end flex-shrink-0">
+                            <div class="small text-muted">Valeur vénale</div>
+                            <div class="small fw-semibold font-monospace">
+                                <?= number_format((float)$veh['valeur_venale'], 0, ',', ' ') ?>&nbsp;XOF
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
 
         <!-- ── Historique des paiements soumis ──────────────────────────── -->
         <?php if (!empty($payments)): ?>
@@ -285,7 +348,7 @@ foreach ($byCategory['souscription'] as $doc) {
                                 <span class="text-muted fw-normal ms-1">·</span>
                                 <span class="text-muted fw-normal"><?= $methodLabels[$p['method']] ?? htmlspecialchars($p['method']) ?></span>
                             </div>
-                            <div class="text-muted mt-1" style="font-size:.75rem">
+                            <div class="text-muted mt-1 fs-xs">
                                 Soumis le <?= date('d/m/Y', strtotime($p['created_at'])) ?>
                             </div>
                         </div>
@@ -312,14 +375,11 @@ foreach ($byCategory['souscription'] as $doc) {
         <!-- ── Formulaire de règlement ────────────────────────────────────── -->
         <div class="card shadow-sm">
             <div class="card-header fw-semibold">
-                <i class="bi bi-cash-coin me-2 text-primary"></i>Déposer une preuve de règlement
+                <i class="bi bi-cash-coin me-2 text-primary"></i>Effectuer un règlement
             </div>
             <div class="card-body">
-                <p class="small text-muted mb-3">
-                    Indiquez le montant réglé, le mode de paiement et joignez votre justificatif
-                    (reçu, ordre de virement…). Votre paiement sera validé par l'équipe TILKI.
-                </p>
-                <form method="post"
+                <form id="paymentForm"
+                      method="post"
                       action="/contracts/<?= (int)$contract['id'] ?>/payment"
                       enctype="multipart/form-data"
                       novalidate>
@@ -332,25 +392,26 @@ foreach ($byCategory['souscription'] as $doc) {
                             </label>
                             <div class="input-group">
                                 <input type="number"
+                                       id="payAmt"
                                        name="amount"
                                        class="form-control"
                                        min="1"
                                        step="1"
                                        placeholder="0"
                                        required>
-                                <span class="input-group-text"><?= htmlspecialchars($contract['currency']) ?></span>
+                                <span class="input-group-text font-mono"><?= htmlspecialchars($contract['currency']) ?></span>
                             </div>
                         </div>
                         <div class="col-sm-7">
                             <label class="form-label small fw-semibold">
-                                Mode de paiement <span class="text-danger">*</span>
+                                Moyen <span class="text-danger">*</span>
                             </label>
-                            <select name="method" class="form-select" required>
+                            <select id="payMethod" name="method" class="form-select" required>
                                 <option value="">— Sélectionner —</option>
-                                <option value="especes">Espèces</option>
-                                <option value="virement">Virement</option>
-                                <option value="cheque">Chèque</option>
+                                <option value="virement">Virement bancaire</option>
                                 <option value="mobile_money">Mobile Money</option>
+                                <option value="especes">Espèces</option>
+                                <option value="cheque">Chèque</option>
                                 <option value="carte">Carte</option>
                             </select>
                         </div>
@@ -368,13 +429,61 @@ foreach ($byCategory['souscription'] as $doc) {
                     </div>
 
                     <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send me-2"></i>Envoyer pour validation
+                        <button type="button" class="btn btn-primary" onclick="tkOpenPayModal()">
+                            <i class="bi bi-send me-2"></i>Déclarer le règlement
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <!-- Modale confirmation règlement -->
+        <div class="modal fade" id="payConfirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">Confirmer le règlement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Vous déclarez un règlement par <span id="mc-method" class="fw-semibold"></span>. Il sera vérifié puis validé par votre conseiller.</p>
+                        <div class="tk-confirm-row">
+                            <span class="text-muted small">Contrat</span>
+                            <span class="fw-semibold small"><?= htmlspecialchars($contract['branche']) ?> &middot; <span class="font-mono"><?= htmlspecialchars($contract['policy_number']) ?></span></span>
+                        </div>
+                        <div class="tk-confirm-row">
+                            <span class="text-muted small">Montant</span>
+                            <span class="fw-semibold font-mono" id="mc-amount"></span>
+                        </div>
+                        <div class="tk-confirm-row border-0">
+                            <span class="text-muted small">Statut après envoi</span>
+                            <span class="badge tk-badge-en_attente">en attente</span>
+                        </div>
+                        <p class="small text-muted mt-3 mb-0">
+                            <i class="bi bi-info-circle me-1"></i>Votre règlement passe en <strong>attente</strong> jusqu'à validation par votre conseiller.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0 gap-2">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('paymentForm').submit()">
+                            Confirmer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+        function tkOpenPayModal() {
+            const form = document.getElementById('paymentForm');
+            if (!form.reportValidity()) return;
+            const amt    = document.getElementById('payAmt').value;
+            const method = document.getElementById('payMethod');
+            const methodText = method.options[method.selectedIndex].text;
+            document.getElementById('mc-amount').textContent = parseInt(amt).toLocaleString('fr-FR') + ' <?= htmlspecialchars($contract['currency']) ?>';
+            document.getElementById('mc-method').textContent = methodText;
+            new bootstrap.Modal(document.getElementById('payConfirmModal')).show();
+        }
+        </script>
 
     </div><!-- /col -->
 </div><!-- /row -->

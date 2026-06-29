@@ -1,53 +1,74 @@
-<?php $pageTitle = 'Mes contrats – TILKI'; ?>
+<?php
+$pageTitle     = 'Mes contrats – TILKI';
+$isEntreprise  = ($client['account_type'] ?? 'individuel') === 'entreprise';
+$titre         = $isEntreprise ? 'Nos contrats' : 'Mes contrats';
+$actifs        = count(array_filter($contracts, fn($c) => $c['status'] === 'actif'));
+$vehicleCounts = $vehicleCounts ?? [];
+$vehicleBranches = ['auto', 'automobile', 'moto', 'flotte automobile'];
+?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="h4 mb-0 fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Mes contrats</h2>
+    <h2 class="h4 mb-0 fw-bold">
+        <?= $titre ?>
+        <?php if ($actifs): ?>
+        <span class="badge bg-primary ms-2 fw-normal" style="font-size:.7rem"><?= $actifs ?> actif<?= $actifs > 1 ? 's' : '' ?></span>
+        <?php endif; ?>
+    </h2>
 </div>
 
 <?php if (empty($contracts)): ?>
-    <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Aucun contrat trouvé.</div>
-<?php else: ?>
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 tbl-card-mobile">
-                <thead class="table-light">
-                    <tr>
-                        <th>Branche</th>
-                        <th>N° Police</th>
-                        <th>Assureur</th>
-                        <th>Début</th>
-                        <th>Expiration</th>
-                        <th>Prime TTC</th>
-                        <th>Statut</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($contracts as $c): ?>
-                        <tr class="tbl-row-link" data-href="/contracts/<?= (int)$c['id'] ?>">
-                            <td data-label="Branche" class="fw-semibold"><?= htmlspecialchars($c['branche']) ?></td>
-                            <td data-label="N° Police"><code><?= htmlspecialchars($c['policy_number']) ?></code></td>
-                            <td data-label="Assureur"><?= htmlspecialchars($c['insurer']) ?></td>
-                            <td data-label="Début"><?= date('d/m/Y', strtotime($c['effective_date'])) ?></td>
-                            <td data-label="Expiration"><?= date('d/m/Y', strtotime($c['expiry_date'])) ?></td>
-                            <td data-label="Prime TTC"><?= number_format((float)$c['premium_total'], 0, ',', ' ') ?> <?= htmlspecialchars($c['currency']) ?></td>
-                            <td data-label="Statut">
-                                <span class="badge bg-<?= $c['status'] === 'actif' ? 'success' : 'secondary' ?>">
-                                    <?= htmlspecialchars($c['status']) ?>
-                                </span>
-                            </td>
-                            <td data-label="">
-                                <a href="/contracts/<?= $c['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye me-1"></i>Détail
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+<div class="card">
+    <div class="card-body text-center text-muted py-5">
+        <i class="bi bi-file-earmark-x fs-1 d-block mb-2 opacity-25"></i>
+        <p class="mb-0">Aucun contrat enregistré.</p>
     </div>
+</div>
+<?php else: ?>
+<div class="card">
+    <ul class="list-group list-group-flush">
+        <?php foreach ($contracts as $c):
+            $due = (float)$c['premium_due'];
+        ?>
+        <li class="list-group-item list-group-item-action px-4 py-3 tk-list-row"
+            onclick="window.location='/contracts/<?= (int)$c['id'] ?>'" style="cursor:pointer">
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div class="min-w-0">
+                    <div class="fw-semibold text-body">
+                        <?= htmlspecialchars($c['branche']) ?> &middot; <?= htmlspecialchars($c['insurer']) ?>
+                    </div>
+                    <div class="small text-muted mt-1 d-flex flex-wrap gap-2">
+                        <span class="font-mono"><?= htmlspecialchars($c['policy_number']) ?></span>
+                        <?php
+                        $nbVeh = (int)($vehicleCounts[(int)$c['id']] ?? 0);
+                        if ($nbVeh > 0 && in_array(mb_strtolower(trim($c['branche'])), $vehicleBranches, true)):
+                        ?>
+                        <span>&middot; <?= $nbVeh ?>&nbsp;véhicule<?= $nbVeh > 1 ? 's' : '' ?></span>
+                        <?php endif; ?>
+                        <?php if (!empty($c['expiry_date'])): ?>
+                        <span>&middot; échéance <?= date('d/m/Y', strtotime($c['expiry_date'])) ?></span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <?php if ($due > 0): ?>
+                    <span class="small fw-semibold text-danger font-mono">
+                        <?= number_format($due, 0, ',', ' ') ?>&nbsp;<?= htmlspecialchars($c['currency'] ?? 'FCFA') ?>&nbsp;dû
+                    </span>
+                    <?php else: ?>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">
+                        <i class="bi bi-check2 me-1"></i>À jour
+                    </span>
+                    <?php endif; ?>
+                    <span class="badge tk-badge-<?= htmlspecialchars($c['status']) ?>">
+                        <?= htmlspecialchars($c['status']) ?>
+                    </span>
+                </div>
+            </div>
+        </li>
+        <?php endforeach; ?>
+    </ul>
+</div>
 <?php endif; ?>
 
 <?php require APP_PATH . '/Views/layout/footer.php'; ?>

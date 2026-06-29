@@ -2,169 +2,205 @@
 declare(strict_types=1);
 $pageTitle = 'Tableau de bord – TILKI';
 
-// Helpers
+$isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
+$displayName  = $isEntreprise
+    ? htmlspecialchars($client['company_name'] ?? $client['first_name'])
+    : htmlspecialchars($client['first_name']);
+
+function fmtAmt(float $v, string $cur = 'FCFA'): string {
+    return number_format($v, 0, ',', ' ') . ' ' . $cur;
+}
 function fmtDate(string $d): string {
     return $d ? date('d/m/Y', strtotime($d)) : '—';
 }
-function fmtAmount(float $v, string $cur): string {
-    return number_format($v, 0, ',', ' ') . ' ' . $cur;
+
+// Contrat avec le plus grand solde dû (pour le lien "Régler")
+$dueContract = null;
+foreach ($contracts as $c) {
+    if ((float)$c['premium_due'] > 0) { $dueContract = $c; break; }
 }
+
+// Contrat en échéance proche pour le lien "Voir"
+$expiringContract = $nextExpiry;
 ?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
 <!-- ── En-tête ─────────────────────────────────────────────────────────── -->
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-    <div>
-        <h2 class="h4 fw-bold mb-0">
-            Bonjour, <?= htmlspecialchars($client['first_name']) ?>&nbsp;!
-        </h2>
-        <p class="text-muted small mb-0">
-            Compte&nbsp;<code><?= htmlspecialchars($client['account_number']) ?></code>
-        </p>
-    </div>
-    <?php if ($totalDue > 0): ?>
-    <div class="alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0" style="max-width:380px">
-        <i class="bi bi-exclamation-circle-fill flex-shrink-0"></i>
-        <span class="small">
-            Solde restant dû sur vos contrats&nbsp;:
-            <strong>
-                <?= fmtAmount($totalDue, $contracts[0]['currency'] ?? 'XOF') ?>
-            </strong>
-        </span>
-    </div>
-    <?php endif; ?>
+<div class="mb-4">
+    <h2 class="h4 fw-bold mb-0">
+        Bonjour<?= $isEntreprise ? '' : ', ' . $displayName ?><?= $isEntreprise ? ', ' . $displayName : '' ?>&nbsp;!
+    </h2>
+    <p class="text-muted small mb-0">
+        <?php if ($isEntreprise): ?>
+            Entreprise &middot; n°&nbsp;<span class="font-mono"><?= htmlspecialchars($client['account_number']) ?></span>
+        <?php else: ?>
+            Particulier &middot; n°&nbsp;<span class="font-mono"><?= htmlspecialchars($client['account_number']) ?></span>
+        <?php endif; ?>
+    </p>
 </div>
 
-<!-- ── Section 1 : Contrats ────────────────────────────────────────────── -->
-<section class="mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h3 class="h6 fw-bold text-uppercase text-muted letter-spacing mb-0">
-            <i class="bi bi-file-earmark-text me-2"></i>Mes contrats
-            <span class="badge bg-secondary ms-1 fw-normal"><?= count($contracts) ?></span>
-        </h3>
+<!-- ── Alertes ──────────────────────────────────────────────────────────── -->
+<?php if ($totalDue > 0 && $dueContract): ?>
+<div class="tk-alert-card tk-alert-warning mb-3">
+    <div class="tk-alert-body">
+        <div class="tk-alert-label">Solde dû sur votre contrat <?= htmlspecialchars($dueContract['branche']) ?></div>
+        <div class="tk-alert-sub">Restant à régler</div>
+        <div class="tk-alert-amount font-mono"><?= fmtAmt((float)$totalDue, $dueContract['currency'] ?? 'FCFA') ?></div>
     </div>
+    <a href="/contracts/<?= (int)$dueContract['id'] ?>" class="btn btn-sm btn-primary flex-shrink-0">
+        Régler
+    </a>
+</div>
+<?php endif; ?>
 
-    <?php if (empty($contracts)): ?>
-        <div class="card shadow-sm">
-            <div class="card-body text-center text-muted py-5">
-                <i class="bi bi-file-earmark-x fs-1 d-block mb-2 opacity-25"></i>
-                Aucun contrat enregistré.
-            </div>
-        </div>
-    <?php else: ?>
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 tbl-card-mobile" id="tbl-contracts">
-                <thead class="table-light">
-                    <tr>
-                        <th>Branche</th>
-                        <th>N° Police</th>
-                        <th>Assureur</th>
-                        <th>Date d'effet</th>
-                        <th>Date d'échéance</th>
-                        <th class="text-end">Restant dû</th>
-                        <th>Statut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($contracts as $c): ?>
-                    <tr class="tbl-row-link"
-                        data-href="/contracts/<?= (int)$c['id'] ?>"
-                        title="Ouvrir le détail du contrat <?= htmlspecialchars($c['policy_number']) ?>">
-                        <td data-label="Branche" class="fw-semibold"><?= htmlspecialchars($c['branche']) ?></td>
-                        <td data-label="N° Police"><code class="text-body"><?= htmlspecialchars($c['policy_number']) ?></code></td>
-                        <td data-label="Assureur"><?= htmlspecialchars($c['insurer']) ?></td>
-                        <td data-label="Date d'effet"><?= fmtDate($c['effective_date']) ?></td>
-                        <td data-label="Échéance">
-                            <?php
-                                $isExpiring = $c['expiry_date'] && strtotime($c['expiry_date']) < strtotime('+30 days');
-                                $cls = $isExpiring ? 'text-danger fw-semibold' : '';
-                            ?>
-                            <span class="<?= $cls ?>">
-                                <?= fmtDate($c['expiry_date']) ?>
-                                <?php if ($isExpiring): ?>
-                                    <i class="bi bi-alarm ms-1" title="Expire bientôt"></i>
-                                <?php endif; ?>
-                            </span>
-                        </td>
-                        <td data-label="Restant dû">
-                            <?php if ((float)$c['premium_due'] <= 0): ?>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">
-                                    <i class="bi bi-check2 me-1"></i>À jour
-                                </span>
-                            <?php else: ?>
-                                <span class="fw-semibold text-danger">
-                                    <?= fmtAmount((float)$c['premium_due'], $c['currency']) ?>
-                                </span>
-                            <?php endif; ?>
-                        </td>
-                        <td data-label="Statut">
-                            <span class="badge bg-<?= $c['status'] === 'actif' ? 'success' : 'secondary' ?>">
-                                <?= htmlspecialchars($c['status']) ?>
-                            </span>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+<?php if ($nextExpiry && $nextExpiryDays !== null && $nextExpiryDays <= 30): ?>
+<div class="tk-alert-card tk-alert-info mb-3">
+    <div class="tk-alert-body">
+        <div class="tk-alert-label">Échéance <?= htmlspecialchars($nextExpiry['branche']) ?> à venir</div>
+        <div class="tk-alert-sub">Renouvellement le</div>
+        <div class="tk-alert-amount font-mono"><?= fmtDate($nextExpiry['expiry_date']) ?></div>
+    </div>
+    <a href="/contracts/<?= (int)$nextExpiry['id'] ?>" class="btn btn-sm btn-outline-primary flex-shrink-0">
+        Voir
+    </a>
+</div>
+<?php endif; ?>
+
+<!-- ── KPIs ─────────────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card tk-kpi-card">
+            <div class="tk-kpi-label">Contrats actifs</div>
+            <div class="tk-kpi-value"><?= $activeCount ?></div>
         </div>
     </div>
-    <?php endif; ?>
-</section>
-
-<!-- ── Section 2 : Sinistres ouverts ───────────────────────────────────── -->
-<section>
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h3 class="h6 fw-bold text-uppercase text-muted mb-0">
-            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Sinistres ouverts
-            <?php if (count($openClaims)): ?>
-                <span class="badge bg-danger ms-1 fw-normal"><?= count($openClaims) ?></span>
+    <div class="col-6 col-lg-3">
+        <div class="card tk-kpi-card">
+            <div class="tk-kpi-label">Restant dû</div>
+            <?php if ($totalDue > 0): ?>
+            <div class="tk-kpi-value font-mono tk-kpi-danger"><?= number_format($totalDue, 0, ',', ' ') ?></div>
+            <div class="tk-kpi-sub">FCFA</div>
+            <?php else: ?>
+            <div class="tk-kpi-value tk-kpi-ok"><i class="bi bi-check2-circle"></i></div>
+            <div class="tk-kpi-sub">À jour</div>
             <?php endif; ?>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card tk-kpi-card">
+            <div class="tk-kpi-label">Prochaine échéance</div>
+            <?php if ($nextExpiry): ?>
+            <div class="tk-kpi-value font-mono <?= ($nextExpiryDays <= 30) ? 'tk-kpi-warning' : '' ?>"><?= fmtDate($nextExpiry['expiry_date']) ?></div>
+            <?php else: ?>
+            <div class="tk-kpi-value text-muted" style="font-size:1.1rem">—</div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card tk-kpi-card">
+            <div class="tk-kpi-label">Sinistres ouverts</div>
+            <div class="tk-kpi-value <?= count($openClaims) > 0 ? 'tk-kpi-danger' : '' ?>"><?= count($openClaims) ?></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Contrats ─────────────────────────────────────────────────────────── -->
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="h6 fw-bold mb-0">
+            <?= $isEntreprise ? 'Nos contrats' : 'Vos contrats' ?>
         </h3>
-        <a href="/claims" class="btn btn-sm btn-outline-secondary">
-            Tous les sinistres <i class="bi bi-arrow-right ms-1"></i>
+        <a href="/contracts" class="small text-primary text-decoration-none fw-semibold">
+            Tout voir <i class="bi bi-arrow-right ms-1"></i>
         </a>
     </div>
 
-    <?php if (empty($openClaims)): ?>
-        <div class="card shadow-sm">
-            <div class="card-body text-center text-muted py-5">
-                <i class="bi bi-shield-check fs-1 d-block mb-2 text-success opacity-50"></i>
-                Aucun sinistre ouvert en cours.
-            </div>
+    <?php if (empty($contracts)): ?>
+    <div class="card">
+        <div class="card-body text-center text-muted py-5">
+            <i class="bi bi-file-earmark-x fs-1 d-block mb-2 opacity-25"></i>
+            Aucun contrat enregistré.
         </div>
+    </div>
     <?php else: ?>
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 tbl-card-mobile" id="tbl-claims">
-                <thead class="table-light">
-                    <tr>
-                        <th>N° Sinistre</th>
-                        <th>Assureur</th>
-                        <th>Branche</th>
-                        <th>Date de survenance</th>
-                        <th>Dernière mise à jour</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($openClaims as $cl): ?>
-                    <tr class="tbl-row-link"
-                        data-href="/claims/<?= (int)$cl['id'] ?>"
-                        title="Ouvrir le sinistre <?= htmlspecialchars($cl['claim_number']) ?>">
-                        <td data-label="N° Sinistre">
-                            <code class="text-body"><?= htmlspecialchars($cl['claim_number']) ?></code>
-                        </td>
-                        <td data-label="Assureur"><?= htmlspecialchars($cl['insurer']) ?></td>
-                        <td data-label="Branche"><?= htmlspecialchars($cl['branche']) ?></td>
-                        <td data-label="Survenance"><?= fmtDate($cl['occurrence_date']) ?></td>
-                        <td data-label="Mis à jour" class="text-muted small"><?= fmtDate($cl['updated_at']) ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+    <div class="card">
+        <ul class="list-group list-group-flush">
+            <?php foreach (array_slice($contracts, 0, 4) as $c): ?>
+            <li class="list-group-item list-group-item-action px-4 py-3 tk-list-row"
+                onclick="window.location='/contracts/<?= (int)$c['id'] ?>'" style="cursor:pointer">
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <div class="min-w-0">
+                        <div class="fw-semibold text-body">
+                            <?= htmlspecialchars($c['branche']) ?> &middot; <?= htmlspecialchars($c['insurer']) ?>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            <span class="font-mono"><?= htmlspecialchars($c['policy_number']) ?></span>
+                            <?php if (!empty($c['expiry_date'])): ?>
+                                &middot; échéance <?= fmtDate($c['expiry_date']) ?>
+                            <?php endif; ?>
+                            <?php if ((float)$c['premium_due'] > 0): ?>
+                                &middot; <span class="text-danger fw-semibold"><?= fmtAmt((float)$c['premium_due'], $c['currency'] ?? 'FCFA') ?> dû</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <span class="badge tk-badge-<?= $c['status'] ?> flex-shrink-0">
+                        <?= htmlspecialchars($c['status']) ?>
+                    </span>
+                </div>
+            </li>
+            <?php endforeach; ?>
+        </ul>
     </div>
     <?php endif; ?>
 </section>
+
+<!-- ── Raccourcis ──────────────────────────────────────────────────────── -->
+<section class="mb-4">
+    <h3 class="h6 fw-bold mb-3">Raccourcis</h3>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="/claims" class="btn btn-outline-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>Déclarer un sinistre
+        </a>
+        <a href="/devis" class="btn btn-outline-primary">
+            <i class="bi bi-pencil-square me-2"></i>Demander un devis
+        </a>
+    </div>
+</section>
+
+<?php if (!empty($openClaims)): ?>
+<!-- ── Sinistres ouverts ─────────────────────────────────────────────────── -->
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="h6 fw-bold mb-0">
+            <?= $isEntreprise ? 'Nos sinistres ouverts' : 'Sinistres ouverts' ?>
+            <span class="badge bg-danger ms-1 fw-normal"><?= count($openClaims) ?></span>
+        </h3>
+        <a href="/claims" class="small text-primary text-decoration-none fw-semibold">
+            Tout voir <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card">
+        <ul class="list-group list-group-flush">
+            <?php foreach ($openClaims as $cl): ?>
+            <li class="list-group-item list-group-item-action px-4 py-3 tk-list-row"
+                onclick="window.location='/claims/<?= (int)$cl['id'] ?>'" style="cursor:pointer">
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <div class="min-w-0">
+                        <div class="fw-semibold text-body">
+                            <?= htmlspecialchars($cl['branche']) ?> &middot; <?= htmlspecialchars($cl['insurer']) ?>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            <span class="font-mono"><?= htmlspecialchars($cl['claim_number']) ?></span>
+                            &middot; déclaré le <?= fmtDate($cl['occurrence_date']) ?>
+                        </div>
+                    </div>
+                    <span class="badge tk-badge-ouvert flex-shrink-0">ouvert</span>
+                </div>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+</section>
+<?php endif; ?>
 
 <?php require APP_PATH . '/Views/layout/footer.php'; ?>

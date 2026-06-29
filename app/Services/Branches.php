@@ -4,40 +4,46 @@ namespace App\Services;
 
 class Branches
 {
+    // Branches commerciales — marché CI (zone CIMA)
     public const BRANCHES = [
-        'Automobile',
+        'Auto',
         'Moto',
-        'Assurance voyage',
-        'Assurance santé',
+        'Flotte automobile',
+        'Santé individuelle',
+        'Santé groupe',
+        'Vie',
+        'Voyage',
         'Multirisques habitation',
         'Multirisques professionnelle',
-        'Responsabilité civile',
+        'RC pro',
     ];
 
-    public const INSURERS = [
-        'ALLIANZ Sénégal',
-        'AMSA Assurances',
-        'ASKIA Assurances',
-        'ATLANTIQUE Assurances',
-        'AXA Assurances Sénégal',
-        'BAVIC Assurances',
-        'Compagnie Africaine d\'Assurances (CAA)',
-        'CNAAS',
-        'GFA Assurances',
-        'LAFIA Assurances',
-        'Mutuelle Panafricaine de Garantie (MPG)',
-        'NSIA Sénégal',
-        'PRUDENTIAL Africa Sénégal',
-        'SAHAM Assurance Sénégal',
-        'SAAR Assurance',
-        'SALAMA Assurances',
-        'SANLAM Sénégal',
-        'SMIG',
-        'SONAR Sénégal',
-        'SUNU Assurances IARD Sénégal',
-        'SUNU Assurances Vie Sénégal',
-        'UAB Sénégal',
-        'Wafa Assurance Sénégal',
-        'NOVELIA Gestion Santé',
+    // Branches réservées aux clients entreprise
+    public const ENTREPRISE_ONLY = [
+        'Flotte automobile',
+        'Santé groupe',
+        'Multirisques professionnelle',
+        'RC pro',
     ];
+
+    public static function forAccountType(string $type): array
+    {
+        if ($type === 'entreprise') {
+            return self::BRANCHES;
+        }
+        return array_values(array_filter(
+            self::BRANCHES,
+            fn($b) => !in_array($b, self::ENTREPRISE_ONLY, true)
+        ));
+    }
+
+    // Retourne true si la branche implique des véhicules (flotte ou mono)
+    public static function isVehicleBranche(string $branche): bool
+    {
+        return in_array(
+            mb_strtolower(trim($branche)),
+            ['auto', 'automobile', 'moto', 'flotte automobile'],
+            true
+        );
+    }
 }

@@ -52,4 +52,18 @@ class Vehicle
     {
         Database::get()->prepare('DELETE FROM vehicles WHERE id = ?')->execute([$id]);
     }
+
+    // Retourne un tableau [contract_id => count] pour un client donné
+    public static function countByContractForClient(int $clientId): array
+    {
+        $stmt = Database::get()->prepare(
+            'SELECT contract_id, COUNT(*) AS cnt FROM vehicles WHERE client_id = ? GROUP BY contract_id'
+        );
+        $stmt->execute([$clientId]);
+        $map = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $map[(int)$row['contract_id']] = (int)$row['cnt'];
+        }
+        return $map;
+    }
 }
