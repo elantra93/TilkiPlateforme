@@ -32,7 +32,7 @@ try {
 <aside class="tk-sidebar" id="tkSidebar">
 
     <a class="tk-sidebar-brand" href="/admin/dashboard">
-        <img src="/logoblanc.svg" alt="TILKI" height="30" style="width:auto">
+        <img src="/logoparapluie.svg" alt="TILKI" height="30" style="width:auto">
         <span class="badge bg-white text-primary fw-semibold ms-1 fs-badge">Admin</span>
     </a>
 
