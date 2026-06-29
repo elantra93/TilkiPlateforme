@@ -190,8 +190,8 @@ class AdminClientController extends BaseController
             'company_address'       => $ent['company_address'],
             'company_city'          => $ent['company_city'],
             'company_country'       => $ent['company_country'],
-            'company_contact_name'  => $ent['company_contact_name'],
-            'company_contact_phone' => $ent['company_contact_phone'],
+            'company_contact_name'  => $client['company_contact_name'],
+            'company_contact_phone' => $client['company_contact_phone'],
         ]);
 
         AuditLogger::log('admin', (int)$_SESSION['admin_id'], 'client_updated', "client:{$id}", $this->ip());
@@ -199,13 +199,21 @@ class AdminClientController extends BaseController
         $this->redirect('/admin/clients/' . $id . '/edit');
     }
 
-    private const CLIENT_DOC_TYPES = [
-        'cni'                  => "Carte Nationale d'Identité",
-        'passeport'            => 'Passeport',
-        'permis_conduire'      => 'Permis de conduire',
-        'justificatif_domicile'=> 'Justificatif de domicile',
-        'formulaire'           => 'Formulaire de souscription',
-        'autre'                => 'Autre document',
+    private const CLIENT_DOC_TYPES_INDIVIDUEL = [
+        'cni'                   => "Carte Nationale d'Identité",
+        'passeport'             => 'Passeport',
+        'permis_conduire'       => 'Permis de conduire',
+        'justificatif_domicile' => 'Justificatif de domicile',
+        'formulaire'            => 'Formulaire de souscription',
+        'autre'                 => 'Autre document',
+    ];
+
+    private const CLIENT_DOC_TYPES_ENTREPRISE = [
+        'rccm'              => 'RCCM',
+        'dfe'               => 'DFE',
+        'plan_localisation' => 'Plan de localisation',
+        'formulaire'        => 'Formulaire de souscription',
+        'autre'             => 'Autre document',
     ];
 
     public function showEdit(string $id): void
@@ -217,12 +225,15 @@ class AdminClientController extends BaseController
             require APP_PATH . '/Views/errors/404.php';
             return;
         }
+        $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
         $this->render('admin.clients.edit', [
-            'csrf'       => $this->csrfToken(),
-            'client'     => $client,
-            'carte'      => Document::carteAssurance((int)$id),
-            'clientDocs' => Document::forClientScope((int)$id),
-            'docTypes'   => self::CLIENT_DOC_TYPES,
+            'csrf'               => $this->csrfToken(),
+            'client'             => $client,
+            'carte'              => Document::carteAssurance((int)$id),
+            'clientDocs'         => Document::forClientScope((int)$id),
+            'docTypes'           => $isEntreprise ? self::CLIENT_DOC_TYPES_ENTREPRISE : self::CLIENT_DOC_TYPES_INDIVIDUEL,
+            'docTypesIndividuel' => self::CLIENT_DOC_TYPES_INDIVIDUEL,
+            'docTypesEntreprise' => self::CLIENT_DOC_TYPES_ENTREPRISE,
         ]);
     }
 
@@ -239,7 +250,10 @@ class AdminClientController extends BaseController
         }
 
         $docType = trim($_POST['doc_type'] ?? '');
-        if (!$docType || !array_key_exists($docType, self::CLIENT_DOC_TYPES)) {
+        $allowedTypes = ($client['account_type'] ?? 'individuel') === 'entreprise'
+            ? self::CLIENT_DOC_TYPES_ENTREPRISE
+            : self::CLIENT_DOC_TYPES_INDIVIDUEL;
+        if (!$docType || !array_key_exists($docType, $allowedTypes)) {
             $_SESSION['admin_flash'] = ['type' => 'danger', 'msg' => 'Type de document invalide.'];
             $this->redirect('/admin/clients/' . $id . '/edit');
             return;
