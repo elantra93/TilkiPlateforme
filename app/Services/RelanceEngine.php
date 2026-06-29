@@ -53,7 +53,10 @@ class RelanceEngine
         ]);
 
         $to   = $contract['email'] ?? '';
-        $name = trim(($contract['first_name'] ?? '') . ' ' . ($contract['last_name'] ?? ''));
+        $isEntreprise = ($contract['account_type'] ?? '') === 'entreprise';
+        $name = $isEntreprise && !empty($contract['company_name'])
+            ? trim($contract['company_name'])
+            : trim(($contract['first_name'] ?? '') . ' ' . ($contract['last_name'] ?? ''));
 
         if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
             Relance::markFailed($relanceId, 'Adresse email client invalide ou absente.');

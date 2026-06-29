@@ -60,6 +60,7 @@ class Contract
     {
         $stmt = Database::get()->prepare(
             "SELECT c.*, cl.first_name, cl.last_name, cl.email, cl.account_number,
+                    cl.account_type, cl.company_name,
                     DATEDIFF(c.expiry_date, CURDATE()) AS days_until_expiry
              FROM contracts c
              JOIN clients cl ON c.client_id = cl.id
