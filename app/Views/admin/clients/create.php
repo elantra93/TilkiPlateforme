@@ -94,7 +94,7 @@
                     <!-- Identité de base -->
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Prénom <span class="text-danger">*</span></label>
+                            <label class="form-label small fw-semibold">Prénoms <span class="text-danger">*</span></label>
                             <input type="text" name="first_name" class="form-control"
                                    value="<?= htmlspecialchars($old['firstName'] ?? '') ?>" required autofocus>
                         </div>
@@ -167,16 +167,7 @@
                                 <input type="text" name="company_city" class="form-control"
                                        value="<?= htmlspecialchars($old['company_city'] ?? '') ?>">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Interlocuteur</label>
-                                <input type="text" name="company_contact_name" class="form-control"
-                                       value="<?= htmlspecialchars($old['company_contact_name'] ?? '') ?>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Téléphone du contact</label>
-                                <input type="tel" name="company_contact_phone" class="form-control"
-                                       value="<?= htmlspecialchars($old['company_contact_phone'] ?? '') ?>">
-                            </div>
+
                         </div>
                     </div>
 

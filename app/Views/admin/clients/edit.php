@@ -67,7 +67,7 @@ $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
                     <!-- Identité de base -->
                     <div class="row g-2 mb-2">
                         <div class="col-md-5">
-                            <label class="form-label small fw-semibold">Prénom <span class="text-danger">*</span></label>
+                            <label class="form-label small fw-semibold">Prénoms <span class="text-danger">*</span></label>
                             <input type="text" name="first_name" class="form-control form-control-sm"
                                    value="<?= htmlspecialchars($client['first_name']) ?>" required>
                         </div>
@@ -136,16 +136,7 @@ $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
                                 <input type="text" name="company_city" class="form-control form-control-sm"
                                        value="<?= htmlspecialchars($client['company_city'] ?? '') ?>">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Interlocuteur</label>
-                                <input type="text" name="company_contact_name" class="form-control form-control-sm"
-                                       value="<?= htmlspecialchars($client['company_contact_name'] ?? '') ?>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Téléphone du contact</label>
-                                <input type="tel" name="company_contact_phone" class="form-control form-control-sm"
-                                       value="<?= htmlspecialchars($client['company_contact_phone'] ?? '') ?>">
-                            </div>
+
                         </div>
                     </div>
 
@@ -175,7 +166,6 @@ $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
                         'N° RCCM fourni'            => !empty($client['company_rccm']),
                         'N° DFE fourni'             => !empty($client['company_dfe']),
                         'Adresse du siège'          => !empty($client['company_address']),
-                        'Interlocuteur désigné'     => !empty($client['company_contact_name']),
                     ];
                     foreach ($checks as $label => $done): ?>
                     <li class="d-flex align-items-center gap-2 py-1 border-bottom">
@@ -196,7 +186,7 @@ $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
     <div class="col-lg-5">
         <div class="card shadow-sm">
             <div class="card-header d-flex align-items-center gap-2 fw-semibold">
-                <i class="bi bi-credit-card text-primary"></i>Carte d'assurance
+                <i class="bi bi-credit-card text-primary"></i>Carte de membre
             </div>
             <div class="card-body d-flex flex-column gap-3">
 
@@ -262,7 +252,7 @@ $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
                 <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
                 <div class="col-md-4">
                     <label class="form-label small mb-1">Type de document <span class="text-danger">*</span></label>
-                    <select name="doc_type" class="form-select form-select-sm" required>
+                    <select name="doc_type" class="form-select form-select-sm" required data-doc-type-select>
                         <option value="">— Choisir —</option>
                         <?php foreach ($docTypes as $key => $label): ?>
                         <option value="<?= htmlspecialchars($key) ?>"><?= htmlspecialchars($label) ?></option>
@@ -312,5 +302,11 @@ $isEntreprise = ($client['account_type'] ?? 'individuel') === 'entreprise';
         <?php endif; ?>
     </div>
 </div>
+
+<div id="clientDocCtx"
+     data-account-type="<?= htmlspecialchars($client['account_type'] ?? 'individuel') ?>"
+     data-types-individuel="<?= htmlspecialchars(json_encode($docTypesIndividuel, JSON_HEX_TAG)) ?>"
+     data-types-entreprise="<?= htmlspecialchars(json_encode($docTypesEntreprise, JSON_HEX_TAG)) ?>"
+     hidden></div>
 
 <?php require APP_PATH . '/Views/admin/layout/footer.php'; ?>
