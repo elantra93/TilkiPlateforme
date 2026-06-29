@@ -21,7 +21,7 @@
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 tbl-card-mobile">
-            <thead class="table-dark">
+            <thead class="table-light">
                 <tr>
                     <th>Date dépôt</th>
                     <th>Client</th>
@@ -44,7 +44,7 @@
                     <td data-label="Date dépôt" class="text-muted small"><?= date('d/m/Y H:i', strtotime($doc['created_at'])) ?></td>
                     <td data-label="Client">
                         <div class="fw-semibold small"><?= htmlspecialchars($doc['first_name'] . ' ' . $doc['last_name']) ?></div>
-                        <div class="text-muted" style="font-size:.75rem"><code><?= htmlspecialchars($doc['account_number']) ?></code></div>
+                        <div class="text-muted fs-xs"><code><?= htmlspecialchars($doc['account_number']) ?></code></div>
                     </td>
                     <td data-label="Contrat / Sinistre" class="small">
                         <?php if ($doc['scope'] === 'contrat' && $doc['policy_number']): ?>

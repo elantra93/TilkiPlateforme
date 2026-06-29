@@ -11,9 +11,12 @@
 </div>
 
 <?php if (empty($branches)): ?>
-<div class="alert alert-info">
-    <i class="bi bi-info-circle me-2"></i>
-    Aucun formulaire de devis configuré. Renseignez les clés <code>TALLY_DEVIS_*</code> dans le fichier <code>.env</code>.
+<div class="card shadow-sm">
+    <div class="card-body text-center text-muted py-5">
+        <i class="bi bi-pencil-square fs-1 d-block mb-2 opacity-25"></i>
+        <p class="mb-1">Aucun formulaire configuré.</p>
+        <p class="small mb-0">Renseignez les clés <code>TALLY_DEVIS_*</code> dans le fichier <code>.env</code>.</p>
+    </div>
 </div>
 <?php else: ?>
 
@@ -32,7 +35,7 @@
                 <div>
                     <div class="fw-semibold text-body"><?= htmlspecialchars($branch['label']) ?></div>
                     <div class="small text-primary mt-1">
-                        Ouvrir le formulaire <i class="bi bi-box-arrow-up-right ms-1" style="font-size:.7rem"></i>
+                        Ouvrir le formulaire <i class="bi bi-box-arrow-up-right ms-1 fs-2xs"></i>
                     </div>
                 </div>
             </div>

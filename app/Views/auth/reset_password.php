@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Réinitialisation du code PIN &ndash; TILKI</title>
     <link rel="icon" type="image/svg+xml" href="/logoparapluie.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
@@ -16,7 +18,7 @@
             <div class="card login-card border-0">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <i class="bi bi-key text-primary" style="font-size:3rem"></i>
+                        <i class="bi bi-key text-primary fs-3x"></i>
                         <h1 class="h4 mt-2 fw-bold">Nouveau code PIN</h1>
                     </div>
 

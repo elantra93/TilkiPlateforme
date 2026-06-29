@@ -171,7 +171,7 @@ $isOpen = $claim['status'] === 'ouvert';
                         <div class="me-3 overflow-hidden">
                             <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
                             <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                            <div class="text-muted mt-1" style="font-size:.75rem">
+                            <div class="text-muted mt-1 fs-xs">
                                 <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                 &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
                                 <?php if ($doc['source'] === 'client'): ?>
@@ -283,7 +283,7 @@ $isOpen = $claim['status'] === 'ouvert';
                             <div class="me-3 overflow-hidden">
                                 <i class="bi <?= docIcon($doc['mime_type']) ?> me-1 small"></i>
                                 <span class="small"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                                <span class="text-muted ms-1" style="font-size:.72rem">
+                                <span class="text-muted ms-1 fs-xxs">
                                     <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                     &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
                                     <?php if ($doc['source'] === 'client'): ?>
@@ -312,12 +312,12 @@ $isOpen = $claim['status'] === 'ouvert';
                 <?php foreach ($expertiseOther as $doc): ?>
                 <div class="border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
                     <div class="me-3 overflow-hidden">
-                        <span class="badge bg-light text-dark border me-1" style="font-size:.7rem">
+                        <span class="badge bg-light text-dark border me-1 fs-2xs">
                             <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
                         </span>
                         <i class="bi <?= docIcon($doc['mime_type']) ?> me-1 small"></i>
                         <span class="small"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                        <span class="text-muted ms-1" style="font-size:.72rem">
+                        <span class="text-muted ms-1 fs-xxs">
                             <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                             &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
                         </span>
@@ -395,7 +395,7 @@ $isOpen = $claim['status'] === 'ouvert';
                         <div class="me-3 overflow-hidden">
                             <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
                             <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                            <div class="text-muted mt-1" style="font-size:.75rem">
+                            <div class="text-muted mt-1 fs-xs">
                                 <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
                                 &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                 &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>
@@ -465,7 +465,7 @@ $isOpen = $claim['status'] === 'ouvert';
                         <div class="me-3 overflow-hidden">
                             <i class="bi <?= docIcon($doc['mime_type']) ?> me-2"></i>
                             <span class="small fw-semibold"><?= htmlspecialchars($doc['original_filename']) ?></span>
-                            <div class="text-muted mt-1" style="font-size:.75rem">
+                            <div class="text-muted mt-1 fs-xs">
                                 <?= htmlspecialchars(str_replace('_', ' ', $doc['doc_type'])) ?>
                                 &bull; <?= number_format($doc['file_size'] / 1024, 0) ?>&nbsp;Ko
                                 &bull; <?= date('d/m/Y', strtotime($doc['created_at'])) ?>

@@ -119,7 +119,7 @@ function tallyFieldPreview(string $jsonPayload, int $max = 6): array
 
                         <form method="post" action="/admin/tally/<?= (int)$entry['id'] ?>/ignore"
                               class="mt-2"
-                              onsubmit="return confirm('Ignorer définitivement cette soumission ?')">
+                              data-confirm="Ignorer définitivement cette soumission ?">
                             <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
                             <button type="submit" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-x me-1"></i>Ignorer

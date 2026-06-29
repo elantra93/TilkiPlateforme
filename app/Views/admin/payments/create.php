@@ -12,7 +12,7 @@
     <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i><?= htmlspecialchars($error) ?></div>
 <?php endif; ?>
 
-<div class="card shadow-sm" style="max-width:680px">
+<div class="card shadow-sm mw-form">
     <div class="card-body p-4">
         <form method="post" action="/admin/payments/create" enctype="multipart/form-data" novalidate>
             <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf) ?>">
@@ -71,7 +71,7 @@
                 <select name="method" id="methodSel" class="form-select" required>
                     <option value="">— Choisir —</option>
                     <?php
-                    $methodLabels = ['cheque'=>'Chèque','virement'=>'Virement bancaire','caisse'=>'Caisse','mobile_money'=>'Mobile Money'];
+                    $methodLabels = ['especes'=>'Espèces','virement'=>'Virement bancaire','cheque'=>'Chèque','caisse'=>'Caisse','mobile_money'=>'Mobile Money','carte'=>'Carte bancaire'];
                     foreach ($methods as $m): ?>
                     <option value="<?= $m ?>"
                         <?= ($old['method'] ?? '') === $m ? 'selected' : '' ?>>

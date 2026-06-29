@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     modele          VARCHAR(100)   DEFAULT NULL,
     annee           YEAR           DEFAULT NULL,
     energie         ENUM('essence','diesel','hybride','electrique','autre') DEFAULT NULL,
-    usage           ENUM('personnel','commercial','mixte') NOT NULL DEFAULT 'personnel',
+    `usage`         ENUM('personnel','commercial','mixte') NOT NULL DEFAULT 'personnel',
     valeur_venale   DECIMAL(12,2)  DEFAULT NULL      COMMENT 'Valeur vénale en XOF',
     created_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

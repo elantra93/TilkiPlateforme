@@ -15,7 +15,12 @@
 </div>
 
 <?php if (empty($claims)): ?>
-    <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Aucun sinistre enregistré.</div>
+<div class="card shadow-sm">
+    <div class="card-body text-center text-muted py-5">
+        <i class="bi bi-shield-check fs-1 d-block mb-2 text-success opacity-50"></i>
+        <p class="mb-0">Aucun sinistre enregistré.</p>
+    </div>
+</div>
 <?php else: ?>
     <div class="card shadow-sm">
         <div class="table-responsive">

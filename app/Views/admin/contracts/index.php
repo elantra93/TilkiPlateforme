@@ -11,7 +11,7 @@
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 tbl-card-mobile">
-            <thead class="table-dark">
+            <thead class="table-light">
                 <tr>
                     <th>Client</th>
                     <th>Branche</th>
@@ -32,7 +32,7 @@
                 <tr class="tbl-row-link" data-href="/admin/contracts/<?= (int)$c['id'] ?>/edit">
                     <td data-label="Client">
                         <div class="fw-semibold small"><?= htmlspecialchars($c['first_name'] . ' ' . $c['last_name']) ?></div>
-                        <div class="text-muted" style="font-size:.75rem"><code><?= htmlspecialchars($c['account_number']) ?></code></div>
+                        <div class="text-muted fs-xs"><code><?= htmlspecialchars($c['account_number']) ?></code></div>
                     </td>
                     <td data-label="Branche"><?= htmlspecialchars($c['branche']) ?></td>
                     <td data-label="N° Police"><code class="text-body"><?= htmlspecialchars($c['policy_number']) ?></code></td>

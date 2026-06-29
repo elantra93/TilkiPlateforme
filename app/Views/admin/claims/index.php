@@ -16,7 +16,7 @@
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 tbl-card-mobile">
-            <thead class="table-dark">
+            <thead class="table-light">
                 <tr>
                     <th>Client</th>
                     <th>N° Sinistre</th>
@@ -36,7 +36,7 @@
                 <tr class="tbl-row-link" data-href="/admin/claims/<?= (int)$cl['id'] ?>/edit">
                     <td data-label="Client">
                         <div class="fw-semibold small"><?= htmlspecialchars($cl['first_name'] . ' ' . $cl['last_name']) ?></div>
-                        <div class="text-muted" style="font-size:.75rem"><code><?= htmlspecialchars($cl['account_number']) ?></code></div>
+                        <div class="text-muted fs-xs"><code><?= htmlspecialchars($cl['account_number']) ?></code></div>
                     </td>
                     <td data-label="N° Sinistre"><code class="text-body"><?= htmlspecialchars($cl['claim_number']) ?></code></td>
                     <td data-label="Branche"><?= htmlspecialchars($cl['branche']) ?></td>
