@@ -49,8 +49,8 @@
                     <label for="amountInp" class="form-label fw-semibold">
                         Montant (XOF) <span class="text-danger">*</span>
                     </label>
-                    <input type="number" name="amount" id="amountInp" class="form-control"
-                           min="1" step="1" required
+                    <input type="text" name="amount" id="amountInp" class="form-control tk-money-input"
+                           inputmode="numeric" required
                            value="<?= htmlspecialchars((string)($old['amount'] ?? '')) ?>">
                 </div>
                 <!-- Date -->
@@ -69,13 +69,20 @@
                     Mode de paiement <span class="text-danger">*</span>
                 </label>
                 <select name="method" id="methodSel" class="form-select" required>
-                    <option value="">— Choisir —</option>
+                    <option value="" disabled selected>— Choisir —</option>
                     <?php
-                    $methodLabels = ['especes'=>'Espèces','virement'=>'Virement bancaire','cheque'=>'Chèque','caisse'=>'Caisse','mobile_money'=>'Mobile Money','carte'=>'Carte bancaire'];
+                    $methodLabels = [
+                        'especes'      => 'Espèces',
+                        'carte'        => 'Carte',
+                        'cheque'       => 'Chèque',
+                        'mobile_money' => 'Mobile Money',
+                        'virement'     => 'Virement bancaire',
+                        'compensation' => 'Compensation',
+                    ];
                     foreach ($methods as $m): ?>
                     <option value="<?= $m ?>"
                         <?= ($old['method'] ?? '') === $m ? 'selected' : '' ?>>
-                        <?= $methodLabels[$m] ?>
+                        <?= $methodLabels[$m] ?? $m ?>
                     </option>
                     <?php endforeach; ?>
                 </select>

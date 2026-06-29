@@ -12,7 +12,7 @@ use App\Services\FileStorage;
 
 class AdminPaymentController extends BaseController
 {
-    private const METHODS = ['especes', 'virement', 'cheque', 'mobile_money', 'carte'];
+    private const METHODS = ['especes', 'carte', 'cheque', 'mobile_money', 'virement', 'compensation'];
 
     public function index(): void
     {
@@ -119,7 +119,7 @@ class AdminPaymentController extends BaseController
 
         $clientId   = (int)($_POST['client_id']   ?? 0);
         $contractId = (int)($_POST['contract_id']  ?? 0);
-        $amount     = trim($_POST['amount']        ?? '');
+        $amount     = str_replace([' ', "\u{202F}", "\u{00A0}"], '', trim($_POST['amount'] ?? ''));
         $method     = trim($_POST['method']        ?? '');
         $reference  = trim($_POST['reference']     ?? '') ?: null;
         $paidAt     = trim($_POST['paid_at']       ?? '');
