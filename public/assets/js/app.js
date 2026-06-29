@@ -54,6 +54,61 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checked) applyToggle(checked.value);
     }());
 
+    // Document type conditional by account type ([data-doc-type-select] + #clientDocCtx)
+    (function () {
+        var ctx = document.getElementById('clientDocCtx');
+        var sel = document.querySelector('[data-doc-type-select]');
+        if (!ctx || !sel) return;
+
+        var typesInd = JSON.parse(ctx.dataset.typesIndividuel || '{}');
+        var typesEnt = JSON.parse(ctx.dataset.typesEntreprise || '{}');
+
+        function buildOptions(types) {
+            sel.innerHTML = '<option value="">— Choisir —</option>';
+            Object.keys(types).forEach(function (key) {
+                var opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = types[key];
+                sel.appendChild(opt);
+            });
+        }
+
+        function applyTypes(accountType) {
+            buildOptions(accountType === 'entreprise' ? typesEnt : typesInd);
+        }
+
+        var checked = document.querySelector('[data-account-type-toggle]:checked');
+        applyTypes(checked ? checked.value : (ctx.dataset.accountType || 'individuel'));
+
+        document.querySelectorAll('[data-account-type-toggle]').forEach(function (radio) {
+            radio.addEventListener('change', function () { applyTypes(this.value); });
+        });
+    }());
+
+    // Money input formatting (.tk-money-input) — format on input, strip on submit
+    (function () {
+        function formatMoney(val) {
+            return val.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        document.querySelectorAll('.tk-money-input').forEach(function (inp) {
+            inp.addEventListener('input', function () {
+                var start = this.selectionStart;
+                var before = this.value.length;
+                this.value = formatMoney(this.value);
+                var diff = this.value.length - before;
+                this.setSelectionRange(start + diff, start + diff);
+            });
+
+            var form = inp.closest('form');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    inp.value = inp.value.replace(/\s/g, '');
+                }, true);
+            }
+        });
+    }());
+
     // Admin sidebar toggle
     var toggle  = document.getElementById('tkToggle');
     var sidebar = document.getElementById('tkSidebar');
