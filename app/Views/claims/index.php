@@ -2,13 +2,13 @@
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="h4 mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Mes sinistres</h2>
+    <h2 class="h4 mb-0 fw-bold">Mes sinistres</h2>
     <?php if (!empty($contracts)): ?>
-    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declarerModal">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#declarerModal">
         <i class="bi bi-plus-lg me-1"></i>Déclarer un sinistre
     </button>
     <?php else: ?>
-    <a href="/claims/declare" class="btn btn-danger">
+    <a href="/claims/declare" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>Déclarer un sinistre
     </a>
     <?php endif; ?>
@@ -22,43 +22,31 @@
     </div>
 </div>
 <?php else: ?>
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 tbl-card-mobile">
-                <thead class="table-light">
-                    <tr>
-                        <th>N° Sinistre</th>
-                        <th>Branche</th>
-                        <th>Assureur</th>
-                        <th>Survenance</th>
-                        <th>N° Police</th>
-                        <th>Statut</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($claims as $cl): ?>
-                        <tr class="tbl-row-link" data-href="/claims/<?= (int)$cl['id'] ?>">
-                            <td data-label="N° Sinistre"><code><?= htmlspecialchars($cl['claim_number']) ?></code></td>
-                            <td data-label="Branche"><?= htmlspecialchars($cl['branche']) ?></td>
-                            <td data-label="Assureur"><?= htmlspecialchars($cl['insurer']) ?></td>
-                            <td data-label="Survenance"><?= date('d/m/Y', strtotime($cl['occurrence_date'])) ?></td>
-                            <td data-label="N° Police"><?= htmlspecialchars($cl['policy_number'] ?? '—') ?></td>
-                            <td data-label="Statut">
-                                <span class="badge bg-<?= $cl['status'] === 'ouvert' ? 'danger' : 'success' ?>">
-                                    <?= htmlspecialchars($cl['status']) ?>
-                                </span>
-                            </td>
-                            <td data-label="">
-                                <a href="/claims/<?= $cl['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye me-1"></i>Détail
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+    <div class="card">
+        <ul class="list-group list-group-flush">
+            <?php foreach ($claims as $cl): ?>
+            <li class="list-group-item list-group-item-action px-4 py-3 tk-list-row"
+                onclick="window.location='/claims/<?= (int)$cl['id'] ?>'" style="cursor:pointer">
+                <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-3 min-w-0">
+                        <span class="tk-icon-tile"><i class="bi <?= tk_branche_icon($cl['branche']) ?>"></i></span>
+                        <div class="min-w-0">
+                            <div class="fw-semibold text-body">
+                                <?= htmlspecialchars($cl['branche']) ?> &middot; <?= htmlspecialchars($cl['insurer']) ?>
+                            </div>
+                            <div class="small text-muted mt-1">
+                                <span class="font-mono"><?= htmlspecialchars($cl['claim_number']) ?></span>
+                                &middot; déclaré le <?= date('d/m/Y', strtotime($cl['occurrence_date'])) ?>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="badge tk-badge-<?= htmlspecialchars($cl['status']) ?> flex-shrink-0">
+                        <?= htmlspecialchars($cl['status']) ?>
+                    </span>
+                </div>
+            </li>
+            <?php endforeach; ?>
+        </ul>
     </div>
 <?php endif; ?>
 
@@ -93,7 +81,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-danger" id="declarerSubmitBtn" disabled>
+                    <button type="submit" class="btn btn-primary" id="declarerSubmitBtn" disabled>
                         <i class="bi bi-box-arrow-up-right me-1"></i>Accéder au formulaire
                     </button>
                 </div>

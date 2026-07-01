@@ -35,7 +35,9 @@ $santeBranches      = ['santé individuelle', 'santé groupe', 'santé'];
         <li class="list-group-item list-group-item-action px-4 py-3 tk-list-row"
             onclick="window.location='/contracts/<?= (int)$c['id'] ?>'" style="cursor:pointer">
             <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                <div class="min-w-0">
+                <div class="d-flex align-items-center gap-3 min-w-0">
+                    <span class="tk-icon-tile"><i class="bi <?= tk_branche_icon($c['branche']) ?>"></i></span>
+                    <div class="min-w-0">
                     <div class="fw-semibold text-body">
                         <?= htmlspecialchars($c['branche']) ?> &middot; <?= htmlspecialchars($c['insurer']) ?>
                     </div>
@@ -55,6 +57,7 @@ $santeBranches      = ['santé individuelle', 'santé groupe', 'santé'];
                         <?php if (!empty($c['expiry_date'])): ?>
                         <span>&middot; échéance <?= date('d/m/Y', strtotime($c['expiry_date'])) ?></span>
                         <?php endif; ?>
+                    </div>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-shrink-0">

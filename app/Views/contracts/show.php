@@ -31,7 +31,7 @@ foreach ($byCategory['souscription'] as $doc) {
     </a>
     <?php if (!empty($tallyClaimUrl)): ?>
     <a href="<?= htmlspecialchars($tallyClaimUrl) ?>" target="_blank" rel="noopener"
-       class="btn btn-danger btn-sm">
+       class="btn btn-primary btn-sm">
         <i class="bi bi-exclamation-triangle me-1"></i>Déclarer un sinistre
     </a>
     <?php endif; ?>
@@ -127,7 +127,7 @@ foreach ($byCategory['souscription'] as $doc) {
                                 <i class="bi bi-download me-1"></i>Télécharger
                             </a>
                         <?php else: ?>
-                            <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                            <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                         <?php endif; ?>
                     </li>
                     <?php endforeach; ?>
@@ -222,7 +222,7 @@ foreach ($byCategory['souscription'] as $doc) {
                             <i class="bi bi-download me-1"></i>Télécharger
                         </a>
                     <?php else: ?>
-                        <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                        <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                     <?php endif; ?>
                 </li>
                 <?php endforeach; ?>
@@ -257,7 +257,7 @@ foreach ($byCategory['souscription'] as $doc) {
                                 <i class="bi bi-download me-1"></i>Télécharger
                             </a>
                         <?php else: ?>
-                            <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                            <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                         <?php endif; ?>
                     </li>
                     <?php endforeach; ?>
@@ -422,9 +422,9 @@ foreach ($byCategory['souscription'] as $doc) {
                             </a>
                             <?php endif; ?>
                             <?php if ($p['status'] === 'valide'): ?>
-                                <span class="badge bg-success">Validé</span>
+                                <span class="badge tk-badge-valide">validé</span>
                             <?php else: ?>
-                                <span class="badge bg-warning text-dark">En attente</span>
+                                <span class="badge tk-badge-en_attente">en attente</span>
                             <?php endif; ?>
                         </div>
                     </div>

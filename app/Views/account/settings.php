@@ -10,6 +10,27 @@
 <!-- ── Identité ───────────────────────────────────────────────────────── -->
 <div class="card mb-4">
     <div class="card-body">
+
+        <!-- Carte d'identité de marque (panneau bleu) -->
+        <div class="tk-id-card mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <img src="/logoblanc.svg" alt="TILKI" height="20" style="width:auto">
+                <span class="tk-id-pill"><?= $isEntreprise ? 'Entreprise' : 'Particulier' ?></span>
+            </div>
+            <div class="tk-id-label">Titulaire</div>
+            <div class="fw-bold" style="font-size:1.15rem;line-height:1.2">
+                <?php if ($isEntreprise): ?>
+                    <?= htmlspecialchars($client['company_name'] ?? '') ?>
+                <?php else: ?>
+                    <?= htmlspecialchars(trim(($client['first_name'] ?? '') . ' ' . ($client['last_name'] ?? ''))) ?>
+                <?php endif; ?>
+            </div>
+            <div class="mt-3">
+                <div class="tk-id-label">N° de compte</div>
+                <div class="tk-id-value" style="font-size:1rem"><?= htmlspecialchars($client['account_number'] ?? '') ?></div>
+            </div>
+        </div>
+
         <dl class="row mb-0 small">
             <dt class="col-sm-4 text-muted py-2 border-bottom">Titulaire</dt>
             <dd class="col-sm-8 fw-semibold py-2 border-bottom">

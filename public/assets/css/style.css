@@ -143,7 +143,8 @@ code, pre, kbd, .font-mono {
    LOGIN PAGE — split layout
    ================================================================ */
 body.login-page {
-    background: linear-gradient(135deg, var(--tk-blue) 0%, #0f172a 100%);
+    /* Charte : fond clair uni (pas de dégradé sur le contenu) — cf. canevas /reset */
+    background: var(--tk-bg-page);
 }
 
 body.login-page-admin {
@@ -659,6 +660,147 @@ body.tk-admin {
 .badge-method-virement    { background: #dcfce7; color: #166534; }
 .badge-method-caisse      { background: #fef9c3; color: #854d0e; }
 .badge-method-mobile      { background: #fce7f3; color: #9d174d; }
+
+/* ================================================================
+   ALIGNEMENT CHARTE — TILKI Portail (design appliqué)
+   Rapproche l'espace client du canevas « TILKI Portail.dc.html » :
+   boutons pilule, cartes 20px, badges de statut, montants JetBrains Mono,
+   tuiles d'icône bleutées. Portée : espace client + accès (pas l'admin).
+   ================================================================ */
+
+/* Tokens charte (valeurs exactes du canevas) */
+:root {
+    --tk-radius-card: 20px;
+    --tk-blue-soft:   #EEF3FF;       /* fond des tuiles d'icône */
+    --tk-shadow-card: 0 1px 2px rgba(16,24,40,.04), 0 10px 28px rgba(16,24,40,.05);
+    --tk-shadow-flat: 0 1px 2px rgba(16,24,40,.04);
+}
+
+/* Boutons pilule — la forme signature (client + accès, pas l'admin) */
+body:not(.tk-admin) .btn {
+    border-radius: 999px;
+    font-weight: 600;
+    transition: background .14s cubic-bezier(.4,0,.2,1),
+                border-color .14s cubic-bezier(.4,0,.2,1),
+                transform .14s cubic-bezier(.4,0,.2,1);
+}
+body:not(.tk-admin) .btn:active { transform: scale(.97); }
+/* Le bouton de fermeture d'alerte reste circulaire natif */
+body:not(.tk-admin) .btn-close { border-radius: 50%; }
+
+/* Cartes — grand rayon, filet fin, ombre douce */
+body:not(.tk-admin) .card {
+    border-radius: var(--tk-radius-card);
+    border: 1px solid var(--tk-neutral-200);
+    box-shadow: var(--tk-shadow-card);
+}
+body:not(.tk-admin) .card-header {
+    border-radius: var(--tk-radius-card) var(--tk-radius-card) 0 0 !important;
+}
+
+/* Carte interactive — se soulève de 2px au survol */
+.tk-card-int {
+    transition: transform .18s cubic-bezier(.4,0,.2,1),
+                box-shadow .18s cubic-bezier(.4,0,.2,1);
+}
+.tk-card-int:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(16,24,40,.10), 0 2px 8px rgba(16,24,40,.05);
+}
+
+/* Tuile d'icône — carré bleuté à coins doux, icône bleue */
+.tk-icon-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--tk-blue-soft);
+    color: var(--tk-blue);
+    flex-shrink: 0;
+    font-size: 1.15rem;
+}
+.tk-icon-tile-sm { width: 34px; height: 34px; border-radius: 10px; font-size: 1rem; }
+.tk-icon-tile-lg { width: 54px; height: 54px; border-radius: 15px; font-size: 1.6rem; }
+
+/* Montants & références en mono tabulaire */
+.tk-mono, .tk-amount { font-family: var(--tk-font-mono); font-feature-settings: "tnum"; }
+.tk-kpi-value { font-family: var(--tk-font-mono); letter-spacing: -.01em; }
+
+/* Badges de statut — pastilles pleines, couleurs exactes du canevas */
+.tk-badge-actif,
+.tk-badge-valide,
+.tk-badge-validé,
+.tk-badge-clos,
+.tk-doc-fourni      { background: #E9F7EF; color: #128040; border-color: transparent; }
+.tk-badge-en_attente,
+.tk-badge-suspendu,
+.tk-doc-attente     { background: #FEF5E7; color: #C2780A; border-color: transparent; }
+.tk-badge-ouvert    { background: #EEF3FF; color: #0A39D6; border-color: transparent; }
+.tk-badge-rejeté,
+.tk-badge-rejete    { background: #FDECEC; color: #C32921; border-color: transparent; }
+.tk-badge-expiré,
+.tk-badge-expire,
+.tk-badge-résilié,
+.tk-badge-resilie,
+.tk-doc-requis      { background: #EDEDF0; color: #48484A; border-color: transparent; }
+
+/* Forme pastille commune pour les badges de statut/document */
+[class*="tk-badge-"],
+[class*="tk-doc-"] {
+    display: inline-flex;
+    align-items: center;
+    gap: .3em;
+    border-radius: 999px;
+    font-weight: 600;
+    padding: .28em .7em;
+}
+
+/* Alertes tableau de bord — ambre chaud, filet complet */
+.tk-alert-card { border-radius: 16px; border-left: none; }
+.tk-alert-warning {
+    background: #FEF5E7;
+    border: 1px solid #F6DCAE;
+}
+.tk-alert-info {
+    background: var(--tk-bg-surface);
+    border: 1px solid var(--tk-neutral-200);
+}
+
+/* KPI — carte charte + valeur mono */
+body:not(.tk-admin) .tk-kpi-card { border-radius: var(--tk-radius-card); }
+
+/* Cartes de branches (devis) — filet fin 1px, coins 16px */
+.branch-card { border-width: 1px; border-radius: 16px; }
+.branch-icon { border-radius: 11px; }
+
+/* Carte d'identité de marque — panneau bleu plein (/account) */
+.tk-id-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--tk-blue);
+    color: #fff;
+    border-radius: 18px;
+    padding: 22px 24px;
+}
+.tk-id-card::before {
+    content: "";
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    right: -70px; top: -80px;
+    pointer-events: none;
+}
+.tk-id-card > * { position: relative; }
+.tk-id-label { font-size: .72rem; color: rgba(255,255,255,.72); }
+.tk-id-value { font-family: var(--tk-font-mono); font-weight: 600; letter-spacing: .06em; }
+.tk-id-pill  {
+    font-size: .68rem; font-weight: 700;
+    background: rgba(255,255,255,.18);
+    padding: .2rem .6rem; border-radius: 999px;
+}
 
 /* ================================================================
    RESPONSIVE

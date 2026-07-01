@@ -92,7 +92,7 @@ $isOpen = $claim['status'] === 'ouvert';
 
                     <dt class="col-6 text-muted">Statut</dt>
                     <dd class="col-6">
-                        <span class="badge bg-<?= $isOpen ? 'danger' : 'success' ?>">
+                        <span class="badge tk-badge-<?= htmlspecialchars($claim['status']) ?>">
                             <?= htmlspecialchars($claim['status']) ?>
                         </span>
                     </dd>
@@ -185,7 +185,7 @@ $isOpen = $claim['status'] === 'ouvert';
                                 <i class="bi bi-download me-1"></i>Télécharger
                             </a>
                         <?php else: ?>
-                            <span class="badge bg-warning text-dark flex-shrink-0">En attente de validation</span>
+                            <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                         <?php endif; ?>
                     </li>
                     <?php endforeach; ?>
@@ -299,7 +299,7 @@ $isOpen = $claim['status'] === 'ouvert';
                                     <i class="bi bi-download me-1"></i><span class="small">Télécharger</span>
                                 </a>
                             <?php else: ?>
-                                <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                                <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                             <?php endif; ?>
                         </li>
                         <?php endforeach; ?>
@@ -328,7 +328,7 @@ $isOpen = $claim['status'] === 'ouvert';
                             <i class="bi bi-download me-1"></i><span class="small">Télécharger</span>
                         </a>
                     <?php else: ?>
-                        <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                        <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                     <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
@@ -412,7 +412,7 @@ $isOpen = $claim['status'] === 'ouvert';
                                 <i class="bi bi-download me-1"></i>Télécharger
                             </a>
                         <?php else: ?>
-                            <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                            <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                         <?php endif; ?>
                     </li>
                     <?php endforeach; ?>
@@ -477,7 +477,7 @@ $isOpen = $claim['status'] === 'ouvert';
                                 <i class="bi bi-download me-1"></i>Télécharger
                             </a>
                         <?php else: ?>
-                            <span class="badge bg-warning text-dark flex-shrink-0">En attente</span>
+                            <span class="badge tk-badge-en_attente flex-shrink-0">en attente</span>
                         <?php endif; ?>
                     </li>
                     <?php endforeach; ?>

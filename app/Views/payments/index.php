@@ -1,7 +1,7 @@
 <?php $pageTitle = 'Mes paiements – TILKI'; ?>
 <?php require APP_PATH . '/Views/layout/header.php'; ?>
 
-<h2 class="h4 fw-bold mb-4"><i class="bi bi-cash-coin me-2"></i>Mes paiements</h2>
+<h2 class="h4 fw-bold mb-4">Mes paiements</h2>
 
 <?php if (empty($payments)): ?>
 <div class="card shadow-sm">
@@ -35,7 +35,7 @@
                     <td data-label="Date" class="small text-muted"><?= date('d/m/Y', strtotime($p['paid_at'])) ?></td>
                     <td data-label="Police"><code class="small"><?= htmlspecialchars($p['policy_number']) ?></code></td>
                     <td data-label="Branche" class="small"><?= htmlspecialchars($p['branche']) ?></td>
-                    <td data-label="Montant" class="fw-semibold small">
+                    <td data-label="Montant" class="fw-semibold small font-mono">
                         <?= number_format((float)$p['amount'], 0, ',', ' ') ?>&nbsp;XOF
                     </td>
                     <td data-label="Mode">

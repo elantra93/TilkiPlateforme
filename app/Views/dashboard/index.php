@@ -70,13 +70,13 @@ $expiringContract = $nextExpiry;
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
         <div class="card tk-kpi-card">
-            <div class="tk-kpi-label">Contrats actifs</div>
+            <div class="tk-kpi-label"><i class="bi bi-shield text-primary me-1"></i>Contrats actifs</div>
             <div class="tk-kpi-value"><?= $activeCount ?></div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
         <div class="card tk-kpi-card">
-            <div class="tk-kpi-label">Restant dû</div>
+            <div class="tk-kpi-label"><i class="bi bi-wallet2 text-primary me-1"></i>Restant dû</div>
             <?php if ($totalDue > 0): ?>
             <div class="tk-kpi-value font-mono tk-kpi-danger"><?= number_format($totalDue, 0, ',', ' ') ?></div>
             <div class="tk-kpi-sub">FCFA</div>
@@ -88,7 +88,7 @@ $expiringContract = $nextExpiry;
     </div>
     <div class="col-6 col-lg-3">
         <div class="card tk-kpi-card">
-            <div class="tk-kpi-label">Prochaine échéance</div>
+            <div class="tk-kpi-label"><i class="bi bi-calendar-event text-primary me-1"></i>Prochaine échéance</div>
             <?php if ($nextExpiry): ?>
             <div class="tk-kpi-value font-mono <?= ($nextExpiryDays <= 30) ? 'tk-kpi-warning' : '' ?>"><?= fmtDate($nextExpiry['expiry_date']) ?></div>
             <?php else: ?>
@@ -98,7 +98,7 @@ $expiringContract = $nextExpiry;
     </div>
     <div class="col-6 col-lg-3">
         <div class="card tk-kpi-card">
-            <div class="tk-kpi-label">Sinistres ouverts</div>
+            <div class="tk-kpi-label"><i class="bi bi-file-earmark-medical text-primary me-1"></i>Sinistres ouverts</div>
             <div class="tk-kpi-value <?= count($openClaims) > 0 ? 'tk-kpi-danger' : '' ?>"><?= count($openClaims) ?></div>
         </div>
     </div>
@@ -128,8 +128,9 @@ $expiringContract = $nextExpiry;
             <?php foreach (array_slice($contracts, 0, 4) as $c): ?>
             <li class="list-group-item list-group-item-action px-4 py-3 tk-list-row"
                 onclick="window.location='/contracts/<?= (int)$c['id'] ?>'" style="cursor:pointer">
-                <div class="d-flex justify-content-between align-items-center gap-3">
-                    <div class="min-w-0">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="tk-icon-tile"><i class="bi <?= tk_branche_icon($c['branche']) ?>"></i></span>
+                    <div class="min-w-0 flex-grow-1">
                         <div class="fw-semibold text-body">
                             <?= htmlspecialchars($c['branche']) ?> &middot; <?= htmlspecialchars($c['insurer']) ?>
                         </div>
@@ -184,8 +185,9 @@ $expiringContract = $nextExpiry;
             <?php foreach ($openClaims as $cl): ?>
             <li class="list-group-item list-group-item-action px-4 py-3 tk-list-row"
                 onclick="window.location='/claims/<?= (int)$cl['id'] ?>'" style="cursor:pointer">
-                <div class="d-flex justify-content-between align-items-center gap-3">
-                    <div class="min-w-0">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="tk-icon-tile"><i class="bi <?= tk_branche_icon($cl['branche']) ?>"></i></span>
+                    <div class="min-w-0 flex-grow-1">
                         <div class="fw-semibold text-body">
                             <?= htmlspecialchars($cl['branche']) ?> &middot; <?= htmlspecialchars($cl['insurer']) ?>
                         </div>

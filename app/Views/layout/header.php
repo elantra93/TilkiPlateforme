@@ -5,6 +5,26 @@ $_tkPath = rtrim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH), '/') ?
 function _tk_tab(string $prefix, string $current): string {
     return str_starts_with($current, $prefix) ? ' active' : '';
 }
+/**
+ * Icône Bootstrap Icons associée à une branche d'assurance.
+ * Utilisée par les tuiles bleutées (.tk-icon-tile) du canevas TILKI Portail.
+ */
+if (!function_exists('tk_branche_icon')) {
+    function tk_branche_icon(?string $branche): string {
+        $b = strtolower((string) $branche);
+        return match (true) {
+            str_contains($b, 'auto') || str_contains($b, 'véhic') || str_contains($b, 'vehic') => 'bi-car-front',
+            str_contains($b, 'moto') || str_contains($b, 'deux-roues')                          => 'bi-bicycle',
+            str_contains($b, 'sant') || str_contains($b, 'maladie')                             => 'bi-heart-pulse',
+            str_contains($b, 'voyage')                                                          => 'bi-airplane',
+            str_contains($b, 'habit') || str_contains($b, 'mrh') || str_contains($b, 'incendie') || str_contains($b, 'maison') => 'bi-house',
+            str_contains($b, 'transport') || str_contains($b, 'marchand')                       => 'bi-truck',
+            str_contains($b, 'vie') || str_contains($b, 'décès') || str_contains($b, 'deces')   => 'bi-shield-heart',
+            str_contains($b, 'rc') || str_contains($b, 'pro') || str_contains($b, 'entreprise') => 'bi-building',
+            default                                                                             => 'bi-shield',
+        };
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
